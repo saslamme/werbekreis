@@ -1,0 +1,11 @@
+<div class="row g-3">{% for image in company.images %}<div class="col-sm-6 col-lg-4">
+<article class="border rounded p-3">
+<img class="directory-image mb-3" src="{{ path('admin_company_image_file', {company: company.id, image: image.id}) }}" alt="{{ image.altText }}" loading="lazy">
+<p>{{ image.title ?: image.altText }} · {{ image.type }} · Position {{ image.position }}</p>
+<a href="{{ path('admin_company_image_edit', {company: company.id, image: image.id}) }}">Bild bearbeiten</a>
+<form class="mt-2" method="post" action="{{ path('admin_company_image_delete', {company: company.id, image: image.id}) }}">
+<input type="hidden" name="_token" value="{{ csrf_token('delete_image_' ~ image.id) }}">
+<button class="btn btn-outline-danger btn-sm" type="submit">Bild löschen</button>
+</form>
+</article>
+</div>{% else %}<p>Noch keine Bilder vorhanden.</p>{% endfor %}</div>

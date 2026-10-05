@@ -1,0 +1,5 @@
+# Uploaded test images must never use a configured deployment upload directory.
+services:
+    App\Service\CompanyImageStorage:
+        arguments:
+            $directory: '%kernel.project_dir%/var/uploads/test_companies'

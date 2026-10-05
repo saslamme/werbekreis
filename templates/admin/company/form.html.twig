@@ -1,0 +1,49 @@
+{% extends 'admin/base.html.twig' %}
+{% block admin_body %}
+<div class="section-heading">
+<h1>{{ company.id ? 'Unternehmen bearbeiten' : 'Unternehmen anlegen' }}</h1>
+<a href="{{ path('admin_companies') }}">Zur Liste</a>
+</div>
+{{ form_start(form) }}{{ form_errors(form) }}
+<section class="directory-form-section">
+<h2 class="h4">Allgemein</h2>
+<div class="row">
+<div class="col-lg-8">{{ form_row(form.name) }}{{ form_row(form.slug) }}{{ form_row(form.shortDescription) }}{{ form_row(form.description) }}</div>
+<div class="col-lg-4">{{ form_row(form.categories) }}{{ form_row(form.active) }}{{ form_row(form.featured) }}</div>
+</div>
+</section>
+<section class="directory-form-section">
+<h2 class="h4">Adresse</h2>
+<div class="row">
+<div class="col-md-8">{{ form_row(form.street) }}</div>
+<div class="col-md-4">{{ form_row(form.houseNumber) }}</div>
+<div class="col-md-4">{{ form_row(form.postalCode) }}</div>
+<div class="col-md-8">{{ form_row(form.city) }}</div>
+<div class="col-md-6">{{ form_row(form.latitude) }}</div>
+<div class="col-md-6">{{ form_row(form.longitude) }}</div>
+</div>
+</section>
+<section class="directory-form-section">
+<h2 class="h4">Kontakt</h2>
+<div class="row">{% for field in [form.phone, form.email, form.website, form.facebookUrl, form.instagramUrl] %}<div class="col-md-6">{{ form_row(field) }}</div>{% endfor %}</div>
+</section>
+<section class="directory-form-section">
+<h2 class="h4">Öffnungszeiten</h2>
+<p class="text-secondary">Mehrere Zeitfenster pro Tag sind möglich. Bei „Geschlossen“ die Uhrzeiten leer lassen.</p>{% include 'admin/partials/_collection.html.twig' with {field: form.openingHours, add_label: 'Zeitfenster hinzufügen'} %}</section>
+<section class="directory-form-section">
+<h2 class="h4">Ansprechpartner</h2>{% include 'admin/partials/_collection.html.twig' with {field: form.contactPersons, add_label: 'Ansprechpartner hinzufügen'} %}</section>
+<button class="btn btn-primary" type="submit">Speichern</button>
+<a class="btn btn-outline-secondary" href="{{ path('admin_companies') }}">Abbrechen</a>
+{{ form_end(form) }}
+<section class="directory-form-section mt-5" id="company-images">
+<h2 class="h4">Bilder</h2>{% if company.id %}<p>Logo, Titelbild und Galeriebilder werden hier verwaltet. Änderungen am Unternehmensformular zuerst speichern.</p>
+<a class="btn btn-outline-primary mb-3" href="{{ path('admin_company_image_new', {company: company.id}) }}">Bild hinzufügen</a>{% include 'admin/company/_images.html.twig' %}{% else %}<p>Bitte das Unternehmen zuerst speichern. Danach können Bilder hinzugefügt werden.</p>{% endif %}</section>
+{% if company.id %}<div class="border-top pt-4">
+<h2 class="h5">Unternehmen löschen</h2>
+<p>Öffnungszeiten, Ansprechpartner und Bilder werden ebenfalls gelöscht.</p>
+<form method="post" action="{{ path('admin_company_delete', {id: company.id}) }}">
+<input type="hidden" name="_token" value="{{ csrf_token('delete_company_' ~ company.id) }}">
+<button class="btn btn-outline-danger" type="submit">Unternehmen endgültig löschen</button>
+</form>
+</div>{% endif %}
+{% endblock %}
