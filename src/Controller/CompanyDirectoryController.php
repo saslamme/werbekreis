@@ -11,6 +11,7 @@ use App\Repository\CategoryRepository;
 use App\Repository\CompanyRepository;
 use App\Repository\OfferRepository;
 use App\Repository\EventRepository;
+use App\Repository\NewsArticleRepository;
 use App\Service\CompanyImageStorage;
 use App\Service\CompanyStructuredData;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -55,14 +56,15 @@ final class CompanyDirectoryController extends AbstractController
     }
 
     #[Route('/{slug}', name: 'company_show', requirements: ['slug' => self::SLUG], methods: ['GET'])]
-    public function show(string $slug, CompanyRepository $companies, CompanyStructuredData $structuredData, DirectoryMap $map, OfferRepository $offers, EventRepository $events): Response
+    public function show(string $slug, CompanyRepository $companies, CompanyStructuredData $structuredData, DirectoryMap $map, OfferRepository $offers, EventRepository $events, NewsArticleRepository $news): Response
     {
         $company = $companies->findPublicBySlug($slug) ?? throw $this->createNotFoundException('Unbekanntes Unternehmen.');
 
+        $companyNews = $news->findForCompany($company, 4);
         $upcomingEvents = $events->findUpcomingForCompany($company, 4);
         $currentOffers = $offers->findCurrentForCompany($company, 4);
 
-        return $this->render('frontend/company/show.html.twig', ['events' => array_slice($upcomingEvents, 0, 3), 'more_events' => count($upcomingEvents) > 3, 'offers' => array_slice($currentOffers, 0, 3), 'more_offers' => count($currentOffers) > 3, 'company' => $company, 'map_data' => $map->data([$company]), 'structured_data' => $structuredData->forCompany($company)]);
+        return $this->render('frontend/company/show.html.twig', ['news_articles' => array_slice($companyNews, 0, 3), 'more_news' => count($companyNews) > 3, 'events' => array_slice($upcomingEvents, 0, 3), 'more_events' => count($upcomingEvents) > 3, 'offers' => array_slice($currentOffers, 0, 3), 'more_offers' => count($currentOffers) > 3, 'company' => $company, 'map_data' => $map->data([$company]), 'structured_data' => $structuredData->forCompany($company)]);
     }
 
     #[Route('/{slug}/bilder/{fileName}', name: 'company_image', requirements: ['slug' => self::SLUG, 'fileName' => '[a-f0-9]{32}\.(?:jpg|png|webp)'], methods: ['GET'])]

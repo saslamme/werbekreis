@@ -1,0 +1,7 @@
+{% extends 'admin/base.html.twig' %}
+{% block admin_body %}<h1>{{ category.id ? 'News-Kategorie bearbeiten' : 'News-Kategorie anlegen' }}</h1>
+<div class="col-lg-7">{{ form_start(form) }}{{ form_widget(form) }}<button class="btn btn-primary" type="submit">Speichern</button> <a class="btn btn-outline-secondary" href="{{ path('admin_news_categories') }}">Abbrechen</a>{{ form_end(form) }}</div>{% if category.id %}<form class="border-top mt-4 pt-4" method="post" action="{{ path('admin_news_category_delete', {id: category.id}) }}">
+<input type="hidden" name="_token" value="{{ csrf_token('delete_news_category_' ~ category.id) }}">
+<p>Zugeordnete Kategorien können nicht gelöscht werden.</p>
+<button class="btn btn-outline-danger" type="submit">Kategorie löschen</button>
+</form>{% endif %}{% endblock %}

@@ -1,0 +1,3 @@
+<article class="news-card{{ article.featured ? ' is-featured' }}">
+{% if article.imagePath %}<img class="news-card-image" src="{{ path('news_image', {slug: article.slug, fileName: article.imagePath}) }}" alt="{{ article.imageAltText ?: article.title }}" loading="lazy">{% else %}<div class="news-card-fallback" aria-hidden="true"><i class="fa-solid fa-newspaper"></i></div>{% endif %}
+<div class="news-card-body">{% include 'frontend/news/_meta.html.twig' %}{% include 'frontend/news/_categories.html.twig' %}<h3 class="news-card-title"><a href="{{ path('news_show', {slug: article.slug}) }}">{{ article.title }}</a></h3><p>{{ article.teaser }}</p>{% if article.featured %}<span class="news-featured">Hervorgehoben</span>{% endif %}</div></article>

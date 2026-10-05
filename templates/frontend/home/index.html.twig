@@ -37,6 +37,7 @@
 <section class="section bg-light" id="angebote"><div class="container"><div class="section-heading"><h2>Angebote &amp; Aktionen</h2><a href="{{ path('offer_index') }}">Alle Angebote</a></div>
 {% if featured_offers is empty %}<p role="status">Aktuell sind keine Angebote verfügbar.</p>{% else %}<div class="row g-4">{% for offer in featured_offers %}<div class="col-md-4">{% include 'frontend/offer/_card.html.twig' %}</div>{% endfor %}</div>{% endif %}
 </div></section>
+<section class="section bg-light" id="aktuelles"><div class="container"><div class="section-heading"><h2>Neuigkeiten von hier.</h2><a href="{{ path('news_index') }}">Alle Neuigkeiten</a></div>{% if featured_news is empty %}<p>Aktuell sind keine Neuigkeiten verfügbar.</p>{% else %}<div class="row g-4">{% for article in featured_news %}<div class="col-md-6 col-lg-4">{% include 'frontend/news/_card.html.twig' %}</div>{% endfor %}</div>{% endif %}</div></section>
 <section class="section" id="veranstaltungen"><div class="container"><div class="section-heading"><h2>Gemeinsam etwas erleben.</h2><a href="{{ path('event_index') }}">Alle Veranstaltungen</a></div>{% if upcoming_events is empty %}<p>Aktuell sind keine Veranstaltungen verfügbar.</p>{% else %}<div class="row g-4">{% for occurrence in upcoming_events %}<div class="col-md-6 col-lg-4">{% include 'frontend/event/_card.html.twig' %}</div>{% endfor %}</div>{% endif %}</div></section>
 <section class="section bg-light" id="unternehmen">
 <div class="container">
