@@ -35,11 +35,16 @@ final class DirectoryFixtures extends Fixture implements DependentFixtureInterfa
             $categories[] = $category;
         }
         $manager->flush();
+        // A deliberately inactive category: it must never appear publicly, even when assigned.
+        $archive = (new Category())->setName('Archiv')->setIcon('fa-box-archive')->setPosition(count($categories))->setActive(false);
+        $this->slugs->assign($archive);
+        $manager->persist($archive);
         $names = ['Musterladen Hasebogen', 'Beispielcafé Uferpause', 'Demo-Werkstatt Stadtblick', 'Musterpraxis Wohlgefühl', 'Beispielhotel Lindenhof'];
+        $teasers = ['Mode, Geschenkideen und Wohnaccessoires', 'Frühstück, hausgemachter Kuchen und Kaffeespezialitäten', 'Möbel nach Maß, Reparaturen und Innenausbau', 'Physiotherapie, Massage und Rückenkurse', 'Übernachtung mit Frühstück und Radlerservice'];
         $assignments = [[0, 3], [1], [2, 6], [4], [7, 5]];
         foreach ($names as $index => $name) {
             $company = (new Company())->setName($name)->setCity($this->city)->setStreet('Fiktive Beispielstraße')->setHouseNumber((string) ($index + 1))->setPostalCode('49740')
-                ->setShortDescription('Fiktives Entwicklungsunternehmen; keine realen Kontaktdaten.')
+                ->setShortDescription($teasers[$index].' – fiktives Entwicklungsunternehmen; keine realen Kontaktdaten.')
                 ->setDescription('Diese Stammdaten dienen ausschließlich der lokalen Entwicklung und automatisierten Tests.')
                 ->setEmail('kontakt@betrieb'.($index + 1).'.example')->setPhone('0000 / 000000')->setActive($index !== 4)->setFeatured($index < 2);
             if ($index % 2 === 0) {
@@ -60,6 +65,8 @@ final class DirectoryFixtures extends Fixture implements DependentFixtureInterfa
             $company->addOpeningHour((new OpeningHour())->setDayOfWeek(7)->setClosed(true));
             $company->addContactPerson((new ContactPerson())->setFirstName('Alex')->setLastName('Beispiel')->setPosition('Ansprechpartner (fiktiv)')->setEmail('kontakt@betrieb'.($index + 1).'.example')->setPrimaryContact(true));
             if ($index === 0) {
+                $company->addCategory($archive);
+                $company->addContactPerson((new ContactPerson())->setFirstName('Robin')->setLastName('Exempel')->setPosition('Verkauf (fiktiv)')->setPhone('0000 / 000001')->setMobile('0000 / 000002')->setSortOrder(2));
                 $company->addContactPerson((new ContactPerson())->setFirstName('Sam')->setLastName('Muster')->setPosition('Vertretung (fiktiv)')->setSortOrder(1)->setActive(false));
             }
             $this->slugs->assign($company);
