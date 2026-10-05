@@ -17,7 +17,7 @@ final class CompanyImageType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $constraints = [new Assert\Image(maxSize: '5M', mimeTypes: ['image/jpeg', 'image/png', 'image/webp'], maxWidth: 8000, maxHeight: 8000)];
+        $constraints = self::imageConstraints();
         if ($options['is_new']) {
             $constraints[] = new Assert\NotNull();
         }
@@ -27,6 +27,12 @@ final class CompanyImageType extends AbstractType
             ->add('type', ChoiceType::class, ['label' => 'Typ', 'choices' => ['Logo' => 'logo', 'Titelbild' => 'cover', 'Galerie' => 'gallery']])
             ->add('position', IntegerType::class, ['label' => 'Reihenfolge']);
     }
+    /** Shared constraints for company and offer uploads. */
+    public static function imageConstraints(): array
+    {
+        return [new Assert\Image(maxSize: '5M', mimeTypes: ['image/jpeg', 'image/png', 'image/webp'], maxWidth: 8000, maxHeight: 8000)];
+    }
+
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults(['data_class' => CompanyImage::class, 'is_new' => false]);

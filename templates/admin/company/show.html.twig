@@ -29,4 +29,5 @@
 <p>{{ person.position }} · {{ person.active ? 'Aktiv' : 'Inaktiv' }}</p>
 <p>{{ person.email }} · {{ person.phone }} · {{ person.mobile }}</p>{% if person.image %}<img class="directory-image" src="{{ path('admin_company_image_file', {company: company.id, image: person.image.id}) }}" alt="{{ person.image.altText }}">{% endif %}</article>{% else %}<p>Noch keine Ansprechpartner.</p>{% endfor %}
 <h2 class="h4 mt-4">Bilder</h2>{% include 'admin/company/_images.html.twig' %}
+<p class="mt-4"><a class="btn btn-outline-primary" href="{{ path('admin_offer_new', {company: company.id}) }}">Neues Angebot für dieses Unternehmen</a> <a href="{{ path('admin_offers', {company: company.id}) }}">Angebote verwalten</a></p>
 {% endblock %}

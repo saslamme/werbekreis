@@ -1,0 +1,14 @@
+{% extends 'admin/base.html.twig' %}
+{% block admin_body %}
+<div class="section-heading"><h1>Angebote</h1><a class="btn btn-primary" href="{{ path('admin_offer_new') }}">Angebot anlegen</a></div>
+<form method="get" class="row g-2 mb-4">
+<div class="col-md-3"><label class="form-label" for="offer-title">Titel</label><input class="form-control" id="offer-title" name="title" value="{{ filters.title }}"></div>
+<div class="col-md-3"><label class="form-label" for="offer-company">Unternehmen</label><select class="form-select" id="offer-company" name="company"><option value="">Alle</option>{% for company in companies %}<option value="{{ company.id }}"{{ filters.company == company.id ? ' selected' }}>{{ company.name }}</option>{% endfor %}</select></div>
+<div class="col-md-2"><label class="form-label" for="offer-type">Typ</label><select class="form-select" id="offer-type" name="type"><option value="">Alle</option>{% for type in types %}<option value="{{ type.value }}"{{ filters.type == type.value ? ' selected' }}>{{ type.label }}</option>{% endfor %}</select></div>
+{% for field, label in {active: 'Aktiv', featured: 'Hervorgehoben'} %}<div class="col-md-2"><label class="form-label" for="offer-{{ field }}">{{ label }}</label><select class="form-select" id="offer-{{ field }}" name="{{ field }}"><option value="">Alle</option><option value="1"{{ filters[field] == '1' ? ' selected' }}>Ja</option><option value="0"{{ filters[field] == '0' ? ' selected' }}>Nein</option></select></div>{% endfor %}
+<div><button class="btn btn-outline-primary" type="submit">Filtern</button> <a href="{{ path('admin_offers') }}">Zurücksetzen</a></div>
+</form>
+<div class="table-responsive"><table class="table"><thead><tr><th>Titel</th><th>Unternehmen</th><th>Typ</th><th>Start</th><th>Ende</th><th>Aktiv</th><th>Featured</th><th>Status</th><th>Geändert</th><th>Aktionen</th></tr></thead>
+<tbody>{% for offer in rows %}<tr><td><a href="{{ path('admin_offer_show', {id: offer.id}) }}">{{ offer.title }}</a></td><td>{{ offer.company.name }}</td><td>{{ offer.typeLabel }}</td><td>{{ offer.startsAt ? offer.startsAt|date('d.m.Y. H:i', 'Europe/Berlin') : 'Offen' }}</td><td>{{ offer.endsAt ? offer.endsAt|date('d.m.Y. H:i', 'Europe/Berlin') : 'Offen' }}</td><td>{{ offer.active ? 'Ja' : 'Nein' }}</td><td>{{ offer.featured ? 'Ja' : 'Nein' }}</td><td>{% include 'frontend/offer/_status.html.twig' %}</td><td>{{ offer.updatedAt|date('d.m.Y. H:i', 'Europe/Berlin') }}</td><td><a href="{{ path('admin_offer_edit', {id: offer.id}) }}">Bearbeiten</a></td></tr>{% else %}<tr><td colspan="10">Keine Angebote gefunden.</td></tr>{% endfor %}</tbody></table></div>
+{% include 'partials/_pagination.html.twig' with {route: 'admin_offers'} %}
+{% endblock %}

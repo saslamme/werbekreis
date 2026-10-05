@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+{% block title %}{{ offer.title }} | {{ offer.company.name }}{% endblock %}
+{% block meta_description %}{{ offer.shortDescription ?: offer.title }}{% endblock %}
+{% block canonical %}<link rel="canonical" href="{{ url('offer_show', {slug: offer.slug}) }}">{% endblock %}
+{% block meta %}
+<meta property="og:title" content="{{ offer.title }} | {{ offer.company.name }}"><meta property="og:description" content="{{ offer.shortDescription ?: offer.title }}"><meta property="og:type" content="website"><meta property="og:url" content="{{ url('offer_show', {slug: offer.slug}) }}">
+{% if offer.imagePath %}<meta property="og:image" content="{{ url('offer_image', {slug: offer.slug, fileName: offer.imagePath}) }}"><meta property="og:image:alt" content="{{ offer.imageAlt ?: offer.title }}">{% endif %}
+<script type="application/ld+json">{{ structured_data|json_encode(constant('JSON_HEX_TAG') b-or constant('JSON_HEX_AMP') b-or constant('JSON_HEX_APOS') b-or constant('JSON_HEX_QUOT'))|raw }}</script>
+{% endblock %}
+{% block body %}
+<article><header class="directory-hero"><div class="container"><nav aria-label="Brotkrumen"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{{ path('app_home') }}">Startseite</a></li><li class="breadcrumb-item"><a href="{{ path('offer_index') }}">Angebote</a></li><li class="breadcrumb-item active" aria-current="page">{{ offer.title }}</li></ol></nav>
+<p class="eyebrow">{{ offer.typeLabel }}</p><h1>{{ offer.title }}</h1><p class="lead">{{ offer.shortDescription }}</p><p>Von <a href="{{ path('company_show', {slug: offer.company.slug}) }}">{{ offer.company.name }}</a></p>
+</div></header>
+<div class="section"><div class="container"><div class="row g-4"><div class="col-lg-8">
+{% if offer.imagePath %}<img class="offer-detail-image mb-4" src="{{ path('offer_image', {slug: offer.slug, fileName: offer.imagePath}) }}" alt="{{ offer.imageAlt ?: offer.title }}">{% endif %}
+{% if offer.description %}<section class="company-section"><h2>Über dieses Angebot</h2><div class="company-description">{{ offer.description|nl2br }}</div></section>{% endif %}
+{% if offer.terms %}<section class="company-section"><h2>Bedingungen</h2><div class="company-description">{{ offer.terms|nl2br }}</div></section>{% endif %}
+</div><aside class="col-lg-4"><div class="company-panel"><h2 class="h4">{{ offer.typeLabel }}</h2>{% include 'frontend/offer/_price.html.twig' %}{% include 'frontend/offer/_validity.html.twig' %}
+<a class="btn btn-primary w-100 mt-3" href="{{ path('company_show', {slug: offer.company.slug}) }}">Zum Unternehmen</a>
+{% if offer.externalUrl %}<p class="mt-3"><a href="{{ offer.externalUrl }}" target="_blank" rel="noopener noreferrer">Weitere Informationen (öffnet in neuem Tab)</a></p>{% endif %}
+</div><a href="{{ path('offer_index') }}">Alle Angebote</a></aside></div></div></div>
+</article>
+{% endblock %}

@@ -1,0 +1,5 @@
+{% if offer.formattedOfferPrice or offer.formattedRegularPrice or offer.discountText %}<div class="offer-price">
+{% if offer.formattedRegularPrice and offer.formattedOfferPrice and offer.regularPrice != offer.offerPrice %}<span class="offer-regular"><span class="visually-hidden">Regulärer Preis: </span><del>{{ offer.formattedRegularPrice }}</del></span>{% endif %}
+{% if offer.formattedOfferPrice %}<strong><span class="visually-hidden">Angebotspreis: </span>{{ offer.formattedOfferPrice }}</strong>{% elseif offer.formattedRegularPrice %}<strong>{{ offer.formattedRegularPrice }}</strong>{% endif %}
+{% if offer.discountText %}<span class="offer-discount">{{ offer.discountText }}</span>{% endif %}
+</div>{% endif %}
