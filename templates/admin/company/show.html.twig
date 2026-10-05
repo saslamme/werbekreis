@@ -1,0 +1,32 @@
+{% extends 'admin/base.html.twig' %}
+{% block admin_body %}
+<div class="section-heading">
+<h1>{{ company.name }}</h1>
+<a class="btn btn-primary" href="{{ path('admin_company_edit', {id: company.id}) }}">Bearbeiten</a>
+</div>
+<p>{{ company.shortDescription }}</p>
+<p class="text-break" style="white-space: pre-line">{{ company.description }}</p>
+<dl class="row">
+<dt class="col-sm-3">Slug</dt>
+<dd class="col-sm-9">{{ company.slug }}</dd>
+<dt class="col-sm-3">Kategorien</dt>
+<dd class="col-sm-9">{% for category in company.categories %}{{ category.name }}{% if not loop.last %}, {% endif %}{% endfor %}</dd>
+<dt class="col-sm-3">Status</dt>
+<dd class="col-sm-9">{{ company.active ? 'Aktiv' : 'Inaktiv' }}{{ company.featured ? ' · Hervorgehoben' : '' }}</dd>
+<dt class="col-sm-3">Adresse</dt>
+<dd class="col-sm-9">{{ company.street }} {{ company.houseNumber }}<br>{{ company.postalCode }} {{ company.city }}</dd>
+<dt class="col-sm-3">Kontakt</dt>
+<dd class="col-sm-9">{{ company.phone }}<br>{{ company.email }}<br>{{ company.website }}</dd>
+<dt class="col-sm-3">Social Media</dt>
+<dd class="col-sm-9">{{ company.facebookUrl }}<br>{{ company.instagramUrl }}</dd>
+<dt class="col-sm-3">Koordinaten</dt>
+<dd class="col-sm-9">{{ company.latitude }} / {{ company.longitude }}</dd>
+</dl>
+<h2 class="h4">Öffnungszeiten</h2>
+<ul>{% for entry in company.openingHours %}<li>{{ ['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'][entry.dayOfWeek - 1] }}: {{ entry.closed ? 'Geschlossen' : entry.opensAt|date('H:i') ~ '–' ~ entry.closesAt|date('H:i') }}</li>{% else %}<li>Noch keine Öffnungszeiten.</li>{% endfor %}</ul>
+<h2 class="h4">Ansprechpartner</h2>{% for person in company.contactPersons %}<article class="border rounded p-3 mb-3">
+<h3 class="h5">{{ person.firstName }} {{ person.lastName }} {{ person.primaryContact ? '· Primärer Kontakt' : '' }}</h3>
+<p>{{ person.position }} · {{ person.active ? 'Aktiv' : 'Inaktiv' }}</p>
+<p>{{ person.email }} · {{ person.phone }} · {{ person.mobile }}</p>{% if person.image %}<img class="directory-image" src="{{ path('admin_company_image_file', {company: company.id, image: person.image.id}) }}" alt="{{ person.image.altText }}">{% endif %}</article>{% else %}<p>Noch keine Ansprechpartner.</p>{% endfor %}
+<h2 class="h4 mt-4">Bilder</h2>{% include 'admin/company/_images.html.twig' %}
+{% endblock %}

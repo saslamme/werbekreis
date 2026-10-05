@@ -3,7 +3,8 @@
   "private": true,
   "scripts": {
     "build": "sass --load-path=node_modules assets/styles/app.scss assets/generated/app.css --no-source-map --style=compressed && esbuild assets/app.js --bundle --minify --outfile=assets/generated/app.js && node scripts/copy-fonts.mjs",
-    "watch": "sass --load-path=node_modules --watch assets/styles/app.scss:assets/generated/app.css"
+    "watch": "sass --load-path=node_modules --watch assets/styles/app.scss:assets/generated/app.css",
+    "test": "node --test tests/collections.test.mjs"
   },
   "devDependencies": {
     "@hotwired/stimulus": "^3.0.0",
@@ -11,7 +12,8 @@
     "@symfony/ux-live-component": "file:vendor/symfony/ux-live-component/assets",
     "esbuild": "^0.25.0",
     "sass": "^1.89.0",
-    "tom-select": "^2.2.2"
+    "tom-select": "^2.2.2",
+    "jsdom": "^26.1.0"
   },
   "dependencies": {
     "bootstrap": "^5.3.7",

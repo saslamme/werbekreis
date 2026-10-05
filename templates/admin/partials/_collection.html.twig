@@ -1,0 +1,6 @@
+<div data-collection data-prototype="{{ form_widget(field.vars.prototype)|e('html_attr') }}" data-index="{{ field|length > 0 ? (field|last).vars.name + 1 : 0 }}">
+{{ form_errors(field) }}
+<div data-collection-items>{% for entry in field %}<div class="border rounded p-3 mb-3" data-collection-entry>{{ form_widget(entry) }}<button class="btn btn-outline-danger btn-sm" type="button" data-collection-remove>Entfernen</button>
+</div>{% endfor %}</div>
+<button class="btn btn-outline-primary" type="button" data-collection-add>{{ add_label }}</button>
+</div>

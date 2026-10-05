@@ -1,0 +1,65 @@
+{% extends 'admin/base.html.twig' %}
+{% block admin_body %}
+<div class="section-heading">
+<h1>Unternehmen</h1>
+<a class="btn btn-primary" href="{{ path('admin_company_new') }}">Unternehmen anlegen</a>
+</div>
+<form method="get" class="row g-3 mb-4" aria-label="Unternehmen filtern">
+<div class="col-md-4">
+<label class="form-label" for="filter-name">Name</label>
+<input class="form-control" id="filter-name" name="name" value="{{ filters.name }}">
+</div>
+<div class="col-md-3">
+<label class="form-label" for="filter-category">Kategorie</label>
+<select class="form-select" id="filter-category" name="category">
+<option value="">Alle</option>{% for category in categories %}<option value="{{ category.id }}" {{ filters.category == category.id ? 'selected' : '' }}>{{ category.name }}</option>{% endfor %}</select>
+</div>
+{% for key, label in {'active':'Aktiv','featured':'Hervorgehoben'} %}<div class="col-md-2">
+<label class="form-label" for="filter-{{ key }}">{{ label }}</label>
+<select class="form-select" id="filter-{{ key }}" name="{{ key }}">
+<option value="">Alle</option>
+<option value="1" {{ filters[key] == '1' ? 'selected' : '' }}>Ja</option>
+<option value="0" {{ filters[key] == '0' ? 'selected' : '' }}>Nein</option>
+</select>
+</div>{% endfor %}
+<div class="col-md-3">
+<label class="form-label" for="filter-sort">Sortierung</label>
+<select class="form-select" id="filter-sort" name="sort">
+<option value="name">Name</option>
+<option value="updated" {{ filters.sort == 'updated' ? 'selected' : '' }}>Zuletzt geändert</option>
+</select>
+</div>
+<div class="col-md-4 align-self-end">
+<button class="btn btn-primary" type="submit">Filtern</button> <a class="btn btn-outline-secondary" href="{{ path('admin_companies') }}">Zurücksetzen</a>
+</div>
+</form>
+<div class="table-responsive">
+<table class="table" data-company-list>
+<thead>
+<tr>
+<th>Name</th>
+<th>Kategorien</th>
+<th>Ort</th>
+<th>Aktiv</th>
+<th>Hervorgehoben</th>
+<th>Geändert</th>
+<th>Aktionen</th>
+</tr>
+</thead>
+<tbody>{% for company in companies %}<tr>
+<td>{{ company.name }}</td>
+<td>{% for category in company.categories %}{{ category.name }}{% if not loop.last %}, {% endif %}{% endfor %}</td>
+<td>{{ company.city }}</td>
+<td>{{ company.active ? 'Ja' : 'Nein' }}</td>
+<td>{{ company.featured ? 'Ja' : 'Nein' }}</td>
+<td>{{ company.updatedAt|date('d.m.Y H:i') }}</td>
+<td>
+<a href="{{ path('admin_company_show', {id: company.id}) }}">Ansehen</a> · <a href="{{ path('admin_company_edit', {id: company.id}) }}">Bearbeiten</a>
+</td>
+</tr>{% else %}<tr>
+<td colspan="7">Keine Unternehmen gefunden.</td>
+</tr>{% endfor %}</tbody>
+</table>
+</div>
+{% include 'admin/partials/_pagination.html.twig' with {route: 'admin_companies', parameters: filters} %}
+{% endblock %}
