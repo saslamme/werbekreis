@@ -1,0 +1,10 @@
+{% set days = company.openingHoursByDay %}
+{% if days is empty %}<p class="text-secondary mb-0">Es sind keine Öffnungszeiten hinterlegt.</p>{% else %}
+<dl class="opening-hours">
+{% for entries in days %}<div class="opening-hours-row">
+<dt>{{ entries|first.dayName }}</dt>
+<dd>{% for entry in entries %}<span class="d-block">{% if entry.closed %}geschlossen{% else %}{{ entry.opensAt|date('H:i') }}–{{ entry.closesAt|date('H:i') }} Uhr{% endif %}</span> {% endfor %}</dd>
+</div>{% endfor %}
+</dl>
+{% if days|length < 7 %}<p class="small text-secondary mt-2 mb-0">Für nicht aufgeführte Tage liegen keine Angaben vor.</p>{% endif %}
+{% endif %}

@@ -1,0 +1,13 @@
+<article class="company-card{{ company.featured ? ' is-featured' }}">
+<div class="company-card-head">
+{% include 'frontend/company/_logo.html.twig' %}
+<div>
+{% if company.featured %}<span class="badge company-badge">Empfohlen</span>{% endif %}
+<h3 class="company-card-title"><a class="stretched-link" href="{{ path('company_show', {slug: company.slug}) }}">{{ company.name }}</a></h3>
+{% if company.city %}<p class="company-card-city"><i class="fa-solid fa-location-dot" aria-hidden="true"></i> {{ company.city }}</p>{% endif %}
+</div>
+</div>
+{% if company.teaser(140) %}<p class="company-card-text">{{ company.teaser(140) }}</p>{% endif %}
+{% if company.publicCategories is not empty %}<ul class="company-tags" aria-label="Kategorien">{% for category in company.publicCategories %}<li>{{ category.name }}</li>{% endfor %}</ul>{% endif %}
+{% if company.website %}<p class="company-card-web mb-0"><a class="position-relative" href="{{ company.website }}" target="_blank" rel="noopener noreferrer">Website<span class="visually-hidden"> von {{ company.name }} (öffnet in neuem Tab)</span> <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a></p>{% endif %}
+</article>

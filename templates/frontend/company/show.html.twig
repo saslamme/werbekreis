@@ -1,0 +1,64 @@
+{% extends 'base.html.twig' %}
+{% set cover = company.coverImage %}
+{% set share_image = cover ?: company.logoImage %}
+{% set description = company.teaser ?: company.name ~ (company.city ? ' in ' ~ company.city : '') ~ ' im Unternehmensverzeichnis des ' ~ portal_name ~ '.' %}
+{% block title %}{{ company.name }} | {{ portal_name }}{% endblock %}
+{% block meta_description %}{{ description }}{% endblock %}
+{% block canonical %}<link rel="canonical" href="{{ url('company_show', {slug: company.slug}) }}">{% endblock %}
+{% block meta %}
+<meta property="og:type" content="business.business">
+<meta property="og:site_name" content="{{ portal_name }}">
+<meta property="og:title" content="{{ company.name }}">
+<meta property="og:description" content="{{ description }}">
+<meta property="og:url" content="{{ url('company_show', {slug: company.slug}) }}">
+{% if share_image %}<meta property="og:image" content="{{ url('company_image', {slug: company.slug, fileName: share_image.fileName}) }}">
+<meta property="og:image:alt" content="{{ share_image.altText }}">{% endif %}
+<script type="application/ld+json">{{ structured_data|json_encode(constant('JSON_UNESCAPED_SLASHES') b-or constant('JSON_UNESCAPED_UNICODE') b-or constant('JSON_HEX_TAG') b-or constant('JSON_HEX_AMP'))|raw }}</script>
+{% endblock %}
+{% block body %}
+<article class="company-detail">
+<header class="company-header">
+{% if cover %}<div class="company-cover"><img src="{{ path('company_image', {slug: company.slug, fileName: cover.fileName}) }}" alt="{{ cover.altText }}" decoding="async"></div>{% endif %}
+<div class="container">
+<nav aria-label="Brotkrumen"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{{ path('app_home') }}">Startseite</a></li><li class="breadcrumb-item"><a href="{{ path('company_index') }}">Unternehmen</a></li><li class="breadcrumb-item active" aria-current="page">{{ company.name }}</li></ol></nav>
+<div class="company-header-main">
+{% include 'frontend/company/_logo.html.twig' with {size: 'lg'} %}
+<div class="min-w-0">
+<h1>{{ company.name }}</h1>
+{% if company.publicCategories is not empty %}<ul class="company-tags" aria-label="Kategorien">{% for category in company.publicCategories %}<li><a href="{{ path('company_index', {kategorie: category.slug}) }}">{{ category.name }}</a></li>{% endfor %}</ul>{% endif %}
+{% if company.shortDescription %}<p class="lead mb-0">{{ company.shortDescription }}</p>{% endif %}
+</div>
+</div>
+</div>
+</header>
+<div class="section pt-4"><div class="container">
+<div class="row g-4 g-lg-5">
+<div class="col-lg-8">
+{% if company.description %}<section class="company-section" aria-labelledby="about-heading"><h2 id="about-heading">Über uns</h2><div class="company-description">{{ company.description|nl2br }}</div></section>{% endif %}
+{% set contacts = company.publicContactPersons %}
+{% if contacts is not empty %}<section class="company-section" aria-labelledby="contacts-heading"><h2 id="contacts-heading">Ansprechpartner</h2>
+<div class="row g-3">{% for person in contacts %}<div class="col-md-6">{% include 'frontend/company/_contact_person.html.twig' %}</div>{% endfor %}</div>
+</section>{% endif %}
+{% set gallery = company.galleryImages %}
+{% if gallery is not empty %}<section class="company-section" aria-labelledby="gallery-heading"><h2 id="gallery-heading">Galerie</h2>{% include 'frontend/company/_gallery.html.twig' with {images: gallery} %}</section>{% endif %}
+</div>
+<aside class="col-lg-4">
+<section class="company-panel" aria-labelledby="contact-heading">
+<h2 id="contact-heading">Kontakt</h2>
+{% if company.street or company.postalCode or company.city %}<address class="mb-3"><span class="visually-hidden">Adresse: </span>{% if company.street %}{{ company.street }} {{ company.houseNumber }}<br>{% endif %}{{ company.postalCode }} {{ company.city }}</address>{% endif %}
+<ul class="company-contact list-unstyled mb-0">
+{% if company.phone %}<li><i class="fa-solid fa-phone" aria-hidden="true"></i><span>Telefon: <a href="tel:{{ company.phone|replace({' ': '', '/': '', '-': ''}) }}">{{ company.phone }}</a></span></li>{% endif %}
+{% if company.email %}<li><i class="fa-solid fa-envelope" aria-hidden="true"></i><span>E-Mail: <a href="mailto:{{ company.email }}">{{ company.email }}</a></span></li>{% endif %}
+{% for link in [{label: 'Website', url: company.website, icon: 'fa-globe'}, {label: 'Facebook', url: company.facebookUrl, icon: 'fa-share-nodes'}, {label: 'Instagram', url: company.instagramUrl, icon: 'fa-camera'}] %}{% if link.url %}<li><i class="fa-solid {{ link.icon }}" aria-hidden="true"></i><a href="{{ link.url }}" target="_blank" rel="noopener noreferrer">{{ link.label }}<span class="visually-hidden"> (öffnet in neuem Tab)</span> <i class="fa-solid fa-arrow-up-right-from-square small" aria-hidden="true"></i></a></li>{% endif %}{% endfor %}
+</ul>
+</section>
+<section class="company-panel" aria-labelledby="hours-heading">
+<h2 id="hours-heading">Öffnungszeiten</h2>
+{% include 'frontend/company/_opening_hours.html.twig' %}
+</section>
+<p><a href="{{ path('company_index') }}"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Alle Unternehmen</a></p>
+</aside>
+</div>
+</div></div>
+</article>
+{% endblock %}

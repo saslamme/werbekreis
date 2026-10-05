@@ -1,0 +1,4 @@
+<a class="category" href="{{ path('company_index', {kategorie: category.slug}) }}">
+<i class="fa-solid {{ category.icon ?: 'fa-store' }}" aria-hidden="true"></i><span class="category-name">{{ category.name }}</span>
+{% if count is defined %}<span class="category-count">{{ count }} Unternehmen</span>{% endif %}
+</a>

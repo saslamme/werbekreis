@@ -1,0 +1,6 @@
+<ul class="company-gallery">
+{% for image in images %}<li><figure class="mb-0">
+<a href="{{ path('company_image', {slug: company.slug, fileName: image.fileName}) }}"><img src="{{ path('company_image', {slug: company.slug, fileName: image.fileName}) }}" alt="{{ image.altText }}" loading="lazy" decoding="async"></a>
+{% if image.title %}<figcaption>{{ image.title }}</figcaption>{% endif %}
+</figure></li>{% endfor %}
+</ul>

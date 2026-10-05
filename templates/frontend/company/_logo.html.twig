@@ -1,0 +1,5 @@
+{# Logo with a neutral initial as fallback, so cards never show a broken image. #}
+{% set logo = company.logoImage %}
+<div class="company-logo{{ size is defined ? ' company-logo-' ~ size }}">
+{% if logo %}<img src="{{ path('company_image', {slug: company.slug, fileName: logo.fileName}) }}" alt="{{ logo.altText }}" loading="lazy" decoding="async">{% else %}<span aria-hidden="true">{{ company.name|first|upper }}</span>{% endif %}
+</div>
