@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Form;
 
 use App\Entity\Company;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use App\Entity\Offer;
 use App\Enum\OfferType as OfferKind;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
@@ -22,7 +23,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 final class OfferType extends AbstractType
 {
-    public function __construct(private readonly DirectorySlugSubscriber $slugs)
+    public function __construct(private readonly DirectorySlugSubscriber $slugs, #[Autowire('%portal.timezone%')] private readonly string $timezone)
     {
     }
 
@@ -37,7 +38,7 @@ final class OfferType extends AbstractType
             ->add('active', CheckboxType::class, ['label' => 'Aktiv', 'required' => false])
             ->add('featured', CheckboxType::class, ['label' => 'Hervorgehoben', 'required' => false]);
         foreach (['startsAt' => 'Beginn', 'endsAt' => 'Ende'] as $field => $label) {
-            $builder->add($field, DateTimeType::class, ['label' => $label, 'required' => false, 'widget' => 'single_text', 'input' => 'datetime_immutable', 'model_timezone' => 'UTC', 'view_timezone' => 'Europe/Berlin', 'help' => 'Ortszeit Europe/Berlin. Leer lassen für einen offenen Zeitraum; die Grenze selbst ist eingeschlossen.']);
+            $builder->add($field, DateTimeType::class, ['label' => $label, 'required' => false, 'widget' => 'single_text', 'input' => 'datetime_immutable', 'model_timezone' => 'UTC', 'view_timezone' => $this->timezone, 'help' => 'Ortszeit '.$this->timezone.'. Leer lassen für einen offenen Zeitraum; die Grenze selbst ist eingeschlossen.']);
         }
         foreach (['regularPrice' => 'Regulärer Preis (€)', 'offerPrice' => 'Angebotspreis (€)'] as $field => $label) {
             $builder->add($field, TextType::class, ['label' => $label, 'required' => false, 'attr' => ['inputmode' => 'decimal'], 'help' => 'Zum Beispiel 59,90; ohne Tausendertrennzeichen. Preise sind optional.']);

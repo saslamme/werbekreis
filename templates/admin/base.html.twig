@@ -9,5 +9,6 @@
 <a class="nav-link" href="{{ path('admin_companies') }}">Unternehmen</a>
 <a class="nav-link" href="{{ path('admin_categories') }}">Kategorien</a>
 <a class="nav-link" href="{{ path('admin_offers') }}">Angebote</a>
+<a class="nav-link" href="{{ path('admin_events') }}">Veranstaltungen</a><a class="nav-link" href="{{ path('admin_event_categories') }}">Veranstaltungskategorien</a>
 {% if is_granted('ROLE_ADMIN') %}<a class="nav-link" href="{{ path('admin_users') }}">Benutzer</a>{% endif %}</nav>{% block admin_body %}{% endblock %}</div>
 </main>{% include 'partials/_footer.html.twig' %}{% endblock %}

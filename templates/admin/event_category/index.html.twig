@@ -1,0 +1,31 @@
+{% extends 'admin/base.html.twig' %}
+{% block admin_body %}<div class="section-heading">
+<h1>Veranstaltungskategorien</h1>
+<a class="btn btn-primary" href="{{ path('admin_event_category_new') }}">Kategorie anlegen</a>
+</div>
+<div class="table-responsive">
+<table class="table">
+<thead>
+<tr>
+<th>Name</th>
+<th>Slug</th>
+<th>Position</th>
+<th>Aktiv</th>
+
+<th>Aktion</th>
+</tr>
+</thead>
+<tbody>{% for row in rows %}{% set category = row %}<tr>
+<td>{{ category.name }}</td>
+<td>{{ category.slug }}</td>
+<td>{{ category.position }}</td>
+<td>{{ category.active ? 'Ja' : 'Nein' }}</td>
+
+<td>
+<a href="{{ path('admin_event_category_edit', {id: category.id}) }}">Bearbeiten</a>
+</td>
+</tr>{% else %}<tr>
+<td colspan="6">Noch keine Kategorien.</td>
+</tr>{% endfor %}</tbody>
+</table>
+</div>{% include 'partials/_pagination.html.twig' with {route: 'admin_event_categories', parameters: {}} %}{% endblock %}

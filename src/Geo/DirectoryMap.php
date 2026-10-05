@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Geo;
 
 use App\Entity\Company;
+use App\Entity\Event;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
@@ -14,7 +15,7 @@ final readonly class DirectoryMap
     {
     }
 
-    /** @param iterable<Company> $companies */
+    /** @param iterable<Company|Event> $companies */
     public function data(iterable $companies): array
     {
         $markers = [];
@@ -24,10 +25,10 @@ final readonly class DirectoryMap
             }
             $markers[] = [
                 'latitude' => $company->getLatitude(), 'longitude' => $company->getLongitude(),
-                'slug' => $company->getSlug(), 'name' => $company->getName(),
+                'slug' => $company->getSlug(), 'name' => $company instanceof Event ? $company->getTitle() : $company->getName(),
                 'categories' => array_map(static fn ($category): string => $category->getName(), $company->getPublicCategories()),
-                'description' => $company->getTeaser(140),
-                'url' => $this->urls->generate('company_show', ['slug' => $company->getSlug()]),
+                'description' => $company instanceof Event ? mb_substr($company->getShortDescription() ?? '', 0, 140) : $company->getTeaser(140),
+                'url' => $this->urls->generate($company instanceof Event ? 'event_show' : 'company_show', ['slug' => $company->getSlug()]),
             ];
         }
 

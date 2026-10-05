@@ -1,0 +1,4 @@
+{% extends 'admin/base.html.twig' %}
+{% block admin_body %}<div class="section-heading"><h1>{{ event.title }}</h1><a class="btn btn-primary" href="{{ path('admin_event_edit', {id: event.id}) }}">Bearbeiten</a></div>
+{% if event.imagePath %}<img class="directory-image" src="{{ path('admin_event_image', {id: event.id}) }}" alt="{{ event.imageAlt ?: event.title }}">{% endif %}
+<p>{{ event.organizerLabel }} · {{ event.locationName }} · {{ event.city }}</p><p>{{ event.shortDescription }}</p><div class="company-description">{{ event.description|nl2br }}</div><h2>Termine</h2><ul>{% for occurrence in event.occurrences %}<li>{% include 'frontend/event/_date.html.twig' %}{{ occurrence.statusAt(now) }}</li>{% endfor %}</ul><a href="{{ path('admin_events') }}">Alle Veranstaltungen</a>{% endblock %}

@@ -5,3 +5,4 @@ twig:
         portal_name: '%portal.name%'
         portal_city: '%portal.city%'
         portal_contact_email: '%portal.contact_email%'
+        portal_timezone: '%portal.timezone%'

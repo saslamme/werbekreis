@@ -1,0 +1,9 @@
+{% set event = occurrence.event %}
+<article class="event-card{{ event.featured ? ' is-featured' }}">
+{% if event.imagePath %}<img class="event-card-image" src="{{ path('event_image', {slug: event.slug, fileName: event.imagePath}) }}" alt="{{ event.imageAlt ?: event.title }}" loading="lazy">{% else %}<div class="event-card-fallback" aria-hidden="true"><i class="fa-solid fa-calendar-days"></i></div>{% endif %}
+<div class="event-card-body"><p class="eyebrow">{% for category in event.publicCategories %}{{ category.name }}{{ not loop.last ? ' · ' }}{% endfor %}</p>
+<h3 class="event-card-title"><a href="{{ path('event_occurrence', {slug: event.slug, id: occurrence.id}) }}">{{ event.title }}</a></h3>
+{% include 'frontend/event/_date.html.twig' %}
+{% if event.cancelled %}<p class="event-cancelled">Abgesagt{% if event.cancellationNotice %}: {{ event.cancellationNotice }}{% endif %}</p>{% endif %}
+{% if event.organizerLabel %}<p>{{ event.organizerLabel }}</p>{% endif %}<p>{{ event.locationName }}{% if event.city %} · {{ event.city }}{% endif %}</p><p>{{ event.shortDescription }}</p>{% if event.freeAdmission %}<p class="fw-bold">Eintritt frei</p>{% endif %}
+</div></article>
