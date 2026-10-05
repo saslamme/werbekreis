@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
+use App\Entity\Category;
 use App\Entity\Company;
+use App\Entity\CompanyImage;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -13,6 +16,7 @@ use Doctrine\Persistence\ManagerRegistry;
 final class CompanyRepository extends ServiceEntityRepository
 {
     public const PAGE_SIZE = 25;
+    public const PUBLIC_PAGE_SIZE = 12;
 
     public function __construct(ManagerRegistry $registry)
     {
@@ -39,6 +43,77 @@ final class CompanyRepository extends ServiceEntityRepository
         $query->setFirstResult((max(1, $page) - 1) * self::PAGE_SIZE)->setMaxResults(self::PAGE_SIZE);
 
         return new Paginator($query, fetchJoinCollection: true);
+    }
+
+    /**
+     * Single source for every public company listing: only active companies, optional search over name,
+     * descriptions, city and active category names, optional category, fixed order (featured first, then name).
+     * Categories and images are fetch-joined for the cards; opening hours and contacts are not loaded.
+     */
+    public function createPublicDirectoryQueryBuilder(string $search = '', ?Category $category = null): QueryBuilder
+    {
+        $query = $this->createQueryBuilder('company')
+            ->leftJoin('company.categories', 'category')->addSelect('category')
+            ->leftJoin('company.images', 'image')->addSelect('image')
+            ->where('company.active = true');
+        $search = trim($search);
+        if ($search !== '') {
+            $categoryMatch = $this->getEntityManager()->createQueryBuilder()->select('searchCategory.id')->from(Category::class, 'searchCategory')
+                ->innerJoin('searchCategory.companies', 'searchCompany')
+                ->where('searchCompany = company', 'searchCategory.active = true', 'LOWER(searchCategory.name) LIKE :search');
+            // Parameters are bound; LIKE wildcards in the input are escaped so "%" or "_" match literally.
+            $query->andWhere($query->expr()->orX(
+                'LOWER(company.name) LIKE :search',
+                'LOWER(company.shortDescription) LIKE :search',
+                'LOWER(company.description) LIKE :search',
+                'LOWER(company.city) LIKE :search',
+                $query->expr()->exists($categoryMatch->getDQL()),
+            ))->setParameter('search', '%'.addcslashes(mb_strtolower($search), '%_\\').'%');
+        }
+        if ($category !== null) {
+            $query->andWhere(':category MEMBER OF company.categories')->setParameter('category', $category);
+        }
+
+        return $query->orderBy('company.featured', 'DESC')->addOrderBy('company.name', 'ASC')->addOrderBy('company.id', 'ASC');
+    }
+
+    /** @return Paginator<Company> */
+    public function publicDirectoryPage(string $search, ?Category $category, int $page): Paginator
+    {
+        $query = $this->createPublicDirectoryQueryBuilder($search, $category)
+            ->setFirstResult((max(1, $page) - 1) * self::PUBLIC_PAGE_SIZE)->setMaxResults(self::PUBLIC_PAGE_SIZE);
+
+        return new Paginator($query, fetchJoinCollection: true);
+    }
+
+    /**
+     * Homepage selection: active featured companies first, filled up with further active companies.
+     *
+     * @return list<Company>
+     */
+    public function findFeaturedPublic(int $limit = 6): array
+    {
+        return iterator_to_array(new Paginator($this->createPublicDirectoryQueryBuilder()->setMaxResults(max(1, $limit)), fetchJoinCollection: true), false);
+    }
+
+    /** Active company for the public detail page; opening hours and contacts are loaded lazily with one query each. */
+    public function findPublicBySlug(string $slug): ?Company
+    {
+        return $this->createQueryBuilder('company')
+            ->leftJoin('company.categories', 'category')->addSelect('category')
+            ->leftJoin('company.images', 'image')->addSelect('image')
+            ->where('company.slug = :slug', 'company.active = true')->setParameter('slug', $slug)
+            ->getQuery()->getOneOrNullResult();
+    }
+
+    /** Image of an active company, addressed by its random file name instead of a database ID. */
+    public function findPublicImage(string $slug, string $fileName): ?CompanyImage
+    {
+        return $this->getEntityManager()->createQueryBuilder()->select('image')->from(CompanyImage::class, 'image')
+            ->innerJoin('image.company', 'company')
+            ->where('company.slug = :slug', 'company.active = true', 'image.fileName = :fileName')
+            ->setParameter('slug', $slug)->setParameter('fileName', $fileName)
+            ->getQuery()->getOneOrNullResult();
     }
 
     /** @return array{total: int, active: int, featured: int} */

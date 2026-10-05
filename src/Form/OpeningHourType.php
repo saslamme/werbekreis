@@ -17,7 +17,7 @@ final class OpeningHourType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $builder->add('dayOfWeek', ChoiceType::class, ['label' => 'Wochentag', 'choices' => ['Montag' => 1, 'Dienstag' => 2, 'Mittwoch' => 3, 'Donnerstag' => 4, 'Freitag' => 5, 'Samstag' => 6, 'Sonntag' => 7]])
+        $builder->add('dayOfWeek', ChoiceType::class, ['label' => 'Wochentag', 'choices' => array_flip(OpeningHour::DAY_NAMES)])
             ->add('opensAt', TimeType::class, ['label' => 'Öffnet um', 'widget' => 'single_text', 'input' => 'datetime_immutable', 'required' => false])
             ->add('closesAt', TimeType::class, ['label' => 'Schließt um', 'widget' => 'single_text', 'input' => 'datetime_immutable', 'required' => false])
             ->add('closed', CheckboxType::class, ['label' => 'Geschlossen (Uhrzeiten leer lassen)', 'required' => false])

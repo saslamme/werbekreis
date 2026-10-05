@@ -36,6 +36,34 @@ final class CategoryRepository extends ServiceEntityRepository
             ->setFirstResult((max(1, $page) - 1) * self::PAGE_SIZE)->setMaxResults(self::PAGE_SIZE)->getQuery()->getResult();
     }
 
+    /** @return list<Category> */
+    public function findActiveOrdered(): array
+    {
+        return $this->findBy(['active' => true], ['position' => 'ASC', 'name' => 'ASC', 'id' => 'ASC']);
+    }
+
+    public function findPublicBySlug(string $slug): ?Category
+    {
+        return $this->findOneBy(['slug' => $slug, 'active' => true]);
+    }
+
+    /**
+     * Active categories with the number of active companies, in one grouped query.
+     *
+     * @return list<array{category: Category, companyCount: int}>
+     */
+    public function findActiveWithPublicCompanyCount(): array
+    {
+        $rows = $this->createQueryBuilder('category')->select('category', 'COUNT(company.id) AS companyCount')
+            ->leftJoin('category.companies', 'company', 'WITH', 'company.active = true')
+            ->where('category.active = true')
+            ->groupBy('category.id, category.name, category.slug, category.description, category.icon, category.position, category.active, category.createdAt, category.updatedAt')
+            ->orderBy('category.position', 'ASC')->addOrderBy('category.name', 'ASC')->addOrderBy('category.id', 'ASC')
+            ->getQuery()->getResult();
+
+        return array_map(static fn (array $row): array => ['category' => $row[0], 'companyCount' => (int) $row['companyCount']], $rows);
+    }
+
     /** @return list<string> */
     public function existingSlugs(string $base, ?int $excludeId): array
     {

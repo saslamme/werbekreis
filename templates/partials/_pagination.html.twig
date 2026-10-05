@@ -1,0 +1,2 @@
+<nav aria-label="Seitennavigation" class="d-flex align-items-center gap-3 mt-4">
+<span>Seite {{ page }} von {{ pages }}</span>{% if page > 1 %}<a class="btn btn-outline-primary" href="{{ path(route, parameters|merge({page: page - 1})) }}">Zurück</a>{% endif %}{% if page < pages %}<a class="btn btn-outline-primary" href="{{ path(route, parameters|merge({page: page + 1})) }}">Weiter</a>{% endif %}</nav>
