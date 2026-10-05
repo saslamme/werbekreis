@@ -431,6 +431,81 @@ final class Company
         return $this;
     }
 
+    public function getLogoImage(): ?CompanyImage
+    {
+        return $this->firstImageOfType('logo');
+    }
+
+    public function getCoverImage(): ?CompanyImage
+    {
+        return $this->firstImageOfType('cover');
+    }
+
+    /** @return list<CompanyImage> gallery images only; logo and cover are never repeated here */
+    public function getGalleryImages(): array
+    {
+        return array_values(array_filter($this->images->toArray(), static fn (CompanyImage $image): bool => $image->getType() === 'gallery'));
+    }
+
+    /** @return list<Category> active categories in their manual order */
+    public function getPublicCategories(): array
+    {
+        $categories = array_values(array_filter($this->categories->toArray(), static fn (Category $category): bool => $category->isActive()));
+        usort($categories, static fn (Category $a, Category $b): int => [$a->getPosition(), $a->getName()] <=> [$b->getPosition(), $b->getName()]);
+
+        return $categories;
+    }
+
+    /** @return list<ContactPerson> active contacts: primary contact first, then sort order, then name */
+    public function getPublicContactPersons(): array
+    {
+        $contacts = array_values(array_filter($this->contactPersons->toArray(), static fn (ContactPerson $contact): bool => $contact->isActive()));
+        usort($contacts, static fn (ContactPerson $a, ContactPerson $b): int => [!$a->isPrimaryContact(), $a->getSortOrder(), $a->getLastName(), $a->getFirstName()] <=> [!$b->isPrimaryContact(), $b->getSortOrder(), $b->getLastName(), $b->getFirstName()]);
+
+        return $contacts;
+    }
+
+    /**
+     * Opening hours grouped by ISO weekday (1 = Monday). Days without entries are omitted, never treated as closed.
+     *
+     * @return array<int, list<OpeningHour>>
+     */
+    public function getOpeningHoursByDay(): array
+    {
+        $days = [];
+        foreach ($this->openingHours as $entry) {
+            $days[$entry->getDayOfWeek()][] = $entry;
+        }
+        ksort($days);
+        foreach ($days as &$entries) {
+            usort($entries, static fn (OpeningHour $a, OpeningHour $b): int => [$a->getOpensAt()?->format('H:i') ?? '', $a->getPosition()] <=> [$b->getOpensAt()?->format('H:i') ?? '', $b->getPosition()]);
+        }
+
+        return $days;
+    }
+
+    /** Plain-text teaser for listings and meta descriptions: the short description, otherwise the shortened description. */
+    public function getTeaser(int $length = 160): ?string
+    {
+        $text = trim(preg_replace('/\s+/u', ' ', $this->shortDescription ?: (string) $this->description) ?? '');
+        if ($text === '') {
+            return null;
+        }
+
+        return mb_strlen($text) > $length ? rtrim(mb_substr($text, 0, $length - 1)).'…' : $text;
+    }
+
+    private function firstImageOfType(string $type): ?CompanyImage
+    {
+        foreach ($this->images as $image) {
+            if ($image->getType() === $type) {
+                return $image;
+            }
+        }
+
+        return null;
+    }
+
     #[Assert\Callback]
     public function validateDirectoryData(ExecutionContextInterface $context): void
     {

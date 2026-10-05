@@ -1,0 +1,12 @@
+<article class="contact-person">
+{% if person.image %}<img class="contact-person-image" src="{{ path('company_image', {slug: company.slug, fileName: person.image.fileName}) }}" alt="{{ person.image.altText }}" loading="lazy" decoding="async">{% else %}<span class="contact-person-image contact-person-fallback" aria-hidden="true"><i class="fa-solid fa-user"></i></span>{% endif %}
+<div class="min-w-0">
+<h3 class="h6 mb-1">{{ person.firstName }} {{ person.lastName }}{% if person.primaryContact %} <span class="badge company-badge">Hauptansprechpartner</span>{% endif %}</h3>
+{% if person.position %}<p class="text-secondary mb-1">{{ person.position }}</p>{% endif %}
+<ul class="list-unstyled mb-0 small">
+{% if person.email %}<li><span class="visually-hidden">E-Mail: </span><a href="mailto:{{ person.email }}">{{ person.email }}</a></li>{% endif %}
+{% if person.phone %}<li>Telefon: <a href="tel:{{ person.phone|replace({' ': '', '/': '', '-': ''}) }}">{{ person.phone }}</a></li>{% endif %}
+{% if person.mobile %}<li>Mobil: <a href="tel:{{ person.mobile|replace({' ': '', '/': '', '-': ''}) }}">{{ person.mobile }}</a></li>{% endif %}
+</ul>
+</div>
+</article>

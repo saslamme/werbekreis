@@ -11,6 +11,8 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 #[ORM\Entity]
 final class OpeningHour
 {
+    public const DAY_NAMES = [1 => 'Montag', 2 => 'Dienstag', 3 => 'Mittwoch', 4 => 'Donnerstag', 5 => 'Freitag', 6 => 'Samstag', 7 => 'Sonntag'];
+
     #[ORM\Id, ORM\GeneratedValue, ORM\Column]
     private ?int $id = null;
 
@@ -68,6 +70,11 @@ final class OpeningHour
         $this->dayOfWeek = $dayOfWeek;
 
         return $this;
+    }
+
+    public function getDayName(): string
+    {
+        return self::DAY_NAMES[$this->dayOfWeek] ?? (string) $this->dayOfWeek;
     }
 
     public function getOpensAt(): ?\DateTimeImmutable

@@ -3,8 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Lokale Geschäfte, Genuss und Begegnungen in {{ portal_city }}.">
+<meta name="description" content="{% block meta_description %}Lokale Geschäfte, Genuss und Begegnungen in {{ portal_city }}.{% endblock %}">
 <title>{% block title %}{{ portal_name }}{% endblock %}</title>
+{% block canonical %}{% endblock %}
+{% block meta %}{% endblock %}
 <link rel="stylesheet" href="{{ asset('generated/app.css') }}">
 <script src="{{ asset('generated/app.js') }}" defer>
 </script>

@@ -1,0 +1,36 @@
+{% extends 'base.html.twig' %}
+{% set heading = category ? category.name ~ ' in ' ~ portal_city : 'Unternehmen in ' ~ portal_city %}
+{% block title %}{{ heading }}{% if page > 1 %} – Seite {{ page }}{% endif %} | {{ portal_name }}{% endblock %}
+{% block meta_description %}{{ category and category.description ? category.description|striptags|slice(0, 155) : 'Lokale Unternehmen in ' ~ portal_city ~ ' entdecken: Handel, Gastronomie, Handwerk, Dienstleistungen und mehr – mit Kontaktdaten und Öffnungszeiten.' }}{% endblock %}
+{% block canonical %}<link rel="canonical" href="{{ url('company_index', (category ? {kategorie: category.slug} : {})|merge(page > 1 ? {page: page} : {})) }}">{% endblock %}
+{% block meta %}{% if search %}<meta name="robots" content="noindex, follow">{% endif %}{% endblock %}
+{% block body %}
+<section class="directory-hero">
+<div class="container">
+<nav aria-label="Brotkrumen"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{{ path('app_home') }}">Startseite</a></li>{% if category %}<li class="breadcrumb-item"><a href="{{ path('company_index') }}">Unternehmen</a></li><li class="breadcrumb-item active" aria-current="page">{{ category.name }}</li>{% else %}<li class="breadcrumb-item active" aria-current="page">Unternehmen</li>{% endif %}</ol></nav>
+<h1>{{ heading }}</h1>
+<p class="lead mb-4">{{ category and category.description ? category.description : 'Lokale Geschäfte, Gastronomie, Handwerk und Dienstleistungen direkt vor Ort.' }}</p>
+{% include 'frontend/company/_search_form.html.twig' %}
+</div>
+</section>
+<section class="section pt-4" aria-labelledby="results-heading">
+<div class="container">
+{% if categories is not empty %}<nav class="category-filter mb-4" aria-label="Nach Kategorie filtern">
+<a class="category-chip{{ category is null ? ' active' }}" href="{{ path('company_index', search ? {q: search} : {}) }}"{% if category is null %} aria-current="page"{% endif %}>Alle</a>
+{% for option in categories %}<a class="category-chip{{ category and option.id == category.id ? ' active' }}" href="{{ path('company_index', {kategorie: option.slug}|merge(search ? {q: search} : {})) }}"{% if category and option.id == category.id %} aria-current="page"{% endif %}>{{ option.name }}</a>{% endfor %}
+</nav>{% endif %}
+<div class="section-heading mb-3">
+<h2 id="results-heading" class="directory-results-title mb-0">{% if total == 1 %}1 Unternehmen{% else %}{{ total }} Unternehmen{% endif %}{% if search %} für „{{ search }}“{% endif %}</h2>
+{% if search or category %}<a href="{{ path('company_index') }}">Filter zurücksetzen</a>{% endif %}
+</div>
+{% if total == 0 %}<div class="directory-empty" role="status">
+<p class="h5">{% if search %}Für diese Suche wurden keine Unternehmen gefunden.{% else %}In dieser Auswahl sind derzeit keine Unternehmen eingetragen.{% endif %}</p>
+<p class="mb-3 text-secondary">Versuchen Sie einen anderen Suchbegriff oder eine andere Kategorie.</p>
+<a class="btn btn-outline-primary" href="{{ path('company_index') }}">Filter zurücksetzen</a>
+</div>{% else %}
+<div class="row g-4" data-company-results>{% for company in companies %}<div class="col-sm-6 col-lg-4">{% include 'frontend/company/_card.html.twig' %}</div>{% endfor %}</div>
+{% if pages > 1 %}{% include 'partials/_pagination.html.twig' with {route: 'company_index'} %}{% endif %}
+{% endif %}
+</div>
+</section>
+{% endblock %}

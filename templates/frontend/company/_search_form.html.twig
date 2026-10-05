@@ -1,0 +1,16 @@
+<form class="directory-search" method="get" action="{{ path('company_index') }}" role="search">
+<div class="row g-2 align-items-end">
+<div class="col-md-6">
+<label class="form-label" for="directory-q">Suchbegriff</label>
+<input class="form-control" id="directory-q" type="search" name="q" value="{{ search }}" maxlength="100" placeholder="z. B. Café, Handwerk, Hasebogen">
+</div>
+<div class="col-md-4">
+<label class="form-label" for="directory-category">Kategorie</label>
+<select class="form-select" id="directory-category" name="kategorie">
+<option value="">Alle Kategorien</option>
+{% for option in categories %}<option value="{{ option.slug }}"{% if category and option.id == category.id %} selected{% endif %}>{{ option.name }}</option>{% endfor %}
+</select>
+</div>
+<div class="col-md-2 d-grid"><button class="btn btn-primary" type="submit">Suchen</button></div>
+</div>
+</form>
