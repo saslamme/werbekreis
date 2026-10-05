@@ -1,5 +1,5 @@
 {% extends 'admin/base.html.twig' %}
-{% block admin_body %}<p><a href="{{ path('admin_news_new', {company: company.id}) }}">Neuer Beitrag für dieses Unternehmen</a> · <a href="{{ path('admin_news', {company: company.id}) }}">News des Unternehmens</a></p><p><a href="{{ path('admin_event_new', {company: company.id}) }}">Neue Veranstaltung für dieses Unternehmen</a> · <a href="{{ path('admin_events', {company: company.id}) }}">Veranstaltungen des Unternehmens</a></p>
+{% block admin_body %}<p><a class="btn btn-outline-primary" href="{{ path('admin_job_new', {company: company.id}) }}">Stelle für dieses Unternehmen anlegen</a> <a href="{{ path('admin_jobs', {company: company.id}) }}">Stellen des Unternehmens verwalten</a></p><p><a href="{{ path('admin_news_new', {company: company.id}) }}">Neuer Beitrag für dieses Unternehmen</a> · <a href="{{ path('admin_news', {company: company.id}) }}">News des Unternehmens</a></p><p><a href="{{ path('admin_event_new', {company: company.id}) }}">Neue Veranstaltung für dieses Unternehmen</a> · <a href="{{ path('admin_events', {company: company.id}) }}">Veranstaltungen des Unternehmens</a></p>
 <div class="section-heading">
 <h1>{{ company.name }}</h1>
 <a class="btn btn-primary" href="{{ path('admin_company_edit', {id: company.id}) }}">Bearbeiten</a>

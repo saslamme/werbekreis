@@ -65,23 +65,7 @@
 </div>
 </div>
 </section>
-<section class="section" id="jobs">
-<div class="container">
-<div class="section-heading">
-<h2>Ihre Zukunft liegt vor Ort.</h2>
-<span class="text-secondary">Jobs in {{ portal_city }}</span>
-</div>
-<p class="demo-note">Beispielstellen – keine realen Stellenausschreibungen.</p>
-<div class="row g-4">{% for job in [{name:'Verkauf & Beratung',type:'Vollzeit · Beispielstelle'},{name:'Service mit Herz',type:'Teilzeit · Beispielstelle'},{name:'Ausbildung im Handwerk',type:'Ausbildung · Beispielstelle'}] %}<div class="col-md-4">
-<article class="editorial-card card-copy">
-<i class="fa-solid fa-briefcase text-primary mb-3" aria-hidden="true">
-</i>
-<h3>{{ job.name }}</h3>
-<p class="text-secondary mb-0">{{ job.type }}</p>
-</article>
-</div>{% endfor %}</div>
-</div>
-</section>
+<section class="section" id="jobs"><div class="container"><div class="section-heading"><h2>Ihre Zukunft liegt vor Ort.</h2><a href="{{ path('job_index') }}">Alle Jobs</a></div>{% if featured_jobs is empty %}<p>Aktuell sind keine offenen Stellen verfügbar.</p>{% else %}<div class="row g-4">{% for job in featured_jobs %}<div class="col-md-6 col-lg-4">{% include 'frontend/job/_card.html.twig' %}</div>{% endfor %}</div>{% endif %}</div></section>
 <section class="section pt-0" id="mitglied">
 <div class="container">
 <div class="join-box">

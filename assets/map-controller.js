@@ -10,7 +10,7 @@ export function initializeMaps(document, leaflet) {
                 const markers = data.markers.filter(marker =>
                     Number.isFinite(marker.latitude) && Math.abs(marker.latitude) <= 90 &&
                     Number.isFinite(marker.longitude) && Math.abs(marker.longitude) <= 180 &&
-                    typeof marker.url === 'string' && /^\/(?:unternehmen|veranstaltungen)\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(marker.url) && !marker.url.includes('\\'));
+                    typeof marker.url === 'string' && /^\/(?:unternehmen|veranstaltungen|jobs)\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(marker.url) && !marker.url.includes('\\'));
                 if (!markers.length) throw new Error('No coordinates');
                 const canvas = document.createElement('div');
                 canvas.className = 'company-map-canvas';
@@ -40,7 +40,7 @@ export function initializeMaps(document, leaflet) {
                     description.textContent = company.description || '';
                     const link = document.createElement('a');
                     link.href = company.url;
-                    link.textContent = company.url.startsWith('/veranstaltungen/') ? 'Veranstaltung ansehen' : 'Unternehmen ansehen';
+                    link.textContent = company.url.startsWith('/jobs/') ? 'Stelle ansehen' : (company.url.startsWith('/veranstaltungen/') ? 'Veranstaltung ansehen' : 'Unternehmen ansehen');
                     popup.append(name, categories, description, link);
                     const marker = leaflet.marker([company.latitude, company.longitude], {
                         title: company.name, alt: company.name,

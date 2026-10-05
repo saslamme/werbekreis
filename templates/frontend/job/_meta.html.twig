@@ -1,0 +1,2 @@
+<p class="job-meta"><a href="{{ path('company_show', {slug: job.company.slug}) }}">{{ job.company.name }}</a>{% if job.city %} · {{ job.city }}{% endif %}{% if job.locationName %} · {{ job.locationName }}{% endif %}</p>
+<p class="small text-secondary">Veröffentlicht am <time datetime="{{ job.publicationDate|date('c') }}">{{ job.publicationDate|date('d.m.Y', portal_timezone) }}</time>{% if job.validThrough %} · Bewerbung bis <time datetime="{{ job.validThrough|date('c') }}">{{ job.validThrough|date('d.m.Y', portal_timezone) }}</time>{% endif %}</p>

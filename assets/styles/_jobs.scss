@@ -1,0 +1,16 @@
+.job-card {
+  padding: 1.5rem;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 1rem;
+  background: var(--bs-body-bg);
+  overflow-wrap: anywhere;
+  box-shadow: 0 0.4rem 1.5rem rgba(0, 0, 0, 0.04);
+}
+.job-card-title { font-size: 1.25rem; }
+.job-card-title a { text-decoration: none; }
+.job-meta { margin: 1rem 0 0.25rem; }
+.job-detail { overflow-wrap: anywhere; }
+.job-content { max-width: 850px; line-height: 1.8; }
+.job-application { padding: 1.5rem; background: var(--bs-light); border-radius: 1rem; }
+.job-application .btn { white-space: normal; }
+.job-salary { font-size: 0.95rem; }
