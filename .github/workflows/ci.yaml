@@ -1,0 +1,42 @@
+name: PR1 checks
+on: [push, pull_request]
+jobs:
+    application:
+        runs-on: ubuntu-latest
+        services:
+            mariadb:
+                image: mariadb:10.11
+                env:
+                    MARIADB_ROOT_PASSWORD: test-root-password
+                ports: ['3306:3306']
+                options: >-
+                    --health-cmd="healthcheck.sh --connect --innodb_initialized"
+                    --health-interval=5s --health-timeout=5s --health-retries=20
+        env:
+            APP_ENV: test
+            APP_SECRET: ci-test-only
+            DATABASE_URL: 'mysql://root:test-root-password@127.0.0.1:3306/werbekreis?serverVersion=mariadb-10.11.0&charset=utf8mb4'
+        steps:
+            - uses: actions/checkout@v4
+            - uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '8.4'
+                  extensions: intl, pdo_mysql, zip
+                  coverage: none
+                  tools: composer:v2
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: '24'
+                  cache: npm
+            - run: composer install --no-interaction --prefer-dist
+            - run: composer validate --strict
+            - run: npm ci
+            - run: npm run build
+            - run: php bin/console about
+            - run: php bin/console doctrine:database:create --if-not-exists
+            - run: php bin/console doctrine:migrations:migrate --no-interaction
+            - run: php bin/console doctrine:schema:validate
+            - run: php bin/console lint:twig templates
+            - run: php bin/console lint:container
+            - run: php bin/phpunit
+            - run: php bin/console asset-map:compile

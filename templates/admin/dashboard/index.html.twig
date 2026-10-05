@@ -1,0 +1,8 @@
+{% extends 'admin/base.html.twig' %}{% block admin_body %}<h1 class="mb-4">Dashboard</h1>
+<div class="row g-3 mb-5">{% for label, count in counts %}<div class="col-6 col-lg-3">
+<div class="border rounded p-4">
+<span class="text-secondary">{{ label }}</span>
+<strong class="display-6 d-block">{{ count }}</strong>
+</div>
+</div>{% endfor %}</div>
+<h2 class="h4">Letzte Benutzer</h2>{% include 'admin/user/_table.html.twig' with {users: latest, editable: false} %}{% endblock %}

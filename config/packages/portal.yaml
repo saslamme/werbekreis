@@ -1,0 +1,4 @@
+parameters:
+    portal.name: 'Werbekreis Haselünne'
+    portal.city: 'Haselünne'
+    portal.contact_email: 'info@example.local'

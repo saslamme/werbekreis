@@ -1,0 +1,30 @@
+security:
+    password_hashers:
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: auto
+    providers:
+        users:
+            entity:
+                class: App\Entity\User
+                property: email
+    role_hierarchy:
+        ROLE_ADMIN: ROLE_EDITOR
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|assets)/
+            security: false
+        main:
+            lazy: true
+            provider: users
+            user_checker: App\Security\UserChecker
+            form_login:
+                login_path: app_login
+                check_path: app_login
+                enable_csrf: true
+                success_handler: App\Security\LoginSuccessHandler
+            logout:
+                path: app_logout
+                target: app_home
+                enable_csrf: true
+    access_control:
+        - { path: ^/admin(?:/|$), roles: ROLE_EDITOR }
+        - { path: ^/member(?:/|$), roles: ROLE_MEMBER }

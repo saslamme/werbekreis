@@ -1,0 +1,20 @@
+{
+  "name": "werbekreis",
+  "private": true,
+  "scripts": {
+    "build": "sass --load-path=node_modules assets/styles/app.scss assets/generated/app.css --no-source-map --style=compressed && esbuild assets/app.js --bundle --minify --outfile=assets/generated/app.js && node scripts/copy-fonts.mjs",
+    "watch": "sass --load-path=node_modules --watch assets/styles/app.scss:assets/generated/app.css"
+  },
+  "devDependencies": {
+    "@hotwired/stimulus": "^3.0.0",
+    "@symfony/ux-autocomplete": "file:vendor/symfony/ux-autocomplete/assets",
+    "@symfony/ux-live-component": "file:vendor/symfony/ux-live-component/assets",
+    "esbuild": "^0.25.0",
+    "sass": "^1.89.0",
+    "tom-select": "^2.2.2"
+  },
+  "dependencies": {
+    "bootstrap": "^5.3.7",
+    "@fortawesome/fontawesome-free": "^6.7.2"
+  }
+}

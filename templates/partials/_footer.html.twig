@@ -1,0 +1,42 @@
+<footer class="site-footer">
+<div class="container">
+<div class="row gy-4">
+<div class="col-md-4">
+<a class="brand" href="{{ path('app_home') }}">Werbekreis<span>{{ portal_city }}</span>
+</a>
+<p class="mt-4">Nah dran. Gemeinsam mehr bewegen.</p>
+</div>
+<div class="col-6 col-md-3">
+<h2>Entdecken</h2>
+<ul class="list-unstyled">{% for label, anchor in {'Unternehmen':'unternehmen','Angebote':'angebote','Veranstaltungen':'veranstaltungen','Gutschein':'gutschein','Jobs':'jobs'} %}<li>
+<a href="{{ path('app_home') }}#{{ anchor }}">{{ label }}</a>
+</li>{% endfor %}</ul>
+</div>
+<div class="col-6 col-md-3">
+<h2>Werbekreis</h2>
+<ul class="list-unstyled">
+<li>
+<a href="{{ path('app_home') }}#mitglied">Über uns</a>
+</li>
+<li>
+<span>Vorstand – folgt</span>
+</li>
+<li>
+<a href="{{ path('app_home') }}#mitglied">Mitglied werden</a>
+</li>
+<li>
+<a href="mailto:{{ portal_contact_email }}">Kontakt</a>
+</li>
+</ul>
+</div>
+<div class="col-md-2">
+<h2>Rechtliches</h2>
+<ul class="list-unstyled">
+<li>Impressum – folgt</li>
+<li>Datenschutz – folgt</li>
+</ul>
+</div>
+</div>
+<div class="footer-bottom">© {{ 'now'|date('Y') }} {{ portal_name }} · Entwicklungsstand: Inhalte und Kontaktdaten sind Platzhalter.</div>
+</div>
+</footer>

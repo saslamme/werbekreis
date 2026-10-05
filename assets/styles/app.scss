@@ -1,0 +1,15 @@
+@import 'variables';
+@import 'bootstrap/scss/bootstrap';
+@import '@fortawesome/fontawesome-free/scss/fontawesome';
+@import '@fortawesome/fontawesome-free/scss/solid';
+@import 'header';
+@import 'footer';
+@import 'hero';
+@import 'home';
+@import 'login';
+body { background: $wk-white; }
+a { text-underline-offset: .2em; }
+.skip-link { position: absolute; left: -9999px; }
+.skip-link:focus { left: 1rem; top: 1rem; z-index: 2000; padding: 1rem; background: white; }
+.admin-content { min-height: 65vh; }
+.table td, .table th { vertical-align: middle; }

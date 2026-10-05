@@ -1,0 +1,12 @@
+framework:
+    secret: '%env(APP_SECRET)%'
+    csrf_protection: true
+    session: true
+    handle_all_throwables: true
+    router:
+        utf8: true
+    validation:
+        email_validation_mode: html5
+    asset_mapper:
+        paths:
+            - assets/

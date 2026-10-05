@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Lokale Geschäfte, Genuss und Begegnungen in {{ portal_city }}.">
+<title>{% block title %}{{ portal_name }}{% endblock %}</title>
+<link rel="stylesheet" href="{{ asset('generated/app.css') }}">
+<script src="{{ asset('generated/app.js') }}" defer>
+</script>
+</head>
+<body>
+<a class="skip-link" href="#main">Zum Inhalt</a>{% include 'partials/_header.html.twig' %}<main id="main">{% for message in app.flashes('success') %}<div class="container mt-3">
+<div class="alert alert-success" role="status">{{ message }}</div>
+</div>{% endfor %}{% block body %}{% endblock %}</main>{% include 'partials/_footer.html.twig' %}</body>
+</html>

@@ -1,0 +1,7 @@
+.hero { background: $wk-light; padding: clamp(3rem, 7vw, 7rem) 0; }
+.hero h1 { font-size: clamp(2.7rem, 5.5vw, 5.3rem); max-width: 800px; line-height: 1.03; letter-spacing: -.05em; font-weight: 750; }
+.eyebrow { font-size: .75rem; letter-spacing: .17em; color: $wk-green; font-weight: 700; }
+.hero .lead { max-width: 620px; margin: 1.5rem 0 2rem; }
+.search-box { max-width: 650px; padding: .5rem; background: white; border: 1px solid #d8ded6; border-radius: .5rem; }
+.hero-aside { border-left: 3px solid $wk-red; padding-left: 1.8rem; color: $wk-green; }
+.hero-aside strong { display: block; font-size: 3rem; line-height: 1.1; }

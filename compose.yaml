@@ -1,0 +1,25 @@
+services:
+    database:
+        image: mariadb:10.11
+        environment:
+            MARIADB_ROOT_PASSWORD: local-root-password
+            MARIADB_DATABASE: werbekreis
+            MARIADB_USER: app
+            MARIADB_PASSWORD: password
+        volumes: ['database:/var/lib/mysql']
+        healthcheck:
+            test: [CMD, healthcheck.sh, --connect, --innodb_initialized]
+            interval: 5s
+            timeout: 5s
+            retries: 20
+    php:
+        build: .
+        ports: ['127.0.0.1:8080:8080']
+        volumes: ['.:/app']
+        environment:
+            DATABASE_URL: 'mysql://app:password@database:3306/werbekreis?serverVersion=mariadb-10.11.0&charset=utf8mb4'
+        depends_on:
+            database:
+                condition: service_healthy
+volumes:
+    database:
