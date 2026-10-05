@@ -7,4 +7,6 @@ services:
         autoconfigure: true
     App\:
         resource: '../src/'
-        exclude: '../src/{Entity,Kernel.php}'
+        exclude: '../src/{Entity,Doctrine,Geo/GeoPoint.php,Geo/GeocodingResult.php,Geo/DirectoryLocation.php,Kernel.php}'
+
+    App\Geo\GeocodingServiceInterface: '@App\Geo\NominatimGeocodingService'

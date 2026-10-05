@@ -307,6 +307,13 @@ final class Company
         return $this;
     }
 
+    public function hasCoordinates(): bool
+    {
+        return $this->latitude !== null && $this->longitude !== null
+            && is_finite($this->latitude) && is_finite($this->longitude)
+            && abs($this->latitude) <= 90 && abs($this->longitude) <= 180;
+    }
+
     public function getLatitude(): ?float
     {
         return $this->latitude;

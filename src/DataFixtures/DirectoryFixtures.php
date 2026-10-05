@@ -47,6 +47,10 @@ final class DirectoryFixtures extends Fixture implements DependentFixtureInterfa
                 ->setShortDescription($teasers[$index].' – fiktives Entwicklungsunternehmen; keine realen Kontaktdaten.')
                 ->setDescription('Diese Stammdaten dienen ausschließlich der lokalen Entwicklung und automatisierten Tests.')
                 ->setEmail('kontakt@betrieb'.($index + 1).'.example')->setPhone('0000 / 000000')->setActive($index !== 4)->setFeatured($index < 2);
+            // Fictional points: near, intermediate, outside 10 km, and no coordinates.
+            if ($index !== 3) {
+                $company->setLatitude(52.674 + $index * 0.055)->setLongitude(7.484 + $index * 0.03);
+            }
             if ($index % 2 === 0) {
                 $company->setWebsite('https://betrieb'.($index + 1).'.example');
             }

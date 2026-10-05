@@ -7,6 +7,7 @@ namespace App\Repository;
 use App\Entity\Category;
 use App\Entity\Company;
 use App\Entity\CompanyImage;
+use App\Geo\GeoPoint;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;
@@ -78,10 +79,19 @@ final class CompanyRepository extends ServiceEntityRepository
     }
 
     /** @return Paginator<Company> */
-    public function publicDirectoryPage(string $search, ?Category $category, int $page): Paginator
+    public function publicDirectoryPage(string $search, ?Category $category, int $page, ?GeoPoint $point = null, int $radius = 10): Paginator
     {
         $query = $this->createPublicDirectoryQueryBuilder($search, $category)
             ->setFirstResult((max(1, $page) - 1) * self::PUBLIC_PAGE_SIZE)->setMaxResults(self::PUBLIC_PAGE_SIZE);
+
+        if ($point !== null) {
+            $distance = 'GEO_DISTANCE(company.latitude, company.longitude, :originLat, :originLng)';
+            $query->andWhere('company.latitude BETWEEN -90 AND 90', 'company.longitude BETWEEN -180 AND 180')
+                ->andWhere($distance.' <= :radius')
+                ->setParameter('originLat', $point->latitude)->setParameter('originLng', $point->longitude)->setParameter('radius', $radius)
+                ->addSelect($distance.' AS HIDDEN geoDistance')
+                ->orderBy('geoDistance', 'ASC')->addOrderBy('company.featured', 'DESC')->addOrderBy('company.name', 'ASC')->addOrderBy('company.id', 'ASC');
+        }
 
         return new Paginator($query, fetchJoinCollection: true);
     }

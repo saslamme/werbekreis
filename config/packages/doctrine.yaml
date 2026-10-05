@@ -3,6 +3,9 @@ doctrine:
         url: '%env(resolve:DATABASE_URL)%'
     orm:
         auto_mapping: true
+        dql:
+            numeric_functions:
+                GEO_DISTANCE: App\Doctrine\GeoDistance
         mappings:
             App:
                 type: attribute
