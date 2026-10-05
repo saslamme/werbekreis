@@ -1,0 +1,4 @@
+services:
+    App\Geo\GeocodingServiceInterface:
+        alias: App\Geo\NominatimGeocodingService
+        public: true

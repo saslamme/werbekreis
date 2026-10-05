@@ -1,16 +1,24 @@
 <form class="directory-search" method="get" action="{{ path('company_index') }}" role="search">
 <div class="row g-2 align-items-end">
-<div class="col-md-6">
+<div class="col-md-4">
 <label class="form-label" for="directory-q">Suchbegriff</label>
 <input class="form-control" id="directory-q" type="search" name="q" value="{{ search }}" maxlength="100" placeholder="z. B. Café, Handwerk, Hasebogen">
 </div>
-<div class="col-md-4">
+<div class="col-md-3">
 <label class="form-label" for="directory-category">Kategorie</label>
 <select class="form-select" id="directory-category" name="kategorie">
 <option value="">Alle Kategorien</option>
 {% for option in categories %}<option value="{{ option.slug }}"{% if category and option.id == category.id %} selected{% endif %}>{{ option.name }}</option>{% endfor %}
 </select>
 </div>
-<div class="col-md-2 d-grid"><button class="btn btn-primary" type="submit">Suchen</button></div>
+<div class="col-md-3">
+<label class="form-label" for="directory-location">Ort / PLZ</label>
+<input class="form-control" id="directory-location" name="ort" value="{{ location.location }}" maxlength="150" placeholder="z. B. 49740 Haselünne">
+</div>
+<div class="col-md-2"><label class="form-label" for="directory-radius">Umkreis</label>
+<select class="form-select" id="directory-radius" name="radius">{% for radius in radii %}<option value="{{ radius }}"{{ radius == location.radius ? ' selected' }}>{{ radius }} km</option>{% endfor %}</select></div>
+{% if location.view == 'karte' %}<input type="hidden" name="ansicht" value="karte">{% endif %}
+{% if location.point and not location.location %}<input type="hidden" name="lat" value="{{ location.point.latitude }}"><input type="hidden" name="lng" value="{{ location.point.longitude }}">{% endif %}
+<div class="col-md-4 d-grid"><button class="btn btn-primary" type="submit">Unternehmen finden</button></div>
 </div>
 </form>

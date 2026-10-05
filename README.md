@@ -275,3 +275,45 @@ Karten laden Kategorien und Bilder per Fetch-Join im selben Query (Paginator mit
 ### PR3-Tests
 
 Übersicht, aktive/inaktive Unternehmen, Featured-Reihenfolge, Suche (Name, Kurzbeschreibung, Beschreibung, Kategorie, Sonderzeichen, Empty State), Kategorie-Filter inkl. unbekannter/inaktiver Kategorien, Kombination mit Suche, Pagination mit erhaltenen Parametern, Detailseite (Kontakt, Öffnungszeiten, Ansprechpartner, 404-Fälle), Bildverwendung und -auslieferung, Startseite (Unternehmen, Kategorien, Hero-Suche), SEO-Metadaten, JSON-LD, Ladeverhalten der Listen sowie unveränderter Admin-Schutz.
+
+## PR4: Karte und Umkreissuche
+
+Das öffentliche Verzeichnis unterstützt Liste und **Karte und Liste** (`ansicht=karte`). Die Karte zeigt dieselbe paginierte Auswahl wie die Karten darunter, nicht sämtliche Treffer einer Suche. Unternehmen ohne vollständige, gültige Koordinaten bleiben ohne Radiusfilter in der Liste; auf der Karte erscheinen sie nicht. Detailseiten mit Koordinaten bieten einen Kartenabschnitt neben der Adresse. Bestehende Admin-/Mitgliedsrechte bleiben unverändert.
+
+Leaflet **1.9.4** wird lokal über npm, Sass/esbuild und AssetMapper gebündelt (BSD-2-Clause, Lizenz in `node_modules/leaflet/LICENSE`). OpenStreetMap-Kacheln werden erst nach Klick auf „Karte laden“ abgerufen; der Hinweis erklärt die Übermittlung der IP-Adresse. Die OSM-Attribution bleibt sichtbar. Karte und Kacheln sind eine optionale Ergänzung: ohne JavaScript, bei Tile-Ausfall oder fehlenden Koordinaten bleibt die Liste mit Detaillinks nutzbar. Marker-Popups verwenden DOM-Text statt interpoliertem HTML; Marker und „Auf Karte zeigen“-Buttons synchronisieren die Hervorhebung. Auf Mobilgeräten ist die Kartenhöhe reduziert. Es gibt kein SPA und keine CDN-Script-Abhängigkeit.
+
+### Standort, Radius und Entfernung
+
+Das bestehende GET-Formular ergänzt **Ort / PLZ** und **Umkreis**. Beispiele:
+
+```text
+/unternehmen?ort=49740%20Hasel%C3%BCnne&radius=10
+/unternehmen?lat=52.674&lng=7.484&radius=5
+/unternehmen?q=caf&kategorie=gastronomie&ort=Hasel%C3%BCnne&radius=25&ansicht=karte
+```
+
+Parameter: `q`, `kategorie`, `ort` (max. 150 Zeichen), `lat`, `lng`, `radius`, `ansicht` (`liste` oder `karte`), `page`. Radien: 1, 5, 10, 25, 50, 100 km; Standard 10 km. Koordinaten werden auf endliche Zahlen, Latitude −90…90 und Longitude −180…180 geprüft. Ein vollständiges Koordinatenpaar hat Vorrang vor `ort`. Ungültige Koordinaten bzw. ungültige Radien ergeben verständliche Hinweise; ungültige Radien fallen auf 10 km zurück. Ohne auflösbaren Suchpunkt werden die übrigen Suchfilter weiterhin angewendet. Bei aktivem Suchpunkt werden Unternehmen ohne gültiges Koordinatenpaar ausgeschlossen.
+
+`GeoPoint` kapselt Koordinaten und Haversine-Distanz (Erdmittelradius 6371,0088 km). Die Doctrine-Funktion `GEO_DISTANCE` setzt dieselbe Berechnung in MariaDB-SQL um, mit Clamp gegen Rundungsfehler. Radiusfilter, Gesamttrefferzahl, Distanzsortierung und Pagination bleiben in der Datenbank: kein Laden und Filtern aller Unternehmen in PHP. Die bestehende öffentliche QueryBuilder-Suche wird wiederverwendet; Kategorien und Bilder bleiben fetch-joined. Sortierung mit Standort: Entfernung, Featured, Name, ID; ohne Standort bleibt die PR3-Sortierung erhalten. PHP berechnet nur die Distanzanzeige für die geladene Ergebnisseite. Die SQL-Formel ist nicht indexfähig; für wesentlich größere Verzeichnisse kann später ein räumlicher Index/BBox-Vorfilter ergänzt werden. Die Kugelberechnung ist eine Luftlinienentfernung, keine Straßenroute.
+
+Pagination und Kategoriechips erhalten die Standort-, Radius- und Ansichtsparameter. Nach erfolgreicher Ortssuche tragen Folgelinks die aufgelösten Koordinaten mit, wodurch beim Seitenwechsel kein erneutes Geocoding nötig ist. Standortfilter erhalten `noindex, follow` und einen Canonical auf `/unternehmen`. Fiktive Fixtures enthalten verschiedene Distanzen und ein Unternehmen ohne Koordinaten.
+
+### Geocoding, Cache und Betrieb
+
+`GeocodingServiceInterface` / `NominatimGeocodingService` lösen ausschließlich eingegebene Suchorte auf; `GeocodingResult` unterscheidet fehlende Treffer von vorübergehender Nichtverfügbarkeit. Es gibt kein automatisches Unternehmens-, Cron- oder Massengeocoding. Symfony HttpClient verwendet TLS-Prüfung, einen identifizierenden User-Agent, ein hartes Zeitlimit und keine Redirects. API-Fehler, ungültige Antworten und Cache-Ausfälle führen zu einem Hinweis statt einer Exception-Seite. Tests benutzen ausschließlich MockHttpClient bzw. ersetzte Geocoding-Services.
+
+Symfony `cache.app` speichert normalisierte Suchorte (Cache-Key gehasht, providerabhängig), Ergebnisse und negative Treffer standardmäßig 24 Stunden; Fehler werden kurz für 30 Sekunden gecacht. Ein gemeinsames Dateilock in `kernel.cache_dir` verhindert parallele Provideraufrufe dieser Instanz und lässt höchstens einen Request pro Sekunde zu. Bei belegtem Gate wird ein kurzlebiger Hinweis zurückgegeben statt wartende Requests aufzubauen. Für mehrere Produktionsinstanzen ist ein gemeinsamer globaler Limiter oder ein eigener Geocoding-Anbieter erforderlich. Nicht die öffentliche Nominatim-Instanz für Autocomplete oder Massenabfragen verwenden; [Nominatim-Nutzungsrichtlinie](https://operations.osmfoundation.org/policies/nominatim/) und [OSM-Tile-Richtlinie](https://operations.osmfoundation.org/policies/tiles/) beachten.
+
+Konfiguration in `.env` / `.env.local` (keine Secrets oder API-Keys nötig):
+
+- `GEOCODING_BASE_URL`: standardmäßig `https://nominatim.openstreetmap.org`; austauschbarer kompatibler Anbieter.
+- `GEOCODING_USER_AGENT`: Anwendung und Kontakt-/Projektadresse; vor Produktion passend setzen.
+- `GEOCODING_TIMEOUT`: Sekunden, Standard 3.
+- `GEOCODING_CACHE_TTL`: Sekunden, Standard 86400.
+- `MAP_TILE_URL`: Standard `https://tile.openstreetmap.org/{z}/{x}/{y}.png`; bei Anbieterwechsel Attribution und Datenschutzhinweis ebenfalls prüfen.
+
+Cloud-Netzwerkzugriff für serverseitiges Geocoding benötigt `nominatim.openstreetmap.org`; Tiles lädt der Browser. OSM erhält beim Kartenladen IP-Adresse und sichtbare Kartenausschnitte; Nominatim erhält den eingegebenen Ort. Geocoding-Caches enthalten Ortsauflösungen. Browser-Geolocation ist in PR4 bewusst nicht implementiert: keine automatische Standortabfrage und keine Standortpersistenz/Tracking-Funktion. Direkt angegebene Suchkoordinaten werden nur für den Request und die GET-Folgelinks verwendet; im Betrieb Querystrings möglichst aus Access-Logs entfernen. Datenschutzinformationen vor öffentlichem Betrieb ergänzen.
+
+PR4 enthält Karten, Geodaten-Nutzung, Standort-/Radiusfilter, Entfernungsanzeige und -sortierung sowie Tests. Angebote, Veranstaltungen, News, Jobs, Gutscheine, Bewertungen, Mitglieder-Self-Service und Approval-Workflow bleiben außerhalb des Scopes. Für PR5 offen: räumliche Indizes bei größerem Datenbestand, optional Browser-Geolocation/Clustering und ein gesonderter Admin-Geocoding-Workflow.
+
+Die Cloud-Hilfsskripte setzen zusätzlich `WK_CA_BUNDLE` auf den read-only eingebundenen öffentlichen CA-Pfad. Die optionale PHP-INI-Konfiguration verwendet ihn für `openssl.cafile` und `curl.cainfo`, damit auch Symfony HttpClient dem Plattformproxy bei aktivierter TLS-Prüfung vertraut. Außerhalb der Cloud bleibt die normale Systemtrust-Konfiguration erhalten.

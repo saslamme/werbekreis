@@ -52,6 +52,10 @@
 {% for link in [{label: 'Website', url: company.website, icon: 'fa-globe'}, {label: 'Facebook', url: company.facebookUrl, icon: 'fa-share-nodes'}, {label: 'Instagram', url: company.instagramUrl, icon: 'fa-camera'}] %}{% if link.url %}<li><i class="fa-solid {{ link.icon }}" aria-hidden="true"></i><a href="{{ link.url }}" target="_blank" rel="noopener noreferrer">{{ link.label }}<span class="visually-hidden"> (öffnet in neuem Tab)</span> <i class="fa-solid fa-arrow-up-right-from-square small" aria-hidden="true"></i></a></li>{% endif %}{% endfor %}
 </ul>
 </section>
+{% if company.hasCoordinates %}<section class="company-panel" aria-labelledby="map-heading"><h2 id="map-heading">Standort</h2>
+<p>{{ company.street }} {{ company.houseNumber }}, {{ company.postalCode }} {{ company.city }}</p>
+{% include 'frontend/company/_map.html.twig' %}
+</section>{% endif %}
 <section class="company-panel" aria-labelledby="hours-heading">
 <h2 id="hours-heading">Öffnungszeiten</h2>
 {% include 'frontend/company/_opening_hours.html.twig' %}

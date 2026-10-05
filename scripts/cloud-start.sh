@@ -23,7 +23,7 @@ if docker container inspect wk-pr1-php >/dev/null 2>&1; then docker rm -f wk-pr1
 docker run -d --name wk-pr1-php --network wk-pr1 --user "$(id -u):$(id -g)" \
     --mount "type=bind,src=$PWD,dst=/app" \
     --mount type=bind,src=/etc/ssl/certs/ca-certificates.crt,dst=/run/cloud-ca.pem,readonly \
-    -e COMPOSER_CAFILE=/run/cloud-ca.pem -e SSL_CERT_FILE=/run/cloud-ca.pem \
+    -e WK_CA_BUNDLE=/run/cloud-ca.pem -e COMPOSER_CAFILE=/run/cloud-ca.pem -e SSL_CERT_FILE=/run/cloud-ca.pem \
     -e CURL_CA_BUNDLE=/run/cloud-ca.pem -e COMPOSER_HOME=/tmp/composer \
     -e 'DATABASE_URL=mysql://app:password@database:3306/werbekreis?serverVersion=mariadb-10.11.0&charset=utf8mb4' \
     werbekreis-php:pr1 tail -f /dev/null
