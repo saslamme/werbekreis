@@ -10,3 +10,8 @@ framework:
     asset_mapper:
         paths:
             - assets/
+    rate_limiter:
+        voucher_check:
+            policy: fixed_window
+            limit: 20
+            interval: '15 minutes'

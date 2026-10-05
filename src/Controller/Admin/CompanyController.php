@@ -60,7 +60,16 @@ final class CompanyController extends AbstractController
         if (!$this->isCsrfTokenValid('delete_company_'.$company->getId(), $request->request->getString('_token'))) {
             throw $this->createAccessDeniedException('Ungültiger CSRF-Token.');
         }
-        $images->deleteCompany($company);
+        try {
+            $images->deleteCompany($company);
+        } catch (\App\Service\VoucherException $exception) {
+            $this->addFlash('error', $exception->getMessage());
+            return $this->redirectToRoute('admin_company_show', ['id' => $company->getId()], Response::HTTP_SEE_OTHER);
+        } catch (\Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException) {
+            // A redemption may commit after the earlier history check; the FK remains authoritative.
+            $this->addFlash('error', 'Unternehmen mit verknüpfter Historie können nicht gelöscht werden. Bitte stattdessen deaktivieren.');
+            return $this->redirectToRoute('admin_company_show', ['id' => $company->getId()], Response::HTTP_SEE_OTHER);
+        }
         $this->addFlash('success', 'Unternehmen gelöscht.');
 
         return $this->redirectToRoute('admin_companies', status: Response::HTTP_SEE_OTHER);

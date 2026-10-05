@@ -23,7 +23,7 @@ final class User implements UserInterface, PasswordAuthenticatedUserInterface
     /** @var list<string> */
     #[ORM\Column(type: 'json')]
     #[Assert\Count(min: 1, minMessage: 'Bitte mindestens eine Rolle auswählen.')]
-    #[Assert\Choice(choices: ['ROLE_ADMIN', 'ROLE_EDITOR', 'ROLE_MEMBER'], multiple: true)]
+    #[Assert\Choice(choices: ['ROLE_ADMIN', 'ROLE_EDITOR', 'ROLE_MEMBER', 'ROLE_VOUCHER_REDEEMER'], multiple: true)]
     private array $roles = [];
     #[ORM\Column(length: 100)]
     #[Assert\NotBlank, Assert\Length(max: 100)]
@@ -37,6 +37,11 @@ final class User implements UserInterface, PasswordAuthenticatedUserInterface
     private \DateTimeImmutable $createdAt;
     #[ORM\Column(type: 'datetime_immutable')]
     private \DateTimeImmutable $updatedAt;
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Company $company = null;
+    public function getCompany(): ?Company { return $this->company; }
+    public function setCompany(?Company $company): self { $this->company = $company; return $this; }
     public function __construct() { $this->createdAt = $this->updatedAt = new \DateTimeImmutable(); }
     public function getId(): ?int { return $this->id; }
     public function getEmail(): string { return $this->email; }

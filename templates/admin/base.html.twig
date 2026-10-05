@@ -12,5 +12,6 @@
 <a class="nav-link" href="{{ path('admin_events') }}">Veranstaltungen</a><a class="nav-link" href="{{ path('admin_event_categories') }}">Veranstaltungskategorien</a>
 <a class="nav-link" href="{{ path('admin_news') }}">News</a><a class="nav-link" href="{{ path('admin_news_categories') }}">News-Kategorien</a>
 <a class="nav-link" href="{{ path('admin_jobs') }}">Jobs</a>
-{% if is_granted('ROLE_ADMIN') %}<a class="nav-link" href="{{ path('admin_users') }}">Benutzer</a>{% endif %}</nav>{% block admin_body %}{% endblock %}</div>
+<a class="nav-link" href="{{ path('admin_voucher_products') }}">Gutscheinprodukte</a>
+{% if is_granted('ROLE_ADMIN') %}<a class="nav-link" href="{{ path('admin_vouchers') }}">Gutscheine</a><a class="nav-link" href="{{ path('voucher_redeem') }}">Gutschein einlösen</a><a class="nav-link" href="{{ path('admin_users') }}">Benutzer</a>{% endif %}</nav>{% block admin_body %}{% endblock %}</div>
 </main>{% include 'partials/_footer.html.twig' %}{% endblock %}

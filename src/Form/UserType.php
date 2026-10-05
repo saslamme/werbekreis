@@ -2,6 +2,8 @@
 declare(strict_types=1);
 namespace App\Form;
 use App\Entity\User;
+use App\Entity\Company;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -20,7 +22,8 @@ final class UserType extends AbstractType
             ->add('lastName', options: ['label' => 'Nachname'])
             ->add('email', EmailType::class, ['label' => 'E-Mail'])
             ->add('plainPassword', PasswordType::class, ['label' => 'Passwort', 'mapped' => false, 'required' => $options['is_new'], 'constraints' => $constraints, 'help' => $options['is_new'] ? 'Mindestens 8 Zeichen.' : 'Leer lassen, um das bestehende Passwort beizubehalten.'])
-            ->add('roles', ChoiceType::class, ['label' => 'Rollen', 'choices' => ['Admin' => 'ROLE_ADMIN', 'Editor' => 'ROLE_EDITOR', 'Mitglied' => 'ROLE_MEMBER'], 'expanded' => true, 'multiple' => true])
+            ->add('roles', ChoiceType::class, ['label' => 'Rollen', 'choices' => ['Admin' => 'ROLE_ADMIN', 'Editor' => 'ROLE_EDITOR', 'Mitglied' => 'ROLE_MEMBER', 'Gutschein-Einlöser' => 'ROLE_VOUCHER_REDEEMER'], 'expanded' => true, 'multiple' => true])
+            ->add('company', EntityType::class, ['class' => Company::class, 'choice_label' => 'name', 'label' => 'Unternehmen für Gutschein-Einlösung', 'required' => false, 'placeholder' => 'Keine Company-Zuordnung', 'help' => 'Einlöser dürfen ausschließlich für dieses aktive Unternehmen einlösen. Ohne Zuordnung bleibt Einlösung gesperrt.'])
             ->add('active', CheckboxType::class, ['label' => 'Aktiv', 'required' => false]);
     }
     public function configureOptions(OptionsResolver $resolver): void

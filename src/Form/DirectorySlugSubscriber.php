@@ -9,6 +9,7 @@ use App\Entity\Company;
 use App\Entity\Offer;
 use App\Entity\Event;
 use App\Entity\EventCategory;
+use App\Entity\VoucherProduct;
 use App\Entity\JobPosting;
 use App\Entity\NewsArticle;
 use App\Entity\NewsCategory;
@@ -29,7 +30,7 @@ final class DirectorySlugSubscriber implements EventSubscriberInterface
     public function assign(FormEvent $event): void
     {
         $data = $event->getForm()->getData();
-        if ($event->getForm()->isSynchronized() && ($data instanceof Company || $data instanceof Category || $data instanceof Offer || $data instanceof Event || $data instanceof EventCategory || $data instanceof NewsArticle || $data instanceof NewsCategory || $data instanceof JobPosting)) {
+        if ($event->getForm()->isSynchronized() && ($data instanceof Company || $data instanceof Category || $data instanceof Offer || $data instanceof Event || $data instanceof EventCategory || $data instanceof NewsArticle || $data instanceof NewsCategory || $data instanceof JobPosting || $data instanceof VoucherProduct)) {
             $this->slugger->assign($data);
         }
     }
