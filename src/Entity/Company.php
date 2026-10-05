@@ -113,9 +113,14 @@ final class Company
     #[Assert\Valid, Assert\Count(max: 50)]
     private Collection $contactPersons;
 
+    /** @var Collection<int, Offer> */
+    #[ORM\OneToMany(targetEntity: Offer::class, mappedBy: 'company', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $offers;
+
     public function __construct()
     {
         $this->initializeTimestamps();
+        $this->offers = new ArrayCollection();
         $this->categories = new ArrayCollection();
         $this->images = new ArrayCollection();
         $this->openingHours = new ArrayCollection();
@@ -433,6 +438,31 @@ final class Company
     {
         if ($this->contactPersons->removeElement($entry) && $entry->getCompany() === $this) {
             $entry->setCompany(null);
+        }
+
+        return $this;
+    }
+
+    /** @return Collection<int, Offer> */
+    public function getOffers(): Collection
+    {
+        return $this->offers;
+    }
+
+    public function addOffer(Offer $offer): self
+    {
+        if (!$this->offers->contains($offer)) {
+            $this->offers->add($offer);
+            $offer->setCompany($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOffer(Offer $offer): self
+    {
+        if ($this->offers->removeElement($offer) && $offer->getCompany() === $this) {
+            $offer->setCompany(null);
         }
 
         return $this;

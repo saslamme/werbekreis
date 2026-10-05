@@ -44,7 +44,7 @@ final class DirectoryImageFixtures extends Fixture implements DependentFixtureIn
     }
 
     /** @param array{int, int, int} $rgb */
-    private function png(array $rgb, int $width, int $height): UploadedFile
+    public function png(array $rgb, int $width, int $height): UploadedFile
     {
         $chunk = static fn (string $type, string $data): string => pack('N', strlen($data)).$type.$data.pack('N', crc32($type.$data));
         $row = "\x00".str_repeat(pack('C3', ...$rgb), $width);

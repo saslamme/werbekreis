@@ -1,0 +1,11 @@
+{% extends 'admin/base.html.twig' %}
+{% block admin_body %}
+<div class="section-heading"><h1>{{ offer.title }}</h1><a class="btn btn-primary" href="{{ path('admin_offer_edit', {id: offer.id}) }}">Bearbeiten</a></div>
+<p><a href="{{ path('admin_company_show', {id: offer.company.id}) }}">{{ offer.company.name }}</a> · {{ offer.typeLabel }} · {% include 'frontend/offer/_status.html.twig' %}</p>
+{% if offer.imagePath %}<img class="directory-image" src="{{ path('admin_offer_image', {id: offer.id}) }}" alt="{{ offer.imageAlt ?: offer.title }}">{% endif %}
+<p>{{ offer.shortDescription }}</p><div class="company-description">{{ offer.description|nl2br }}</div>
+{% include 'frontend/offer/_price.html.twig' %}{% include 'frontend/offer/_validity.html.twig' %}
+{% if offer.terms %}<h2 class="h4">Bedingungen</h2><p>{{ offer.terms|nl2br }}</p>{% endif %}
+{% if offer.externalUrl %}<p><a href="{{ offer.externalUrl }}" target="_blank" rel="noopener noreferrer">Externe Informationen (öffnet in neuem Tab)</a></p>{% endif %}
+<a href="{{ path('admin_offers') }}">Alle Angebote</a>
+{% endblock %}

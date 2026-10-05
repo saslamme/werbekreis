@@ -1,6 +1,6 @@
 # Werbekreis Haselünne
 
-Technisches Grundgerüst für ein lokales Stadtportal. PR1 enthält Anmeldung, Benutzerverwaltung, Admin-Dashboard, einen Mitglieder-Platzhalter und eine statische öffentliche Startseite. PR2 ergänzt die Stammdatenverwaltung für Unternehmen und Kategorien im bestehenden Adminbereich. PR3 macht daraus das öffentliche Unternehmensverzeichnis mit Suche, Kategorie-Filter, Detailseiten und datengetriebener Startseite. Angebote, Veranstaltungen und Jobs auf der Startseite bleiben ausdrücklich Beispielinhalte; die Datenmodelle und Funktionen folgen später.
+Technisches Grundgerüst für ein lokales Stadtportal. PR1 enthält Anmeldung, Benutzerverwaltung, Admin-Dashboard, einen Mitglieder-Platzhalter und eine statische öffentliche Startseite. PR2 ergänzt die Stammdatenverwaltung für Unternehmen und Kategorien im bestehenden Adminbereich. PR3 macht daraus das öffentliche Unternehmensverzeichnis mit Suche, Kategorie-Filter, Detailseiten und datengetriebener Startseite. PR4 ergänzt Karte und Umkreissuche. PR5 ergänzt echte Angebote und Aktionen; Veranstaltungen und Jobs auf der Startseite bleiben ausdrücklich Beispielinhalte.
 
 ## Technik
 
@@ -317,3 +317,46 @@ Cloud-Netzwerkzugriff für serverseitiges Geocoding benötigt `nominatim.openstr
 PR4 enthält Karten, Geodaten-Nutzung, Standort-/Radiusfilter, Entfernungsanzeige und -sortierung sowie Tests. Angebote, Veranstaltungen, News, Jobs, Gutscheine, Bewertungen, Mitglieder-Self-Service und Approval-Workflow bleiben außerhalb des Scopes. Für PR5 offen: räumliche Indizes bei größerem Datenbestand, optional Browser-Geolocation/Clustering und ein gesonderter Admin-Geocoding-Workflow.
 
 Die Cloud-Hilfsskripte setzen zusätzlich `WK_CA_BUNDLE` auf den read-only eingebundenen öffentlichen CA-Pfad. Die optionale PHP-INI-Konfiguration verwendet ihn für `openssl.cafile` und `curl.cainfo`, damit auch Symfony HttpClient dem Plattformproxy bei aktivierter TLS-Prüfung vertraut. Außerhalb der Cloud bleibt die normale Systemtrust-Konfiguration erhalten.
+
+## PR5: Angebote und Aktionen
+
+`Offer` gehört genau einem `Company` (ManyToOne / OneToMany mit bidirektionalen `addOffer()` / `removeOffer()`-Helpern). Die neue Migration ergänzt die Offer-Tabelle, einen eindeutigen Slug, den Unternehmens-Fremdschlüssel mit Delete-Cascade sowie einen Index für die Zeitsteuerung. Bestehende Migrationen bleiben unverändert. Angebotstypen sind das Enum `OfferType`: Angebot, Aktion, Rabatt und Neuheit. Weitere Felder: Titel, Kurz-/Langbeschreibung, Aktivstatus, Featured, Start/Ende, optionale Preise/Rabatttext, Bild/Alternativtext, externe URL, Bedingungen und Zeitstempel.
+
+### Sichtbarkeit und Zeitsteuerung
+
+Alle öffentlichen Abfragen verwenden `OfferRepository::createCurrentPublicQueryBuilder()`: Angebot aktiv, Unternehmen aktiv, Beginn leer oder bereits erreicht, Ende leer oder noch nicht überschritten. Beide Zeitgrenzen sind **einschließlich**. `Offer::isCurrentlyActive($now)` und `statusAt($now)` spiegeln dieselben Regeln für Domain-/Adminanzeigen. Der Repository-Clock ist über Symfony `ClockInterface` injiziert; Tests frieren Zeit mit `MockClock` ein und prüfen auch den Ablauf ohne Datenbankänderung. Ein Cronjob ist nicht erforderlich. Ungültige Zeiträume erzeugen Formularfehler am Enddatum.
+
+Zeiten werden im Admin in **Europe/Berlin** eingegeben und für das Datenbankmodell in UTC umgerechnet. Nutzer sehen deutsche Datums-/Uhrzeitangaben mit der lokalen Zeitzone. Die Endzeit ist ein genauer Zeitpunkt, nicht automatisch das Ende des ausgewählten Tages. Adminstatus: aktuell, geplant, abgelaufen, deaktiviert bzw. Unternehmen inaktiv. Zeitstempel verwenden weiterhin das vorhandene TimestampedTrait.
+
+### Verwaltung
+
+Admins und Editoren verwalten Angebote unter `/admin/offers`: gefilterte/paginierte Liste, Detailansicht, Anlegen, Bearbeiten, Aktivieren/Deaktivieren und CSRF-geschützte Löschung. Filter: Titel, Unternehmen, Typ, aktiv und Featured. Geplante, abgelaufene und deaktivierte Angebote bleiben im Admin sichtbar. Mitglieder erhalten keinen Adminzugriff. In der Unternehmensansicht verlinken „Neues Angebot für dieses Unternehmen“ und „Angebote verwalten“ in denselben Verwaltungsworkflow.
+
+Das Formular gliedert sich in Allgemein, Zeitraum, Preis und Darstellung. Titeländerungen erhalten bestehende Slugs; ein leeres Slugfeld erzeugt einen neuen Slug über den bestehenden `DirectorySlugger` / `DirectorySlugSubscriber`. Umlaute, Kollisionen und eindeutige Datenbankconstraints entsprechen den Company-/Category-Patterns; konkurrierende Vergaben werden als Formularfehler behandelt.
+
+### Preislogik
+
+`regularPrice` und `offerPrice` sind nullable **DECIMAL(10,2)** und im PHP-Modell Strings. Das Formular verarbeitet ebenfalls Decimal-Strings (zum Beispiel `59,90` oder `59.90`, ohne Tausendertrennzeichen), ohne Float-Konvertierung oder stille Rundung. Negative Preise, mehr als zwei Nachkommastellen, Überläufe und ein Angebotspreis über dem vorhandenen regulären Preis werden abgewiesen. Ein Preis von null ist gültig; ein Preis von `0,00 €` wird als solcher angezeigt. Ohne Preise erscheinen keine leeren Euro-Symbole. `discountText` ist eine eigenständige kurze Angabe, beispielsweise „20 % Rabatt“ oder „2 für 1“. Es gibt keine automatische Rabattberechnung oder Money-/Commerce-Bibliothek. Formatierung und Cent-Vergleich liegen zentral im Modell, nicht in Twig.
+
+### Bilder
+
+Angebote verwenden **denselben `CompanyImageStorage` und Uploadordner** wie Unternehmensbilder, ebenso die gemeinsamen Image-Constraints: MIME JPEG/PNG/WebP, maximal 5 MB und 8000 × 8000 Pixel. Dateien liegen außerhalb von `public/` und erhalten zufällige Hex-Dateinamen; im Modell steht nur ein validierter Dateiname. Es gibt keine Base64-Speicherung und keinen zweiten Uploaddienst. Austausch, Entfernen und Angebots-/Unternehmenslöschung entfernen zugehörige Dateien nach erfolgreichem DB-Commit; bei fehlgeschlagenem Speichern wird das neue Bild zurückgenommen. Gleichzeitiges Hochladen und Entfernen ersetzt das Bild durch den Upload. Ohne Bild erscheint eine neutrale Kartenillustration; der Alternativtext fällt auf den Angebotstitel zurück.
+
+Die bestehende `app:company-images:cleanup`-Bereinigung berücksichtigt zusätzlich alle Angebotsbildreferenzen, auch geplante/deaktivierte Angebote. Sie entfernt nur verwaiste Dateien, die älter als eine Stunde sind, und nur mit `--delete`. Öffentliche Angebotsbilder werden bei jedem Zugriff gegen die aktuelle Sichtbarkeit geprüft und mit `no-store` ausgeliefert; nicht aktuelle oder fremde Bildnamen ergeben 404. Admin-Bilder sind rollenbeschränkt und privat.
+
+### Öffentliche Seiten und Integration
+
+- `/angebote`: aktuelle Angebote, GET-Typfilter `typ=offer|promotion|discount|new_product`, optional `unternehmen=<company-slug>`, Pagination über `page`. Ungültige Typen zeigen einen Hinweis und alle Typen; unbekannte/inaktive Unternehmen liefern 404. Alle Parameter bleiben bei Pagination erhalten.
+- `/angebote/{slug}`: stabile Angebotsdetailseite mit Typ, Unternehmen, Texten, optionalen Preisen/Rabatt, Laufzeit, Bild, Bedingungen und externer URL. Inaktive, abgelaufene, zukünftige Angebote sowie Angebote inaktiver Unternehmen liefern 404, ebenso unbekannte Slugs.
+- Unternehmensdetails zeigen maximal drei aktuelle eigene Angebote, bei mehr einen Link zur gefilterten Gesamtübersicht. Die PR4-Karten-/Umkreissuche bleibt erhalten.
+- Die Startseite ersetzt die früheren Angebotsbeispiele vollständig durch drei aktuelle Angebote: Featured zuerst, dann normale Treffer. Hauptnavigation, Footer und „Alle Angebote“ führen auf `/angebote`. Bei leerer Auswahl erscheint „Aktuell sind keine Angebote verfügbar.“
+
+Öffentliche Sortierung: Featured, dann nächstes Ende (offene Enden zuletzt), Titel und ID. Die zentralen Queries laden das Unternehmen per Fetch-Join, keine Bilder-/Kategorien-/Kontaktgraphen; Homepage und Unternehmensdetails begrenzen ihre Abfragen in SQL. Die Unternehmensseite lädt einen vierten Treffer nur für die „Alle Angebote“-Entscheidung. Es gibt keine N+1-Abfrage pro Angebotskarte.
+
+### SEO, Darstellung und Tests
+
+Übersicht und Detailseiten besitzen eigene Titel/Descriptions/Canonical-URLs; Filter-/Folgeseiten erhalten `noindex, follow` mit Canonical auf `/angebote`. Details enthalten Open-Graph-Metadaten und sicher escaptes Schema.org-`Offer`-JSON-LD mit `seller`, vorhandenen Preisen/Währung, Bild und Zeitgrenzen. Es werden keine künstlichen Preise oder Verfügbarkeiten erfunden. Wiederverwendbare Twig-Partials kapseln Karte, Preis, Laufzeit und Status. Karten behalten den Portalstil, verständliche Links, Bild-Alt-Texte und responsive Raster; Preise/Rabatte sind auch als Text ausgezeichnet.
+
+`OfferFixtures` erzeugt zehn vollständig fiktive Angebote relativ zum injizierten Clock: mehrere Unternehmen, Featured/normal, laufend/geplant/abgelaufen/deaktiviert, inaktives Unternehmen, Preise/kein Preis/Rabatt sowie generierte Bildmotive und Bild-Fallbacks. Fixture-Bilder nutzen dieselbe PNG-Erzeugung wie die vorhandenen DirectoryImageFixtures. Niemals Fixtures gegen produktive Daten laden. Neue Tests decken Domainzeit und -preise, Slugs, Queryfilter/Pagination, öffentliche 404-Regeln, Homepage/Company-Integration, echte Admin-/Editor-CRUDs, Rollen/CSRF, Bildvalidierung und den Dateilebenszyklus ab; alle Zeitfälle verwenden MockClock und bleiben unabhängig vom Kalenderjahr.
+
+PR5 umfasst Angebote und Aktionen. **Nicht enthalten:** Gutscheincodes/Voucher-System, Gutscheinverwaltung, Warenkorb, Checkout, Onlinezahlung, Reservierung, Veranstaltungen, News, Jobs, Bewertungen, Push-Benachrichtigungen, Mitglieder-Self-Service und Approval-Workflow. Für PR6 sind diese Bereiche gesondert zu planen; es wurde keine Commerce- oder Sylius-Shop-Architektur eingeführt.

@@ -6,6 +6,7 @@ namespace App\Service;
 
 use App\Entity\Company;
 use App\Entity\CompanyImage;
+use App\Entity\Offer;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -32,7 +33,7 @@ final class CompanyImageStorage
         return $this->directory.DIRECTORY_SEPARATOR.$fileName;
     }
 
-    public function save(CompanyImage $image, ?UploadedFile $file): void
+    public function save(CompanyImage|Offer $image, ?UploadedFile $file, bool $removeImage = false): void
     {
         $oldName = $image->getFileName();
         $newName = null;
@@ -46,6 +47,9 @@ final class CompanyImageStorage
             $file->move($this->directory, $newName);
             $image->setFileName($newName);
         }
+        if ($file === null && $removeImage) {
+            $image->setFileName('');
+        }
         try {
             $image->getCompany()?->touch();
             $this->em->persist($image);
@@ -57,12 +61,12 @@ final class CompanyImageStorage
             $image->setFileName($oldName);
             throw $exception;
         }
-        if ($newName !== null && $oldName !== '') {
+        if (($newName !== null || $removeImage) && $oldName !== '') {
             $this->removeFile($oldName);
         }
     }
 
-    public function deleteImage(CompanyImage $image): void
+    public function deleteImage(CompanyImage|Offer $image): void
     {
         $fileName = $image->getFileName();
         $image->getCompany()?->touch();
@@ -74,6 +78,11 @@ final class CompanyImageStorage
     public function deleteCompany(Company $company): void
     {
         $fileNames = array_map(static fn (CompanyImage $image): string => $image->getFileName(), $company->getImages()->toArray());
+        foreach ($company->getOffers() as $offer) {
+            if ($offer->getImagePath() !== null) {
+                $fileNames[] = $offer->getImagePath();
+            }
+        }
         $this->em->remove($company);
         $this->em->flush();
         foreach ($fileNames as $name) {
@@ -101,6 +110,9 @@ final class CompanyImageStorage
             return [];
         }
         $used = array_fill_keys(array_column($this->em->createQueryBuilder()->select('image.fileName')->from(CompanyImage::class, 'image')->getQuery()->getScalarResult(), 'fileName'), true);
+        foreach ($this->em->createQueryBuilder()->select('offer.imagePath')->from(Offer::class, 'offer')->where('offer.imagePath IS NOT NULL')->getQuery()->getScalarResult() as $row) {
+            $used[$row['imagePath']] = true;
+        }
         $unused = [];
         foreach (new \DirectoryIterator($this->directory) as $file) {
             if (!$file->isFile() || $file->isLink() || $file->getMTime() > time() - 3600 || !preg_match('/^[a-f0-9]{32}\.(?:jpg|png|webp)$/D', $file->getFilename()) || isset($used[$file->getFilename()])) {

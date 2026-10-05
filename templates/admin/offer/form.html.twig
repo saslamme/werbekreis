@@ -1,0 +1,15 @@
+{% extends 'admin/base.html.twig' %}
+{% block admin_body %}
+<h1>{{ offer.id ? 'Angebot bearbeiten' : 'Angebot anlegen' }}</h1>
+{{ form_start(form) }}{{ form_errors(form) }}
+<section class="directory-form-section"><h2>Allgemein</h2><div class="row g-3">
+{% for field in [form.company, form.title, form.slug, form.type, form.shortDescription, form.description] %}<div class="col-md-6">{{ form_row(field) }}</div>{% endfor %}
+<div class="col-md-6">{{ form_row(form.active) }}{{ form_row(form.featured) }}</div></div></section>
+<section class="directory-form-section"><h2>Zeitraum</h2><div class="row g-3"><div class="col-md-6">{{ form_row(form.startsAt) }}</div><div class="col-md-6">{{ form_row(form.endsAt) }}</div></div></section>
+<section class="directory-form-section"><h2>Preis</h2><div class="row g-3">{% for field in [form.regularPrice, form.offerPrice, form.discountText] %}<div class="col-md-4">{{ form_row(field) }}</div>{% endfor %}</div></section>
+<section class="directory-form-section"><h2>Darstellung</h2>
+{% if offer.imagePath and offer.id %}<img class="directory-image mb-3" src="{{ path('admin_offer_image', {id: offer.id}) }}" alt="{{ offer.imageAlt ?: offer.title }}">{% endif %}
+{{ form_row(form.file) }}{{ form_row(form.imageAlt) }}{{ form_row(form.removeImage) }}{{ form_row(form.externalUrl) }}{{ form_row(form.terms) }}
+</section><button class="btn btn-primary" type="submit">Speichern</button> <a class="btn btn-outline-secondary" href="{{ path('admin_offers') }}">Abbrechen</a>{{ form_end(form) }}
+{% if offer.id %}<form class="mt-4" action="{{ path('admin_offer_delete', {id: offer.id}) }}" method="post"><input type="hidden" name="_token" value="{{ csrf_token('delete_offer_' ~ offer.id) }}"><button class="btn btn-outline-danger" type="submit">Angebot löschen</button></form>{% endif %}
+{% endblock %}

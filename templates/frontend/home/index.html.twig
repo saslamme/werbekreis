@@ -34,28 +34,9 @@
 </div>{% endfor %}</div>{% endif %}
 </div>
 </section>
-<section class="section bg-light" id="angebote">
-<div class="container">
-<div class="section-heading">
-<h2>Angebote &amp; Aktionen</h2>
-<span class="text-secondary">Neue Ideen für Ihren nächsten Besuch</span>
-</div>
-<p class="demo-note">Beispielinhalte – keine realen Angebote.</p>
-<div class="row g-4">{% for item in [{title:'Frische Lieblingsstücke',text:'Inspiration für einen neuen Look.',icon:'bag-shopping',tag:'Einkaufen'},{title:'Eine kleine Genuss-Auszeit',text:'Zeit für Kaffee und gute Gespräche.',icon:'mug-hot',tag:'Gastronomie'},{title:'Für Zuhause gemacht',text:'Entdecken Sie Ideen für Ihr Zuhause.',icon:'house',tag:'Lokal entdecken'}] %}<div class="col-md-4">
-<article class="editorial-card bg-white">
-<div class="card-art {{ loop.index == 2 ? 'warm' : '' }}">
-<i class="fa-solid fa-{{ item.icon }}" aria-hidden="true">
-</i>
-</div>
-<div class="card-copy">
-<p class="eyebrow">{{ item.tag }}</p>
-<h3>{{ item.title }}</h3>
-<p class="text-secondary mb-0">{{ item.text }}</p>
-</div>
-</article>
-</div>{% endfor %}</div>
-</div>
-</section>
+<section class="section bg-light" id="angebote"><div class="container"><div class="section-heading"><h2>Angebote &amp; Aktionen</h2><a href="{{ path('offer_index') }}">Alle Angebote</a></div>
+{% if featured_offers is empty %}<p role="status">Aktuell sind keine Angebote verfügbar.</p>{% else %}<div class="row g-4">{% for offer in featured_offers %}<div class="col-md-4">{% include 'frontend/offer/_card.html.twig' %}</div>{% endfor %}</div>{% endif %}
+</div></section>
 <section class="section" id="veranstaltungen">
 <div class="container">
 <div class="row gy-4">

@@ -1,0 +1,7 @@
+<article class="offer-card{{ offer.featured ? ' is-featured' }}">
+{% if offer.imagePath %}<img class="offer-card-image" src="{{ path('offer_image', {slug: offer.slug, fileName: offer.imagePath}) }}" alt="{{ offer.imageAlt ?: offer.title }}" loading="lazy" decoding="async">{% else %}<div class="offer-card-fallback" aria-hidden="true"><i class="fa-solid fa-tag"></i></div>{% endif %}
+<div class="offer-card-body"><p class="eyebrow">{{ offer.typeLabel }}</p><h3 class="offer-card-title"><a class="stretched-link" href="{{ path('offer_show', {slug: offer.slug}) }}">{{ offer.title }}</a></h3>
+<p class="offer-company">{{ offer.company.name }}</p>
+{% if offer.shortDescription %}<p>{{ offer.shortDescription }}</p>{% endif %}
+{% include 'frontend/offer/_price.html.twig' %}{% include 'frontend/offer/_validity.html.twig' %}
+</div></article>

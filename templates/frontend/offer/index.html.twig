@@ -1,0 +1,20 @@
+{% extends 'base.html.twig' %}
+{% block title %}Angebote in {{ portal_city }} | {{ portal_name }}{% endblock %}
+{% block meta_description %}Aktuelle Angebote, Aktionen, Rabatte und Neuheiten von lokalen Unternehmen in {{ portal_city }} entdecken.{% endblock %}
+{% block canonical %}<link rel="canonical" href="{{ url('offer_index') }}">{% endblock %}
+{% block meta %}{% if type or company or page > 1 or invalid_type %}<meta name="robots" content="noindex, follow">{% endif %}{% endblock %}
+{% block body %}
+<section class="directory-hero"><div class="container"><nav aria-label="Brotkrumen"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{{ path('app_home') }}">Startseite</a></li><li class="breadcrumb-item active" aria-current="page">Angebote</li></ol></nav>
+<h1>Angebote in {{ portal_city }}</h1><p class="lead">Aktionen und Neuheiten direkt vor Ort entdecken.</p>
+{% if company %}<p>Angebote von <a href="{{ path('company_show', {slug: company.slug}) }}">{{ company.name }}</a></p>{% endif %}
+<form method="get" action="{{ path('offer_index') }}" class="row g-2 align-items-end">
+{% if company %}<input type="hidden" name="unternehmen" value="{{ company.slug }}">{% endif %}
+<div class="col-sm-8 col-lg-4"><label class="form-label" for="offer-kind">Angebotstyp</label><select class="form-select" id="offer-kind" name="typ"><option value="">Alle</option>{% for option in types %}<option value="{{ option.value }}"{{ type == option ? ' selected' }}>{{ option.label }}</option>{% endfor %}</select></div>
+<div class="col-sm-4 col-lg-2"><button class="btn btn-primary w-100" type="submit">Filtern</button></div>
+</form>{% if invalid_type %}<p role="status" class="alert alert-warning mt-3">Unbekannter Angebotstyp. Es werden alle Typen angezeigt.</p>{% endif %}
+</div></section>
+<section class="section"><div class="container"><div class="section-heading"><h2 class="h4">{{ total }} {{ total == 1 ? 'Angebot' : 'Angebote' }}</h2>{% if type or company %}<a href="{{ path('offer_index') }}">Filter zurücksetzen</a>{% endif %}</div>
+{% if total == 0 %}<p class="directory-empty" role="status">Aktuell sind keine Angebote verfügbar.</p>{% else %}<div class="row g-4" data-offer-results>{% for offer in offers %}<div class="col-sm-6 col-lg-4">{% include 'frontend/offer/_card.html.twig' %}</div>{% endfor %}</div>
+{% include 'partials/_pagination.html.twig' with {route: 'offer_index'} %}{% endif %}
+</div></section>
+{% endblock %}
