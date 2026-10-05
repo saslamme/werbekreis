@@ -125,10 +125,15 @@ final class Company
     #[ORM\OneToMany(targetEntity: NewsArticle::class, mappedBy: 'company')]
     private Collection $newsArticles;
 
+    /** @var Collection<int, JobPosting> */
+    #[ORM\OneToMany(targetEntity: JobPosting::class, mappedBy: 'company', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $jobPostings;
+
     public function __construct()
     {
         $this->initializeTimestamps();
         $this->offers = new ArrayCollection();
+        $this->jobPostings = new ArrayCollection();
         $this->events = new ArrayCollection();
         $this->newsArticles = new ArrayCollection();
         $this->categories = new ArrayCollection();
@@ -608,5 +613,17 @@ final class Company
         if (count(array_filter($this->contactPersons->toArray(), static fn (ContactPerson $contact): bool => $contact->isPrimaryContact())) > 1) {
             $context->buildViolation('Bitte höchstens einen primären Ansprechpartner auswählen.')->atPath('contactPersons')->addViolation();
         }
+    }
+    /** @return Collection<int, JobPosting> */
+    public function getJobPostings(): Collection { return $this->jobPostings; }
+    public function addJobPosting(JobPosting $job): self
+    {
+        if (!$this->jobPostings->contains($job)) { $this->jobPostings->add($job); $job->setCompany($this); }
+        return $this;
+    }
+    public function removeJobPosting(JobPosting $job): self
+    {
+        if ($this->jobPostings->removeElement($job) && $job->getCompany() === $this) { $job->setCompany(null); }
+        return $this;
     }
 }

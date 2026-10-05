@@ -19,7 +19,7 @@
 </button>
 <div class="collapse navbar-collapse" id="navigation">
 <ul class="navbar-nav ms-auto me-3 gap-xl-2">{% for label, anchor in {'Entdecken':'entdecken','Aktuelles':'aktuelles','Angebote':'angebote','Veranstaltungen':'veranstaltungen','Gutschein':'gutschein','Jobs':'jobs','Werbekreis':'mitglied'} %}<li class="nav-item">
-<a class="nav-link" href="{{ label == 'Aktuelles' ? path('news_index') : label == 'Angebote' ? path('offer_index') : (label == 'Veranstaltungen' ? path('event_index') : path('app_home') ~ '#' ~ anchor) }}">{{ label }}</a>
+<a class="nav-link" href="{{ label == 'Jobs' ? path('job_index') : (label == 'Aktuelles' ? path('news_index') : (label == 'Angebote' ? path('offer_index') : (label == 'Veranstaltungen' ? path('event_index') : path('app_home') ~ '#' ~ anchor))) }}">{{ label }}</a>
 </li>{% endfor %}</ul>
 <a class="btn btn-primary" href="{{ path('company_index') }}">Unternehmen finden</a>
 </div>

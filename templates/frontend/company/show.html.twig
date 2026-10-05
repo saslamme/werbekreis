@@ -68,4 +68,5 @@
 </div>
 </div></div>
 </article>
+{% if jobs is not empty %}<section class="section pt-0" id="offene-stellen"><div class="container"><div class="section-heading"><h2>Offene Stellen</h2>{% if more_jobs %}<a href="{{ path('job_index', {unternehmen: company.slug}) }}">Alle Stellen dieses Unternehmens</a>{% endif %}</div><div class="row g-4">{% for job in jobs %}<div class="col-md-6 col-lg-4">{% include 'frontend/job/_card.html.twig' %}</div>{% endfor %}</div></div></section>{% endif %}
 {% endblock %}

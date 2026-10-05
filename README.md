@@ -1,6 +1,6 @@
 # Werbekreis Haselünne
 
-Technisches Grundgerüst für ein lokales Stadtportal. PR1 enthält Anmeldung, Benutzerverwaltung, Admin-Dashboard, einen Mitglieder-Platzhalter und eine statische öffentliche Startseite. PR2 ergänzt die Stammdatenverwaltung für Unternehmen und Kategorien im bestehenden Adminbereich. PR3 macht daraus das öffentliche Unternehmensverzeichnis mit Suche, Kategorie-Filter, Detailseiten und datengetriebener Startseite. PR4 ergänzt Karte und Umkreissuche. PR5 ergänzt echte Angebote und Aktionen. PR6 ergänzt Veranstaltungen, begrenzte Wiederholungen und einen Monatskalender. PR7 ergänzt Aktuelles mit redaktioneller Verwaltung und zeitgesteuerter Veröffentlichung. Jobs auf der Startseite bleiben ausdrücklich Beispielinhalte.
+Technisches Grundgerüst für ein lokales Stadtportal. PR1 enthält Anmeldung, Benutzerverwaltung, Admin-Dashboard, einen Mitglieder-Platzhalter und eine statische öffentliche Startseite. PR2 ergänzt die Stammdatenverwaltung für Unternehmen und Kategorien im bestehenden Adminbereich. PR3 macht daraus das öffentliche Unternehmensverzeichnis mit Suche, Kategorie-Filter, Detailseiten und datengetriebener Startseite. PR4 ergänzt Karte und Umkreissuche. PR5 ergänzt echte Angebote und Aktionen. PR6 ergänzt Veranstaltungen, begrenzte Wiederholungen und einen Monatskalender. PR7 ergänzt Aktuelles mit redaktioneller Verwaltung und zeitgesteuerter Veröffentlichung. PR8 ergänzt echte Stellenangebote mit Suche, Beschäftigungsarten, Bewerbungsfristen und JobPosting-Daten.
 
 ## Technik
 
@@ -463,3 +463,57 @@ Die Startseite erhält eine echte Aktuelles-Sektion (zuvor keine eigene News-Sek
 Neue Tests decken Statusgrenzen, Clock-Fortschritt, Formvalidierung, fällige Planungsbearbeitung mit Sekundenerhalt, Relations, Slugs, Rollen/CSRF, Kategorie-Löschschutz, Uploads/Cleanup, Company-Löschung, Kartenprojektionen ohne Inhalt/Entities, Sortierung, kombinierte Filter, Pagination, Homepage/Company-Integration, HTML-/JSON-LD-Sicherheit und SEO ab. Alle bestehenden PR1–PR6-Tests bleiben unverändert erhalten; Checks entsprechen dem vorhandenen CI-Workflow.
 
 **Außerhalb von PR7:** Page Builder/WYSIWYG, Kommentare, Likes, Social Login, Newsletter-Versand, Push Notifications, Jobs, Gutscheine, Bewertungen, Mitglieder-Self-Service und Approval-Workflow. Redaktionelle Revisionen, Autorenzuordnung zu Benutzerkonten und ein eigenes Monats-/Jahresarchiv sind mögliche spätere Erweiterungen.
+
+
+## PR8: Jobs und Stellenangebote
+
+`JobPosting` gehört verpflichtend zu genau einer `Company`. Die Company-Helper halten beide Seiten konsistent; beim Löschen eines Unternehmens werden seine Stellen gelöscht, entsprechend dem vorhandenen Offer-Pattern. Inaktive Unternehmen haben keine öffentlich sichtbaren Jobs. Arbeitsort und Koordinaten werden beim Anlegen im Company-Kontext einmalig kopiert, sind unabhängig bearbeitbar und werden durch spätere Company-Adressänderungen nicht überschrieben. Ohne Company-Kontext wird der Ort ausdrücklich eingetragen. Titel werden unverändert übernommen; es gibt keine automatische Ergänzung von Genderzusätzen.
+
+Das Modell enthält Titel, eindeutigen stabilen Slug, Kurzbeschreibung (maximal 500 Zeichen), erforderliche Beschreibung, optionale Anforderungen/Benefits/Referenznummer und Arbeitsbeginn sowie Featured, Clock-Zeitstempel, Veröffentlichung, Frist, Beschäftigungsart, Arbeitsmodell, Ort/Adresse/optionales Land/Koordinaten, Bewerbungskontakt und optionale Gehaltsgrenzen. Slugs verwenden die vorhandene `DirectorySlugger`-Infrastruktur einschließlich Umlautumschreibung, Kollisionssuffix und UniqueEntity/DB-Absicherung. Inhaltsfelder sind Klartext und werden mit Twig-Escaping und Zeilenumbrüchen ausgegeben. Keine WYSIWYG-Abhängigkeit und kein ungeprüftes HTML.
+
+### Beschäftigung und Gehalt
+
+`EmploymentType` enthält Vollzeit, Teilzeit, Minijob, Ausbildung, Praktikum, Werkstudent und Befristet. Deutsche Labels und Schema-Mapping liegen zentral im Enum: `FULL_TIME`, `PART_TIME`, `PART_TIME`, `OTHER`, `INTERN`, `PART_TIME`, `TEMPORARY`. Ausbildung wird bewusst als `OTHER` abgebildet, ohne einen nicht standardisierten Google-Beschäftigungswert zu erfinden. `WorkModel` unterscheidet Vor Ort, Hybrid und Remote. Vor Ort/Hybrid erfordern einen Ort; Remote erlaubt einen leeren Ort.
+
+`salaryMin` und `salaryMax` sind nullable `DECIMAL(10,2)` und bleiben in Speicherung, Formular und Validierung Strings. Das Offer-Money-Pattern normalisiert Dezimalbeträge ohne Rundung, vergleicht ganzzahlige Cent-Beträge und erlaubt keine negativen Werte, mehr als zwei Nachkommastellen oder Mindestgehalt oberhalb des Höchstgehalts. Ein einzelner Grenzwert ist erlaubt; bei einer Gehaltsangabe ist `SalaryPeriod` (pro Stunde/Monat/Jahr) erforderlich. Die Formularangaben und Darstellung verwenden Euro; nur bei der Ausgabe numerischer JSON-LD-Werte findet eine Darstellungskonvertierung statt.
+
+### Veröffentlichung, Scheduling und Ablauf
+
+Jobs verwenden das PR7-Statusmodell `NewsStatus` (`draft`, `scheduled`, `published`) und den bestehenden `NewsPublishing`-Service, der nun beide Content-Entities unterstützt. Der historische Name bleibt zur Vermeidung eines unnötigen PR7-Umbaus erhalten. Der Service setzt beim Veröffentlichen ohne Zeitpunkt die aktuelle Symfony-Clock-Zeit. Neue/geänderte Planungen erfordern einen zukünftigen Zeitpunkt; unveränderte bereits verstrichene Planungen bleiben bearbeitbar. Unveränderte Minutenfelder behalten gespeicherte Sekunden und das ursprüngliche Datum bei mehrdeutigen Sommerzeitstunden.
+
+Öffentlich sichtbar sind nur veröffentlichbare Jobs aktiver Unternehmen: Veröffentlichung leer oder erreicht, geplante Stellen mit vorhandenem erreichtem Zeitpunkt, Bewerbungsfrist leer oder noch nicht überschritten. Beide Zeitgrenzen sind einschließlich. Diese Regeln stehen zentral im Repository und als Domain-Prädikat für dieselben Clock-Werte; Controller enthalten keine eigenen Zeitregeln. Kein Cronjob oder Status-Update ist erforderlich. Entwürfe, zukünftige und abgelaufene Stellen liefern öffentlich 404, bleiben im Admin sichtbar. `createdAt`, `updatedAt` und Veröffentlichung verwenden Symfony Clock.
+
+Das Formular behandelt `validThrough` als **letzten lokalen Bewerbungstag** in `portal.timezone` (standardmäßig Europe/Berlin): UTC-Speicherung des Tagesendes `23:59:59`, einschließlich korrekter kurzer/langer Tage bei Zeitumstellung. Programmatisch gesetzte Zeitstempel behalten ihre genaue Ablaufgrenze bis zur nächsten Formularbearbeitung; die Fixtures verwenden relative Clock-Zeitpunkte. Die Frist darf nicht vor einem expliziten oder beim Speichern gesetzten Veröffentlichungszeitpunkt liegen. Eine bereits abgelaufene Stelle kann im Admin bearbeitet oder verlängert werden.
+
+### Administration und Bewerbung
+
+`/admin/jobs` bietet die Liste mit Titel, Company, Beschäftigungsart/Arbeitsmodell, Ort, effektivem Status, Veröffentlichung, Frist, Featured und Änderung. Titel, Company, Beschäftigungsart, Arbeitsmodell, gespeicherter Status und Featured sind kombinierbar; 25 Stellen pro Seite und Filtererhalt einschließlich `featured=0`. Admins und Editoren können erstellen, anzeigen, bearbeiten, planen, veröffentlichen, auf Entwurf setzen und mit CSRF-Schutz löschen. Mitglieder haben keinen Adminzugriff. Company-Adminseiten verlinken auf vorbelegte neue Stellen und die gefilterte Verwaltung. Das Dashboard zeigt offene, geplante und innerhalb der nächsten sieben Tage auslaufende Stellen.
+
+Mindestens Bewerbungs-URL, eigene Bewerbungs-E-Mail oder Company-E-Mail muss vorhanden sein. Die externe HTTP(S)-URL führt über „Jetzt bewerben“ mit sichtbarem Hinweis auf den neuen Tab sowie `noopener noreferrer`; E-Mail führt zu `mailto:`. Wenn keine eigene E-Mail angegeben ist, wird die Company-E-Mail verwendet. Ansprechpartner, Telefon und Referenznummer sind optional. Es werden keine Bewerbungen oder Lebensläufe im Portal erfasst. Jobs verwenden Company-Cover/Logo für Open Graph; ein zusätzliches Job-Upload-System wurde nicht eingeführt.
+
+### Öffentliche Seiten und Integration
+
+- `/jobs`: öffentlich sichtbare Stellen, Suche `q` in Titel, Kurzbeschreibung, vollständiger Beschreibung, Company-Name und Ort; kombinierbare GET-Filter `employmentType`, `workModel`, `unternehmen={company-slug}`.
+- `/jobs/{slug}`: stabile Detail-URL mit Beschreibung, Anforderungen/Benefits, Beschäftigung, Ort, Bewerbung, optionalem Gehalt, Frist und Company-Link.
+- Listen zeigen zwölf Ergebnisse pro Seite, erhalten sämtliche Filter und bieten freundliche Leerzustände mit Zurücksetzen. Unbekannte konkrete Filter/Companies und nicht vorhandene Seiten liefern 404; nicht skalare Parameter werden defensiv ignoriert.
+- Reihenfolge: Featured zuerst, dann Veröffentlichung (bei fehlendem Datum gespeicherter Erstellungszeitpunkt) absteigend, Titel aufsteigend und ID als stabiler Tie-Breaker.
+- Die bisher statische Homepage-Jobsektion ist durch drei öffentliche Featured-Stellen mit aktuellen normalen Stellen als Fallback ersetzt. Header und Footer führen auf `/jobs`.
+- Unternehmensdetailseiten zeigen bis zu drei eigene offene Stellen unter „Offene Stellen“, bei mehr Stellen einen Company-gefilterten Listenlink; ohne Treffer bleibt der Abschnitt verborgen.
+- Karten verwenden Scalar-Projektionen ohne volle Beschreibung und ohne verwaltete Company-Graphen. Die Suche bleibt eine parametergebundene Doctrine-Abfrage ohne neue Such-Dependency; SQL-Wildcards werden escaped.
+- Gespeicherte Koordinaten verwenden die bestehende PR4-`DirectoryMap`-/Leaflet-Lösung mit ausdrücklichem Laden und Datenschutzhinweis. Ohne Koordinaten wird keine leere Karte dargestellt. Automatische Geocodierung ist kein Pflichtbestandteil von PR8.
+
+### SEO und JobPosting-Daten
+
+Übersicht und Detail erhalten eigene Titel/Descriptions, Detail-Canonical und Open Graph mit vorhandenem Company-Bild. Gefilterte/paginierte Listen verwenden den Canonical `/jobs` und `noindex,follow`, entsprechend PR7. Sicher HEX-encodiertes JSON-LD enthält `JobPosting`, Titel, escaped Beschreibung einschließlich vorhandener Anforderungen/Benefits, tatsächlichen `datePosted`, optionales `validThrough`, zentrales Beschäftigungs-Mapping, `hiringOrganization`, URL und vorhandene PostalAddress-/Geo-Daten. Fehlendes Veröffentlichungsdatum nutzt ausschließlich den gespeicherten Erstellungszeitpunkt.
+
+Nur vorhandene Gehaltsdaten erzeugen `baseSalary` mit EUR und `HOUR`/`MONTH`/`YEAR`; einzelne Grenzwerte bleiben einzelne Grenzwerte. Remote erzeugt `jobLocationType=TELECOMMUTE`; Hybrid und Vor Ort tun dies nicht. Ohne Remote-Standortrestriktion wird kein `applicantLocationRequirements` erfunden. Es werden keine fehlenden Länder, Adressen, Gehälter oder Autoren erfunden. JobPosting-Daten orientieren sich an Schema.org/Google Jobs; Aufnahme oder Darstellung durch Google wird nicht garantiert. Das optionale Land des Arbeitsorts wird ausdrücklich im Formular erfasst und nur bei vorhandenen Daten als `addressCountry` ausgegeben. Remote-Stellen ohne gespeicherte Standortrestriktion können zusätzliche redaktionelle Angaben für Suchmaschinen benötigen.
+
+### Migration, Fixtures und Tests
+
+`Version20261005205439` ergänzt ausschließlich die neue JobPosting-Tabelle, eindeutige Slugs, Veröffentlichung-/Beschäftigungsindizes und die erforderliche Company-FK mit Cascade. Frühere Migrationen bleiben unverändert. `JobFixtures` hängt von `DirectoryFixtures` ab und erzeugt zwölf ausschließlich fiktive Stellen für mehrere Beispielunternehmen relativ zur Clock: alle sieben Beschäftigungsarten, alle drei Arbeitsmodelle, Featured/normal, Entwurf/geplant/veröffentlicht/abgelaufen/zukünftig, mit/ohne Gehalt, E-Mail/externe URL, unterschiedliche Orte und offene Fristen.
+
+Die Jobs-Tests prüfen Domain- und Repository-Sichtbarkeit, sekundengenaue Grenzen mit MockClock, Veröffentlichung und Ablauf, Beziehungen, Salary-Validierung, Labels/Schema-Mapping, Suche/Filter, Featured/Fallback, Pagination, Admin-/Editor-CRUD, Member-Verbot, CSRF, Sekunden-/Sommerzeit-Erhalt, Company-E-Mail-Fallback und Löschkaskade, XSS, SEO/JSON-LD, Karte und Scalar-Projektionen. Vorhandene PR1–PR7-Tests bleiben unverändert. Zusätzlich erfolgen Composer-/Symfony-/Twig-/Container-/Schema-Prüfungen, npm-Install/Build/Tests, AssetMapper und Browser-Smoketests auf Desktop/Tablet/Mobil.
+
+### Scope und mögliche Folgearbeiten
+
+PR8 enthält keine Bewerberkonten, interne Online-Bewerbung, Lebenslauf-Uploads/-Verwaltung, ATS, Bewerbungshistorie, Messaging, Interviewplanung, Newsletter, Gutscheine, Bewertungen, Self-Service oder Approval-Workflow. Denkbare spätere Erweiterungen: explizite Remote-Regionangaben für detailliertere Suchmaschinen-Anforderungen, Admin-Geocodierung und weitere redaktionelle Filter. Diese sind keine verdeckten Bewerbermanagement-Funktionen.

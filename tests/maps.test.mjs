@@ -69,3 +69,17 @@ test('event markers reuse opt-in maps and reject lookalike or unsafe paths', () 
     assert.equal(state.markers[0].popup.querySelector('a').getAttribute('href'), '/veranstaltungen/test');
     dom.window.close();
 });
+
+
+test('job markers keep map consent and strict local link validation', () => {
+    const dom = fixture([{ ...valid, url: '/jobs/test' }, { ...valid, url: '/jobs/../admin' }, { ...valid, url: '//evil.example/jobs/test' }, { ...valid, url: '/jobs/test?redirect=evil' }]);
+    const { leaflet, state } = library();
+    initializeMaps(dom.window.document, leaflet);
+    assert.equal(state.markers.length, 0);
+    dom.window.document.querySelector('[data-map-load]').click();
+    assert.equal(state.markers.length, 1);
+    assert.equal(state.markers[0].popup.querySelector('a').textContent, 'Stelle ansehen');
+    assert.equal(state.markers[0].popup.querySelector('a').getAttribute('href'), '/jobs/test');
+    assert.equal(state.markers[0].popup.querySelector('img, script, svg'), null);
+    dom.window.close();
+});
