@@ -1,0 +1,5 @@
+# PR1 uses local Font Awesome. Do not fetch remote icons during builds or requests.
+ux_icons:
+    iconify:
+        enabled: false
+    ignore_not_found: false

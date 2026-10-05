@@ -1,0 +1,9 @@
+{% extends '@SyliusAdminUi/base.html.twig' %}
+{% block title %}Admin · {{ portal_name }}{% endblock %}
+{% block stylesheets %}<link rel="stylesheet" href="{{ asset('generated/app.css') }}">{% endblock %}
+{% block javascripts %}<script src="{{ asset('generated/app.js') }}" defer>
+</script>{% endblock %}
+{% block body %}{% include 'partials/_header.html.twig' %}<main id="main">{% for message in app.flashes('success') %}<div class="container mt-3 alert alert-success" role="status">{{ message }}</div>{% endfor %}<div class="container section admin-content">
+<nav class="nav nav-pills gap-2 mb-4" aria-label="Adminnavigation">
+<a class="nav-link" href="{{ path('admin_dashboard') }}">Dashboard</a>{% if is_granted('ROLE_ADMIN') %}<a class="nav-link" href="{{ path('admin_users') }}">Benutzer</a>{% endif %}</nav>{% block admin_body %}{% endblock %}</div>
+</main>{% include 'partials/_footer.html.twig' %}{% endblock %}

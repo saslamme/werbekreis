@@ -1,0 +1,156 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+<section class="hero">
+<div class="container">
+<div class="row align-items-center gy-5">
+<div class="col-lg-9">
+<p class="eyebrow">EINKAUFEN. GENIESSEN. ERLEBEN.</p>
+<h1>{{ portal_city }} hat mehr zu bieten.</h1>
+<p class="lead">Entdecken Sie lokale Geschäfte, Gastronomie, Dienstleistungen und Veranstaltungen direkt vor Ihrer Haustür.</p>
+<div class="search-box d-flex gap-2">
+<label class="visually-hidden" for="portal-search">Unternehmen suchen</label>
+<input id="portal-search" class="form-control border-0" type="search" placeholder="z. B. Schuhe, Café, Friseur" aria-describedby="search-note">
+<button class="btn btn-primary" type="button" disabled>Suchen</button>
+</div>
+<p id="search-note" class="demo-note mt-2">Die Suche ist eine Vorschau und noch nicht verfügbar.</p>
+<p class="small mt-3">Beliebt: <span class="ms-2">Mode · Gastronomie · Gesundheit · Handwerk</span>
+</p>
+</div>
+<div class="col-lg-3">
+<div class="hero-aside">
+<strong>Lokal.<br>Lebendig.<br>Zusammen.</strong>
+<p class="mt-3 mb-0">Das Beste liegt oft ganz nah.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="section" id="entdecken">
+<div class="container">
+<div class="section-heading">
+<h2>Was möchten Sie entdecken?</h2>
+<span class="text-secondary">Vielfalt direkt vor der Haustür</span>
+</div>
+<div class="row g-3">{% for label, icon in {'Einkaufen':'bag-shopping','Gastronomie':'utensils','Dienstleistungen':'briefcase','Gesundheit':'heart-pulse','Freizeit':'person-biking','Handwerk':'hammer'} %}<div class="col-6 col-md-4 col-lg-2">
+<a class="category" href="#unternehmen">
+<i class="fa-solid fa-{{ icon }}" aria-hidden="true">
+</i>{{ label }}</a>
+</div>{% endfor %}</div>
+</div>
+</section>
+<section class="section bg-light" id="angebote">
+<div class="container">
+<div class="section-heading">
+<h2>Angebote &amp; Aktionen</h2>
+<span class="text-secondary">Neue Ideen für Ihren nächsten Besuch</span>
+</div>
+<p class="demo-note">Beispielinhalte – keine realen Angebote.</p>
+<div class="row g-4">{% for item in [{title:'Frische Lieblingsstücke',text:'Inspiration für einen neuen Look.',icon:'bag-shopping',tag:'Einkaufen'},{title:'Eine kleine Genuss-Auszeit',text:'Zeit für Kaffee und gute Gespräche.',icon:'mug-hot',tag:'Gastronomie'},{title:'Für Zuhause gemacht',text:'Entdecken Sie Ideen für Ihr Zuhause.',icon:'house',tag:'Lokal entdecken'}] %}<div class="col-md-4">
+<article class="editorial-card bg-white">
+<div class="card-art {{ loop.index == 2 ? 'warm' : '' }}">
+<i class="fa-solid fa-{{ item.icon }}" aria-hidden="true">
+</i>
+</div>
+<div class="card-copy">
+<p class="eyebrow">{{ item.tag }}</p>
+<h3>{{ item.title }}</h3>
+<p class="text-secondary mb-0">{{ item.text }}</p>
+</div>
+</article>
+</div>{% endfor %}</div>
+</div>
+</section>
+<section class="section" id="veranstaltungen">
+<div class="container">
+<div class="row gy-4">
+<div class="col-lg-4">
+<p class="eyebrow">GEMEINSAM ERLEBEN</p>
+<h2>Hier kommt man zusammen.</h2>
+<p class="text-secondary">Begegnungen, die unsere Stadt lebendig machen.</p>
+<p class="demo-note">Beispieltermine ohne Veranstaltungszusage.</p>
+</div>
+<div class="col-lg-8">{% for item in [{day:'12',month:'JUN',title:'Ein Abend in der Innenstadt',place:'Innenstadt · Beispielveranstaltung'},{day:'20',month:'JUN',title:'Markt der lokalen Ideen',place:'Marktplatz · Beispielveranstaltung'},{day:'05',month:'JUL',title:'Sommer gemeinsam genießen',place:'Stadtzentrum · Beispielveranstaltung'}] %}<article class="event-row">
+<div class="event-date">
+<strong>{{ item.day }}</strong>{{ item.month }}</div>
+<div>
+<h3 class="h5">{{ item.title }}</h3>
+<p class="mb-0 text-secondary">{{ item.place }}</p>
+</div>
+</article>{% endfor %}</div>
+</div>
+</div>
+</section>
+<section class="section bg-light" id="unternehmen">
+<div class="container">
+<div class="section-heading">
+<h2>Unternehmen entdecken</h2>
+<span class="text-secondary">Menschen und Ideen von hier</span>
+</div>
+<p class="demo-note">Statische Vorschau – noch kein Unternehmensverzeichnis.</p>
+<div class="row g-4">{% for item in [{name:'Ihr Lieblingsgeschäft',category:'Mode & Lifestyle',icon:'shirt'},{name:'Genuss um die Ecke',category:'Café & Gastronomie',icon:'utensils'},{name:'Kompetenz vor Ort',category:'Dienstleistungen',icon:'briefcase'},{name:'Mit Hand und Herz',category:'Handwerk',icon:'hammer'}] %}<div class="col-sm-6 col-lg-3">
+<article class="editorial-card bg-white">
+<div class="card-art">
+<i class="fa-solid fa-{{ item.icon }}" aria-hidden="true">
+</i>
+</div>
+<div class="card-copy">
+<p class="eyebrow">{{ item.category }}</p>
+<h3>{{ item.name }}</h3>
+<p class="small text-secondary mb-0">{{ portal_city }} · Beispielbetrieb</p>
+</div>
+</article>
+</div>{% endfor %}</div>
+</div>
+</section>
+<section class="section gift-section" id="gutschein">
+<div class="container">
+<div class="row align-items-center gy-4">
+<div class="col-md-8">
+<p class="eyebrow">FREUDE SCHENKEN. REGIONAL DENKEN.</p>
+<h2>Der Haselünner Gutschein</h2>
+<p class="lead">Eine Idee, viele Möglichkeiten: regional schenken und lokale Unternehmen unterstützen.</p>
+<span class="badge text-bg-light p-3">Weitere Informationen folgen</span>
+</div>
+<div class="col-md-4 gift-icon">
+<i class="fa-solid fa-gift" aria-hidden="true">
+</i>
+</div>
+</div>
+</div>
+</section>
+<section class="section" id="jobs">
+<div class="container">
+<div class="section-heading">
+<h2>Ihre Zukunft liegt vor Ort.</h2>
+<span class="text-secondary">Jobs in {{ portal_city }}</span>
+</div>
+<p class="demo-note">Beispielstellen – keine realen Stellenausschreibungen.</p>
+<div class="row g-4">{% for job in [{name:'Verkauf & Beratung',type:'Vollzeit · Beispielstelle'},{name:'Service mit Herz',type:'Teilzeit · Beispielstelle'},{name:'Ausbildung im Handwerk',type:'Ausbildung · Beispielstelle'}] %}<div class="col-md-4">
+<article class="editorial-card card-copy">
+<i class="fa-solid fa-briefcase text-primary mb-3" aria-hidden="true">
+</i>
+<h3>{{ job.name }}</h3>
+<p class="text-secondary mb-0">{{ job.type }}</p>
+</article>
+</div>{% endfor %}</div>
+</div>
+</section>
+<section class="section pt-0" id="mitglied">
+<div class="container">
+<div class="join-box">
+<div class="row align-items-center gy-4">
+<div class="col-lg-8">
+<p class="small">WERBEKREIS {{ portal_city|upper }}</p>
+<h2>Gemeinsam ist hier mehr möglich.</h2>
+<p class="mb-0">Stärken Sie mit uns den Standort {{ portal_city }}. Werden Sie Teil eines Netzwerks, das vor Ort etwas bewegt.</p>
+</div>
+<div class="col-lg-4 text-lg-end">
+<a class="btn btn-light" href="mailto:{{ portal_contact_email }}">Mitglied werden <i class="fa-solid fa-arrow-right ms-2" aria-hidden="true">
+</i>
+</a>
+</div>
+</div>
+</div>
+</div>
+</section>
+{% endblock %}

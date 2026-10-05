@@ -1,0 +1,28 @@
+<div class="utility-bar">
+<div class="container d-flex justify-content-between flex-wrap gap-2">
+<span>Gemeinsam für einen starken Standort {{ portal_city }}</span>
+<div class="d-flex gap-3">
+<a href="{{ path('app_home') }}#mitglied">Mitglied werden</a>{% if app.user %}<form action="{{ path('app_logout') }}" method="post">
+<input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
+<button class="btn btn-link text-white p-0 small" type="submit">Abmelden</button>
+</form>{% else %}<a href="{{ path('app_login') }}">Mitglieder-Login</a>{% endif %}</div>
+</div>
+</div>
+<header>
+<nav class="navbar navbar-expand-xl" aria-label="Hauptnavigation">
+<div class="container">
+<a class="brand" href="{{ path('app_home') }}">Werbekreis<span>{{ portal_city }}</span>
+</a>
+<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navigation" aria-controls="navigation" aria-expanded="false" aria-label="Navigation öffnen">
+<span class="navbar-toggler-icon">
+</span>
+</button>
+<div class="collapse navbar-collapse" id="navigation">
+<ul class="navbar-nav ms-auto me-3 gap-xl-2">{% for label, anchor in {'Entdecken':'entdecken','Angebote':'angebote','Veranstaltungen':'veranstaltungen','Gutschein':'gutschein','Jobs':'jobs','Werbekreis':'mitglied'} %}<li class="nav-item">
+<a class="nav-link" href="{{ path('app_home') }}#{{ anchor }}">{{ label }}</a>
+</li>{% endfor %}</ul>
+<a class="btn btn-primary" href="{{ path('app_home') }}#unternehmen">Unternehmen finden</a>
+</div>
+</div>
+</nav>
+</header>

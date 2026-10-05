@@ -1,0 +1,18 @@
+{% extends 'base.html.twig' %}{% block title %}Anmelden · {{ portal_name }}{% endblock %}{% block body %}<section class="login-section">
+<div class="login-panel">
+<p class="eyebrow">{{ portal_name }}</p>
+<h1 class="h3 mb-3">Willkommen zurück</h1>
+<p class="text-secondary">Anmelden und gemeinsam vor Ort etwas bewegen.</p>{% if error %}<div class="alert alert-danger" role="alert">Die Anmeldung ist fehlgeschlagen. Bitte prüfen Sie Ihre Zugangsdaten.</div>{% endif %}<form method="post" action="{{ path('app_login') }}">
+<input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+<div class="mb-3">
+<label class="form-label" for="email">E-Mail</label>
+<input class="form-control" type="email" id="email" name="_username" value="{{ last_username }}" required autocomplete="username" autofocus>
+</div>
+<div class="mb-4">
+<label class="form-label" for="password">Passwort</label>
+<input class="form-control" type="password" id="password" name="_password" required autocomplete="current-password">
+</div>
+<button class="btn btn-primary w-100" type="submit">Anmelden</button>
+</form>
+</div>
+</section>{% endblock %}
