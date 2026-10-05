@@ -121,11 +121,16 @@ final class Company
     #[ORM\OneToMany(targetEntity: Event::class, mappedBy: 'company')]
     private Collection $events;
 
+    /** @var Collection<int, NewsArticle> */
+    #[ORM\OneToMany(targetEntity: NewsArticle::class, mappedBy: 'company')]
+    private Collection $newsArticles;
+
     public function __construct()
     {
         $this->initializeTimestamps();
         $this->offers = new ArrayCollection();
         $this->events = new ArrayCollection();
+        $this->newsArticles = new ArrayCollection();
         $this->categories = new ArrayCollection();
         $this->images = new ArrayCollection();
         $this->openingHours = new ArrayCollection();
@@ -483,6 +488,19 @@ final class Company
     public function removeEvent(Event $event): self
     {
         if ($this->events->removeElement($event) && $event->getCompany() === $this) { $event->setCompany(null); }
+        return $this;
+    }
+
+    /** @return Collection<int, NewsArticle> */
+    public function getNewsArticles(): Collection { return $this->newsArticles; }
+    public function addNewsArticle(NewsArticle $article): self
+    {
+        if (!$this->newsArticles->contains($article)) { $this->newsArticles->add($article); $article->setCompany($this); }
+        return $this;
+    }
+    public function removeNewsArticle(NewsArticle $article): self
+    {
+        if ($this->newsArticles->removeElement($article) && $article->getCompany() === $this) { $article->setCompany(null); }
         return $this;
     }
 

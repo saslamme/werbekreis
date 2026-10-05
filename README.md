@@ -1,6 +1,6 @@
 # Werbekreis Haselünne
 
-Technisches Grundgerüst für ein lokales Stadtportal. PR1 enthält Anmeldung, Benutzerverwaltung, Admin-Dashboard, einen Mitglieder-Platzhalter und eine statische öffentliche Startseite. PR2 ergänzt die Stammdatenverwaltung für Unternehmen und Kategorien im bestehenden Adminbereich. PR3 macht daraus das öffentliche Unternehmensverzeichnis mit Suche, Kategorie-Filter, Detailseiten und datengetriebener Startseite. PR4 ergänzt Karte und Umkreissuche. PR5 ergänzt echte Angebote und Aktionen. PR6 ergänzt Veranstaltungen, begrenzte Wiederholungen und einen Monatskalender. Jobs auf der Startseite bleiben ausdrücklich Beispielinhalte.
+Technisches Grundgerüst für ein lokales Stadtportal. PR1 enthält Anmeldung, Benutzerverwaltung, Admin-Dashboard, einen Mitglieder-Platzhalter und eine statische öffentliche Startseite. PR2 ergänzt die Stammdatenverwaltung für Unternehmen und Kategorien im bestehenden Adminbereich. PR3 macht daraus das öffentliche Unternehmensverzeichnis mit Suche, Kategorie-Filter, Detailseiten und datengetriebener Startseite. PR4 ergänzt Karte und Umkreissuche. PR5 ergänzt echte Angebote und Aktionen. PR6 ergänzt Veranstaltungen, begrenzte Wiederholungen und einen Monatskalender. PR7 ergänzt Aktuelles mit redaktioneller Verwaltung und zeitgesteuerter Veröffentlichung. Jobs auf der Startseite bleiben ausdrücklich Beispielinhalte.
 
 ## Technik
 
@@ -411,3 +411,55 @@ Geo-Koordinaten werden als Paar validiert. Die Eventdetailkarte erweitert die vo
 Neue Domain-/Integrationstests decken Statusgrenzen, Relations, Slugs, Datumskonsistenz, tägliche/wöchentliche/monatliche Serien, Serienende, maximale Anzahl, fehlende Monatstage, stabile Vorkommens-URLs, DST, Datumsfilter, Monatsnavigation, mehrtägige Kalenderbelegung, Rollen/CSRF, CRUD, Kategorie-Löschschutz, Uploads/Cleanup, Company-Löschung, SEO und Pagination mit Collection-Fetch-Joins ab. Die bestehenden PR1–PR5-Tests bleiben unverändert erhalten. JavaScript-Tests prüfen zusätzlich Eventmarker und die Ablehnung unsicherer Popup-URLs. Vollständige Checks entsprechen dem bestehenden CI-Workflow.
 
 **Außerhalb von PR6:** Ticketshop, Reservierungen, Zahlungsabwicklung, Sitzplätze, QR-Tickets, Gutscheine, News, Jobs, Bewertungen, Push Notifications, Mitglieder-Self-Service und Approval-Workflow. Ein Ticketlink ist ausschließlich ein externer Link. Weitere Kalenderfunktionen wie individuelle Ausnahmen/verschobene Serientermine, ICS und ausgewählte Wochentage sind mögliche spätere Erweiterungen.
+
+
+## PR7: News und redaktionelle Inhalte
+
+### Datenmodell, Inhalt und Zuordnung
+
+`NewsArticle` enthält Titel, eindeutigen stabilen Slug, Teaser (maximal 500 Zeichen), verpflichtenden Inhalt, Featured-Flag, Zeitstempel, Status, optionalen Veröffentlichungszeitpunkt, Hauptbild mit Alternativtext, optionalen Autor und externen Link. `NewsCategory` ist unabhängig von Company- und Eventkategorien: Name, Slug, Beschreibung, manuelle Position, Aktivstatus und Zeitstempel. `NewsArticle ManyToMany NewsCategory` unterstützt mehrere Kategorien. Öffentliche Filter und Labels enthalten ausschließlich aktive Kategorien.
+
+`NewsArticle ManyToOne Company` / `Company OneToMany NewsArticle` ist optional und besitzt beidseitige Helper. Allgemeine Werbekreis-News funktionieren ohne Company. Bei Company-Löschung bleibt der Artikel mit Bild bestehen und wird per `SET NULL` bzw. expliziter Helper-Aktualisierung gelöst. Die Veröffentlichung ist unabhängig vom Company-Aktivstatus; eine inaktive Company wird öffentlich nicht verlinkt. Auf aktiven Unternehmensdetailseiten erscheinen nur deren eigene öffentlichen Beiträge.
+
+Der Inhalt ist **Klartext** aus einem normalen Textarea. Twig escaped alle Inhalte und erhält Zeilenumbrüche über `nl2br`; eingegebenes HTML wird als Text angezeigt. Kein HTML-Renderer, Markdown-Paket, WYSIWYG oder Page Builder. JSON-LD wird separat mit den bestehenden JSON-HEX-Flags sicher ausgegeben. Externe URLs sind auf HTTP/HTTPS beschränkt.
+
+Slugger und Formular-Subscriber werden um die beiden Entities erweitert, ohne eine weitere Slug-Implementierung. Titeländerungen erhalten bestehende Slugs, leere Slugs werden mit Kollisionssuffix vergeben und ein Unique-Index sichert die DB. Die private Upload-Lösung wird um Newsbilder erweitert: echte MIME-Prüfung, 5-MB-/8000-Pixel-Grenze, sichere Dateinamen, Alternativtext/Fallback, Ersetzen/Entfernen nach erfolgreichem DB-Commit und Cleanup unter Berücksichtigung aller noch referenzierten Newsbilder. Kein Base64 und keine neue Upload-Infrastruktur.
+
+### Statusmodell und Veröffentlichung
+
+`NewsStatus` ist ein PHP-Enum mit `draft`, `scheduled`, `published`. Die Domainmethode `isPubliclyVisible(now)` und der zentrale `NewsArticleRepository::createPublicQueryBuilder()` verwenden dieselbe Regel:
+
+- `draft` bleibt unabhängig vom Datum unsichtbar.
+- `published` ist öffentlich, wenn `publishedAt` leer oder einschließlich `<= Clock::now()` ist. Ein explizites zukünftiges Datum bleibt bis dahin unsichtbar.
+- `scheduled` benötigt ein Datum und wird bei dessen Erreichen automatisch öffentlich. Der gespeicherte Status bleibt `scheduled`; das effektive Statuslabel zeigt dann „Veröffentlicht“. Es ist kein Cronjob oder Hintergrundprozess erforderlich.
+
+Beim Speichern eines veröffentlichten Beitrags ohne Datum setzt `NewsPublishing` den Zeitpunkt aus der injizierten Clock. Neue/geänderte Planungen benötigen einen zukünftigen Zeitpunkt. Bereits fällige gespeicherte Planungen bleiben für Inhaltskorrekturen bearbeitbar; ihre Minute, gespeicherten Sekunden und eine gegebenenfalls mehrdeutige DST-Ortszeit werden durch unveränderte Datumsfelder nicht verschoben. Wieder auf Entwurf setzen entfernt den Beitrag sofort von allen öffentlichen Seiten und der Bildroute; das Datum kann für redaktionelle Historie erhalten bleiben.
+
+Zeitpunkte werden als `DateTimeImmutable` in UTC gespeichert, Formulare und Frontend verwenden die zentrale `portal.timezone` (`Europe/Berlin`). Sichtbarkeit und Veröffentlichungs-/Änderungszeitstempel verwenden Symfony Clock; Tests setzen MockClock. Artikel ohne explizites Datum verwenden ihren gespeicherten `createdAt` als sichtbares Datum, Sortierungsdatum und `datePublished`-Fallback. Neu angelegte redaktionelle Artikel erhalten bei Veröffentlichung stets einen expliziten Clock-Zeitpunkt. Kein Datum wird nur für SEO erfunden.
+
+### Administration und öffentliche Seiten
+
+Admins und Editoren verwalten Beiträge unter `/admin/news` und Kategorien unter `/admin/news-categories`. Mitglieder und anonyme Nutzer besitzen keinen Adminzugriff. Beitrags-CRUD einschließlich Anzeige, Entwurf, Planung, Veröffentlichung, Featured, Company, Kategorien, Autor, externem Link und Bildverwaltung. Liste mit Titel-, Company-, Kategorie-, gespeichertem Status- und Featured-Filtern, effektiven Statuslabels, Veröffentlichungs-/Änderungsdatum und Pagination (25 Beiträge). Die News-Kategorieliste ist ebenfalls paginiert; zugeordnete Kategorien müssen vor dem Löschen von ihren Artikeln gelöst werden. Bestehende CSRF-geschützte Formular-/Löschpatterns bleiben erhalten. Company-Kontextlinks und einfache Dashboard-Zahlen für öffentliche News, Entwürfe und gespeicherte Planungen sind ergänzt; fällige Planungen zählen weiterhin zum gespeicherten Planungstyp.
+
+- `/aktuelles`: öffentliche chronologische Übersicht, 12 Beiträge pro Seite. Sortierung nach `COALESCE(publishedAt, createdAt) DESC`, danach `createdAt DESC` und ID als stabiler Tie-Breaker. Featured kennzeichnet Karten und verändert die Übersichts-Chronologie nicht.
+- `?kategorie=<slug>`: aktive NewsCategory; optional `?unternehmen=<company-slug>` nach dem bestehenden Offer-/Event-Pattern. Kombinierte Filter und Pagination erhalten ihre Parameter. Unbekannte/inaktive Filterentitäten liefern 404. Nicht skalare Parameter werden sicher behandelt.
+- `/aktuelles/{slug}`: nur öffentlich sichtbare Beiträge; Entwürfe, zukünftige Planungen/veröffentlichte Beiträge und unbekannte Slugs liefern 404. Alte veröffentlichte Artikel bleiben über Detail-URLs und Pagination erreichbar; keine zusätzliche Monats-/Jahresarchivroute.
+- `/aktuelles/{slug}/bilder/{fileName}`: geprüftes öffentliches Bild, gleiche Veröffentlichungsregel, `nosniff` und keine dauerhafte Cache-Freigabe.
+
+Öffentliche Karten zeigen Bild/Fallback, Datum mit semantischem `time`, aktive Kategorien, Titel, Teaser und Company, gegebenenfalls Featured-Kennzeichnung. Detailseiten ergänzen den vollständigen sicheren Klartext, optional Autor und externen Link.
+
+Die Startseite erhält eine echte Aktuelles-Sektion (zuvor keine eigene News-Sektion): drei öffentliche Featured-Beiträge, mit neuesten normalen Beiträgen aufgefüllt und innerhalb der Auswahl chronologisch ausgegeben. Die Unternehmensseite zeigt deren drei neueste öffentliche Beiträge; bei mehr Ergebnissen führt ein gefilterter Link zur Übersicht. Ohne Beiträge bleibt dieser Abschnitt ausgeblendet. Hauptnavigation und Footer besitzen einen echten Aktuelles-Link; die vorhandenen Navigationspunkte bleiben erhalten.
+
+### Performance, SEO und Fixtures
+
+Öffentliche Listen nutzen skalare Kartenprojektionen **ohne Hauptinhalt** und eine zusätzliche begrenzte Kategorieabfrage für die ausgewählten Artikel-IDs. Damit gibt es keine N+1-Queries und keine teilweise geladenen Entities im Identity Map. Company-Daten enthalten nur Name, Slug und Aktivstatus. Detailabfragen laden den vollständigen Artikel mit gezielten Company-/Kategorie-Fetch-Joins, ohne Company-Collections. Admin-Pagination berücksichtigt Kategorie-Collection-Joins ohne doppelte oder fehlende Artikel.
+
+Übersicht/Detail verwenden die bestehende SEO-Struktur mit Title, Teaser-Description und Canonical. Filter-/Paginationvarianten erhalten `noindex,follow`. Detailseiten enthalten Open Graph mit `og:type=article` und gegebenenfalls Bild. Schema.org-`NewsArticle` enthält tatsächliche Headline, Beschreibung, gespeicherte Veröffentlichungs-/Änderungsdaten, Bild, Autor (nur wenn vorhanden), konfigurierten Portal-Publisher und `mainEntityOfPage` mit eigener Slug-URL.
+
+`Version20261005200912` ergänzt ausschließlich NewsArticle, NewsCategory und deren Zuordnung, einschließlich eindeutiger Slugs, Veröffentlichungsindex und optionaler Company-FK. Bestehende Migrationen bleiben unverändert.
+
+`NewsFixtures` erzeugt zwölf fiktive Artikel, acht aktive Kategorien und eine inaktive Testkategorie relativ zur Clock: veröffentlicht, Featured/normal, Entwurf, künftige/fällige Planung, veröffentlicht mit künftigem Zeitpunkt, Company/allgemein, mehrere Kategorien, Bilder/Fallback und ältere Archivartikel. Entwicklung wie zuvor über `doctrine:fixtures:load`; dies löscht vorhandene Daten und gehört nicht in Produktivsysteme. Test-Fixtures verwenden dieselbe stabile MockClock.
+
+Neue Tests decken Statusgrenzen, Clock-Fortschritt, Formvalidierung, fällige Planungsbearbeitung mit Sekundenerhalt, Relations, Slugs, Rollen/CSRF, Kategorie-Löschschutz, Uploads/Cleanup, Company-Löschung, Kartenprojektionen ohne Inhalt/Entities, Sortierung, kombinierte Filter, Pagination, Homepage/Company-Integration, HTML-/JSON-LD-Sicherheit und SEO ab. Alle bestehenden PR1–PR6-Tests bleiben unverändert erhalten; Checks entsprechen dem vorhandenen CI-Workflow.
+
+**Außerhalb von PR7:** Page Builder/WYSIWYG, Kommentare, Likes, Social Login, Newsletter-Versand, Push Notifications, Jobs, Gutscheine, Bewertungen, Mitglieder-Self-Service und Approval-Workflow. Redaktionelle Revisionen, Autorenzuordnung zu Benutzerkonten und ein eigenes Monats-/Jahresarchiv sind mögliche spätere Erweiterungen.

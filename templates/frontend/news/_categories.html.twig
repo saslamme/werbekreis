@@ -1,0 +1,1 @@
+{% if article.publicCategories is not empty %}<ul class="news-categories list-unstyled d-flex flex-wrap gap-2">{% for category in article.publicCategories %}<li><a href="{{ path('news_index', {kategorie: category.slug}) }}">{{ category.name }}</a></li>{% endfor %}</ul>{% endif %}

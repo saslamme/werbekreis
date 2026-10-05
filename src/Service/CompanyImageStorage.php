@@ -8,6 +8,7 @@ use App\Entity\Company;
 use App\Entity\CompanyImage;
 use App\Entity\Offer;
 use App\Entity\Event;
+use App\Entity\NewsArticle;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -34,7 +35,7 @@ final class CompanyImageStorage
         return $this->directory.DIRECTORY_SEPARATOR.$fileName;
     }
 
-    public function save(CompanyImage|Offer|Event $image, ?UploadedFile $file, bool $removeImage = false): void
+    public function save(CompanyImage|Offer|Event|NewsArticle $image, ?UploadedFile $file, bool $removeImage = false): void
     {
         $oldName = $image->getFileName();
         $newName = null;
@@ -67,7 +68,7 @@ final class CompanyImageStorage
         }
     }
 
-    public function deleteImage(CompanyImage|Offer|Event $image): void
+    public function deleteImage(CompanyImage|Offer|Event|NewsArticle $image): void
     {
         $fileName = $image->getFileName();
         $image->getCompany()?->touch();
@@ -85,6 +86,7 @@ final class CompanyImageStorage
             }
         }
         foreach ($company->getEvents()->toArray() as $event) { $event->setCompany(null); }
+        foreach ($company->getNewsArticles()->toArray() as $article) { $article->setCompany(null); }
         $this->em->remove($company);
         $this->em->flush();
         foreach ($fileNames as $name) {
@@ -116,6 +118,9 @@ final class CompanyImageStorage
             $used[$row['imagePath']] = true;
         }
         foreach ($this->em->createQueryBuilder()->select('event.imagePath')->from(Event::class, 'event')->where('event.imagePath IS NOT NULL')->getQuery()->getScalarResult() as $row) {
+            $used[$row['imagePath']] = true;
+        }
+        foreach ($this->em->createQueryBuilder()->select('article.imagePath')->from(NewsArticle::class, 'article')->where('article.imagePath IS NOT NULL')->getQuery()->getScalarResult() as $row) {
             $used[$row['imagePath']] = true;
         }
         $unused = [];
