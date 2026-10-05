@@ -1,6 +1,6 @@
 # Werbekreis Haselünne
 
-Technisches Grundgerüst für ein lokales Stadtportal. PR1 enthält Anmeldung, Benutzerverwaltung, Admin-Dashboard, einen Mitglieder-Platzhalter und eine statische öffentliche Startseite. PR2 ergänzt die Stammdatenverwaltung für Unternehmen und Kategorien im bestehenden Adminbereich. Unternehmen, Angebote, Veranstaltungen und Jobs auf der Startseite sind ausdrücklich Beispielinhalte; die Datenmodelle und Funktionen folgen später.
+Technisches Grundgerüst für ein lokales Stadtportal. PR1 enthält Anmeldung, Benutzerverwaltung, Admin-Dashboard, einen Mitglieder-Platzhalter und eine statische öffentliche Startseite. PR2 ergänzt die Stammdatenverwaltung für Unternehmen und Kategorien im bestehenden Adminbereich. PR3 macht daraus das öffentliche Unternehmensverzeichnis mit Suche, Kategorie-Filter, Detailseiten und datengetriebener Startseite. Angebote, Veranstaltungen und Jobs auf der Startseite bleiben ausdrücklich Beispielinhalte; die Datenmodelle und Funktionen folgen später.
 
 ## Technik
 
@@ -121,7 +121,7 @@ php bin/console asset-map:compile
 
 ## Spätere PRs
 
-Das öffentliche Unternehmensverzeichnis mit Detailseiten und Startseitenintegration folgt in PR3. Echte Suche, Angebote, Veranstaltungen, News, Jobs, Dokumente, Karten, Mitgliedsinhalte, Freigabeverfahren und Gutscheinfunktionen gehören weiterhin in spätere PRs. Statische Vorschaukarten erzeugen keine entsprechenden Entities.
+Kartenansicht, OpenStreetMap/Google Maps, Umkreissuche, Geocoding, Bewertungen, Favoriten, Angebote, Veranstaltungen, News, Jobs, Dokumente, Mitgliedsinhalte und Self-Service, Freigabeverfahren und Gutscheinfunktionen gehören in spätere PRs. Statische Vorschaukarten erzeugen keine entsprechenden Entities.
 
 ## Verwaltete Cloud-Umgebung ohne PHP auf dem Host
 
@@ -217,3 +217,61 @@ php bin/console asset-map:compile
 ```
 
 Die bestehenden CI-Checks bleiben bestehen und werden um `npm test` erweitert.
+
+## PR3: Öffentliches Unternehmensverzeichnis
+
+### Routen
+
+| Route | Name | Inhalt |
+| --- | --- | --- |
+| `/` | `app_home` | Startseite mit Hero-Suche, aktiven Kategorien und sechs Unternehmen |
+| `/unternehmen` | `company_index` | Übersicht aller aktiven Unternehmen, 12 pro Seite |
+| `/unternehmen?q=…` | `company_index` | Suche |
+| `/unternehmen?kategorie={slug}` | `company_index` | Kategorie-Filter, kombinierbar mit `q` und `page` |
+| `/unternehmen/{slug}` | `company_show` | Detailseite |
+| `/unternehmen/{slug}/bilder/{datei}` | `company_image` | Öffentliche Auslieferung von Logo, Titelbild, Galerie- und Ansprechpartnerbildern |
+
+Öffentliche URLs enthalten nur Slugs und zufällige Bilddateinamen, keine Datenbank-IDs. Alle Seiten sind ohne Login erreichbar (`access_control` betrifft weiterhin nur `/admin` und `/member`); die Admin-Sicherheit aus PR1/PR2 ist unverändert. Inaktive oder unbekannte Unternehmen liefern 404 (nicht 403), ebenso unbekannte oder inaktive Kategorien, Seiten jenseits der letzten Ergebnisseite und Bilder inaktiver Unternehmen. Ungültige `page`-Werte führen auf Seite 1.
+
+### Suche, Filter und Sortierung
+
+Alle öffentlichen Listen nutzen `CompanyRepository::createPublicDirectoryQueryBuilder()` (Übersicht, Suche, Kategorie, Startseite) – es gibt keine zweite Query-Variante:
+
+- nur `active = true`;
+- Suche (`q`, getrimmt, max. 100 Zeichen) per `LIKE` über Name, Kurzbeschreibung, Beschreibung, Ort und Namen **aktiver** Kategorien, groß-/kleinschreibungsunabhängig; Werte werden gebunden, `%`/`_` maskiert und wörtlich gesucht; leere Suche zeigt alle aktiven Unternehmen;
+- Kategorie per Slug (`MEMBER OF`), nur aktive Kategorien;
+- feste Sortierung: hervorgehobene Unternehmen zuerst, dann Name, dann ID. Sortierparameter aus der URL werden nicht ausgewertet.
+
+`CompanyRepository::publicDirectoryPage()` paginiert mit dem Doctrine-Paginator (ohne zusätzliche Bibliothek); Seitenlinks behalten `q` und `kategorie` (gemeinsames Partial `templates/partials/_pagination.html.twig`, auch im Admin genutzt). Keine externe Suchmaschine.
+
+### Detailseite
+
+Titelbild, Logo (sonst neutraler Initial-Platzhalter), Name, aktive Kategorien, Kurzbeschreibung, Beschreibung; Kontakt (Adresse, Telefon, E-Mail, Website, Facebook, Instagram – nur gesetzte Felder, externe Links mit Hinweis „öffnet in neuem Tab“); Öffnungszeiten nach Wochentagen gruppiert mit mehreren Zeitfenstern – Tage ohne Einträge werden nicht als „geschlossen“ dargestellt; aktive Ansprechpartner (primär zuerst, dann Sortierung, dann Name) mit optionalem Bild, Position, E-Mail, Telefon, Mobil; Galerie nur mit Bildern vom Typ `gallery`.
+
+Die Darstellungslogik liegt in Entity-Methoden statt in Twig: `Company::getLogoImage()`, `getCoverImage()`, `getGalleryImages()`, `getPublicCategories()`, `getPublicContactPersons()`, `getOpeningHoursByDay()`, `getTeaser()` sowie `OpeningHour::getDayName()`. Partials: `frontend/company/_card`, `_logo`, `_opening_hours`, `_contact_person`, `_gallery`, `_search_form` und `frontend/category/_card`.
+
+Bilder liegen weiterhin außerhalb von `public/` (`COMPANY_UPLOAD_DIR`). Die öffentliche Route liefert eine Datei nur aus, wenn sie zu einem aktiven Unternehmen mit passendem Slug gehört; Antworten sind öffentlich cachebar (1 Tag, ETag/Last-Modified, `nosniff`).
+
+### Startseite
+
+Die bisher statischen Kategorie- und Unternehmenskarten kommen jetzt aus der Datenbank: aktive Kategorien nach `position` mit Icon und Anzahl aktiver Unternehmen (eine gruppierte Abfrage) und sechs aktive Unternehmen, hervorgehobene zuerst und mit weiteren aktiven aufgefüllt. Die Hero-Suche ist ein GET-Formular auf `/unternehmen?q=…` (kein JavaScript), „Beliebt“ verlinkt die ersten Kategorien, „Unternehmen finden“ im Header und „Unternehmen“ im Footer zeigen auf die Übersicht. Angebote, Veranstaltungen, Gutschein und Jobs bleiben gekennzeichnete Beispielinhalte.
+
+### SEO
+
+`base.html.twig` bietet die Blöcke `title`, `meta_description`, `canonical` und `meta`.
+
+- Übersicht: „Unternehmen in Haselünne | Werbekreis Haselünne“ bzw. „{Kategorie} in Haselünne | …“, passende Beschreibung, Canonical mit Kategorie und Seite; Suchergebnisseiten tragen `noindex, follow`.
+- Detail: „{Name} | Werbekreis Haselünne“, Beschreibung aus der Kurzbeschreibung (sonst gekürzte Beschreibung, sonst Name und Ort), Canonical, Open Graph (`og:title`, `og:description`, `og:url`, `og:type`, `og:image` aus Titelbild oder Logo, falls vorhanden).
+- JSON-LD `LocalBusiness` (`App\Service\CompanyStructuredData`): Name, URL, Beschreibung, Adresse, Telefon, E-Mail, Bilder, `sameAs` und `openingHoursSpecification` – nur aus vorhandenen Daten; geschlossene Tage werden weggelassen.
+
+### Performance
+
+Karten laden Kategorien und Bilder per Fetch-Join im selben Query (Paginator mit `fetchJoinCollection`), Öffnungszeiten und Ansprechpartner werden für Listen nicht geladen. Die Detailseite lädt Kategorien und Bilder gemeinsam, Öffnungszeiten und Ansprechpartner mit je einer Abfrage. Die Startseite lädt nur sechs Unternehmen und die aktiven Kategorien samt Zählung.
+
+### Fixtures
+
+`DirectoryFixtures` enthält zusätzlich eine inaktive Kategorie „Archiv“ (einem aktiven Unternehmen zugeordnet, öffentlich unsichtbar), unterschiedliche Kurzbeschreibungen für die Suche und einen weiteren aktiven Ansprechpartner. `DirectoryImageFixtures` erzeugt einfarbige PNG-Platzhalter: Logo, Titelbild und zwei Galeriebilder für „Musterladen Hasebogen“, nur ein Logo für „Beispielcafé Uferpause“, keine Bilder für die übrigen Unternehmen (Fallback). Die Bilder werden über `CompanyImageStorage` in `COMPANY_UPLOAD_DIR` geschrieben. Nach wiederholtem `doctrine:fixtures:load` bleiben alte Dateien liegen; `php bin/console app:company-images:cleanup --delete` entfernt nicht mehr referenzierte Dateien, die älter als eine Stunde sind.
+
+### PR3-Tests
+
+Übersicht, aktive/inaktive Unternehmen, Featured-Reihenfolge, Suche (Name, Kurzbeschreibung, Beschreibung, Kategorie, Sonderzeichen, Empty State), Kategorie-Filter inkl. unbekannter/inaktiver Kategorien, Kombination mit Suche, Pagination mit erhaltenen Parametern, Detailseite (Kontakt, Öffnungszeiten, Ansprechpartner, 404-Fälle), Bildverwendung und -auslieferung, Startseite (Unternehmen, Kategorien, Hero-Suche), SEO-Metadaten, JSON-LD, Ladeverhalten der Listen sowie unveränderter Admin-Schutz.
