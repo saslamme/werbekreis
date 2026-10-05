@@ -9,6 +9,8 @@ use App\Entity\Company;
 use App\Entity\Offer;
 use App\Entity\Event;
 use App\Entity\EventCategory;
+use App\Entity\VoucherProduct;
+use App\Repository\VoucherProductRepository;
 use App\Entity\JobPosting;
 use App\Repository\JobPostingRepository;
 use App\Entity\NewsArticle;
@@ -24,11 +26,11 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 
 final class DirectorySlugger
 {
-    public function __construct(private readonly SluggerInterface $slugger, private readonly CompanyRepository $companies, private readonly CategoryRepository $categories, private readonly OfferRepository $offers, private readonly EventRepository $events, private readonly EventCategoryRepository $eventCategories, private readonly NewsArticleRepository $newsArticles, private readonly NewsCategoryRepository $newsCategories, private readonly JobPostingRepository $jobs)
+    public function __construct(private readonly SluggerInterface $slugger, private readonly CompanyRepository $companies, private readonly CategoryRepository $categories, private readonly OfferRepository $offers, private readonly EventRepository $events, private readonly EventCategoryRepository $eventCategories, private readonly NewsArticleRepository $newsArticles, private readonly NewsCategoryRepository $newsCategories, private readonly JobPostingRepository $jobs, private readonly VoucherProductRepository $voucherProducts)
     {
     }
 
-    public function assign(Category|Company|Offer|Event|EventCategory|NewsArticle|NewsCategory|JobPosting $entity): void
+    public function assign(Category|Company|Offer|Event|EventCategory|NewsArticle|NewsCategory|JobPosting|VoucherProduct $entity): void
     {
         if ($entity->getSlug() !== '') {
             return;
@@ -40,6 +42,7 @@ final class DirectorySlugger
             $entity instanceof Offer => $this->offers,
             $entity instanceof Event => $this->events,
             $entity instanceof EventCategory => $this->eventCategories,
+            $entity instanceof VoucherProduct => $this->voucherProducts,
             $entity instanceof JobPosting => $this->jobs,
             $entity instanceof NewsArticle => $this->newsArticles,
             $entity instanceof NewsCategory => $this->newsCategories,

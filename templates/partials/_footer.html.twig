@@ -11,7 +11,7 @@
 <ul class="list-unstyled"><li>
 <a href="{{ path('company_index') }}">Unternehmen</a>
 </li>{% for label, anchor in {'Aktuelles':'aktuelles','Angebote':'angebote','Veranstaltungen':'veranstaltungen','Gutschein':'gutschein','Jobs':'jobs'} %}<li>
-<a href="{{ label == 'Jobs' ? path('job_index') : (label == 'Aktuelles' ? path('news_index') : (label == 'Angebote' ? path('offer_index') : (label == 'Veranstaltungen' ? path('event_index') : path('app_home') ~ '#' ~ anchor))) }}">{{ label }}</a>
+<a href="{{ label == 'Gutschein' ? path('voucher_index') : label == 'Jobs' ? path('job_index') : (label == 'Aktuelles' ? path('news_index') : (label == 'Angebote' ? path('offer_index') : (label == 'Veranstaltungen' ? path('event_index') : path('app_home') ~ '#' ~ anchor))) }}">{{ label }}</a>
 </li>{% endfor %}</ul>
 </div>
 <div class="col-6 col-md-3">

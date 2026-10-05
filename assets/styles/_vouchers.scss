@@ -1,0 +1,5 @@
+.voucher-content { max-width: 800px; overflow-wrap: anywhere; }
+.voucher-product-card, .voucher-result { padding: 1.5rem; border: 1px solid var(--bs-border-color); border-radius: 1rem; background: var(--bs-light); overflow-wrap: anywhere; }
+.voucher-balance { display: block; font-size: 1.75rem; font-weight: 700; }
+.voucher-content input, .voucher-content select { min-height: 3rem; }
+.voucher-content .btn { white-space: normal; }

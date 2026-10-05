@@ -11,7 +11,7 @@
 <tbody>{% for user in users %}<tr>
 <td>{{ user.firstName }} {{ user.lastName }}</td>
 <td>{{ user.email }}</td>
-<td>{% for role in user.roles %}{{ {'ROLE_ADMIN':'Admin','ROLE_EDITOR':'Editor','ROLE_MEMBER':'Mitglied'}[role]|default(role) }}{% if not loop.last %}, {% endif %}{% endfor %}</td>
+<td>{% for role in user.roles %}{{ {'ROLE_ADMIN':'Admin','ROLE_EDITOR':'Editor','ROLE_MEMBER':'Mitglied','ROLE_VOUCHER_REDEEMER':'Gutschein-Einlöser'}[role]|default(role) }}{% if not loop.last %}, {% endif %}{% endfor %}</td>
 <td>{{ user.active ? 'Aktiv' : 'Inaktiv' }}</td>
 <td>{{ user.createdAt|date('d.m.Y') }}</td>{% if editable %}<td>
 <a href="{{ path('admin_user_edit', {id: user.id}) }}">Bearbeiten</a>

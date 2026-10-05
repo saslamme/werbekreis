@@ -13,7 +13,7 @@ final class LoginSuccessHandler implements AuthenticationSuccessHandlerInterface
     {
         $roles = $token->getRoleNames();
         $route = in_array('ROLE_ADMIN', $roles, true) || in_array('ROLE_EDITOR', $roles, true)
-            ? 'admin_dashboard' : (in_array('ROLE_MEMBER', $roles, true) ? 'member_dashboard' : 'app_home');
+            ? 'admin_dashboard' : (in_array('ROLE_VOUCHER_REDEEMER', $roles, true) ? 'voucher_redeem' : (in_array('ROLE_MEMBER', $roles, true) ? 'member_dashboard' : 'app_home'));
         return new RedirectResponse($this->urls->generate($route));
     }
 }

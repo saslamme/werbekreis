@@ -10,3 +10,5 @@ services:
         exclude: '../src/{Entity,Enum,Doctrine,Geo/GeoPoint.php,Geo/GeocodingResult.php,Geo/DirectoryLocation.php,Kernel.php}'
 
     App\Geo\GeocodingServiceInterface: '@App\Geo\NominatimGeocodingService'
+
+    App\Service\VoucherCodeGeneratorInterface: '@App\Service\VoucherCodeGenerator'

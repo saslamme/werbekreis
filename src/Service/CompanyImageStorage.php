@@ -79,6 +79,7 @@ final class CompanyImageStorage
 
     public function deleteCompany(Company $company): void
     {
+        if ($this->em->getRepository(\App\Entity\VoucherRedemption::class)->count(['company' => $company]) !== 0) { throw new VoucherException('Unternehmen mit Einlösungshistorie können nicht gelöscht werden. Bitte stattdessen deaktivieren.'); }
         $fileNames = array_map(static fn (CompanyImage $image): string => $image->getFileName(), $company->getImages()->toArray());
         foreach ($company->getOffers() as $offer) {
             if ($offer->getImagePath() !== null) {

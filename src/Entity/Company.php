@@ -129,11 +129,16 @@ final class Company
     #[ORM\OneToMany(targetEntity: JobPosting::class, mappedBy: 'company', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $jobPostings;
 
+    /** @var Collection<int, VoucherProduct> */
+    #[ORM\ManyToMany(targetEntity: VoucherProduct::class, mappedBy: 'acceptingCompanies')]
+    private Collection $acceptedVoucherProducts;
+
     public function __construct()
     {
         $this->initializeTimestamps();
         $this->offers = new ArrayCollection();
         $this->jobPostings = new ArrayCollection();
+        $this->acceptedVoucherProducts = new ArrayCollection();
         $this->events = new ArrayCollection();
         $this->newsArticles = new ArrayCollection();
         $this->categories = new ArrayCollection();
@@ -624,6 +629,18 @@ final class Company
     public function removeJobPosting(JobPosting $job): self
     {
         if ($this->jobPostings->removeElement($job) && $job->getCompany() === $this) { $job->setCompany(null); }
+        return $this;
+    }
+    /** @return Collection<int, VoucherProduct> */
+    public function getAcceptedVoucherProducts(): Collection { return $this->acceptedVoucherProducts; }
+    public function addAcceptedVoucherProduct(VoucherProduct $product): self
+    {
+        if (!$this->acceptedVoucherProducts->contains($product)) { $this->acceptedVoucherProducts->add($product); $product->addAcceptingCompany($this); }
+        return $this;
+    }
+    public function removeAcceptedVoucherProduct(VoucherProduct $product): self
+    {
+        if ($this->acceptedVoucherProducts->removeElement($product)) { $product->removeAcceptingCompany($this); }
         return $this;
     }
 }
