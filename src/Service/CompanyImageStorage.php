@@ -7,6 +7,7 @@ namespace App\Service;
 use App\Entity\Company;
 use App\Entity\CompanyImage;
 use App\Entity\Offer;
+use App\Entity\Event;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -33,7 +34,7 @@ final class CompanyImageStorage
         return $this->directory.DIRECTORY_SEPARATOR.$fileName;
     }
 
-    public function save(CompanyImage|Offer $image, ?UploadedFile $file, bool $removeImage = false): void
+    public function save(CompanyImage|Offer|Event $image, ?UploadedFile $file, bool $removeImage = false): void
     {
         $oldName = $image->getFileName();
         $newName = null;
@@ -66,7 +67,7 @@ final class CompanyImageStorage
         }
     }
 
-    public function deleteImage(CompanyImage|Offer $image): void
+    public function deleteImage(CompanyImage|Offer|Event $image): void
     {
         $fileName = $image->getFileName();
         $image->getCompany()?->touch();
@@ -83,6 +84,7 @@ final class CompanyImageStorage
                 $fileNames[] = $offer->getImagePath();
             }
         }
+        foreach ($company->getEvents()->toArray() as $event) { $event->setCompany(null); }
         $this->em->remove($company);
         $this->em->flush();
         foreach ($fileNames as $name) {
@@ -111,6 +113,9 @@ final class CompanyImageStorage
         }
         $used = array_fill_keys(array_column($this->em->createQueryBuilder()->select('image.fileName')->from(CompanyImage::class, 'image')->getQuery()->getScalarResult(), 'fileName'), true);
         foreach ($this->em->createQueryBuilder()->select('offer.imagePath')->from(Offer::class, 'offer')->where('offer.imagePath IS NOT NULL')->getQuery()->getScalarResult() as $row) {
+            $used[$row['imagePath']] = true;
+        }
+        foreach ($this->em->createQueryBuilder()->select('event.imagePath')->from(Event::class, 'event')->where('event.imagePath IS NOT NULL')->getQuery()->getScalarResult() as $row) {
             $used[$row['imagePath']] = true;
         }
         $unused = [];

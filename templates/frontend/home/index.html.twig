@@ -37,26 +37,7 @@
 <section class="section bg-light" id="angebote"><div class="container"><div class="section-heading"><h2>Angebote &amp; Aktionen</h2><a href="{{ path('offer_index') }}">Alle Angebote</a></div>
 {% if featured_offers is empty %}<p role="status">Aktuell sind keine Angebote verfügbar.</p>{% else %}<div class="row g-4">{% for offer in featured_offers %}<div class="col-md-4">{% include 'frontend/offer/_card.html.twig' %}</div>{% endfor %}</div>{% endif %}
 </div></section>
-<section class="section" id="veranstaltungen">
-<div class="container">
-<div class="row gy-4">
-<div class="col-lg-4">
-<p class="eyebrow">GEMEINSAM ERLEBEN</p>
-<h2>Hier kommt man zusammen.</h2>
-<p class="text-secondary">Begegnungen, die unsere Stadt lebendig machen.</p>
-<p class="demo-note">Beispieltermine ohne Veranstaltungszusage.</p>
-</div>
-<div class="col-lg-8">{% for item in [{day:'12',month:'JUN',title:'Ein Abend in der Innenstadt',place:'Innenstadt · Beispielveranstaltung'},{day:'20',month:'JUN',title:'Markt der lokalen Ideen',place:'Marktplatz · Beispielveranstaltung'},{day:'05',month:'JUL',title:'Sommer gemeinsam genießen',place:'Stadtzentrum · Beispielveranstaltung'}] %}<article class="event-row">
-<div class="event-date">
-<strong>{{ item.day }}</strong>{{ item.month }}</div>
-<div>
-<h3 class="h5">{{ item.title }}</h3>
-<p class="mb-0 text-secondary">{{ item.place }}</p>
-</div>
-</article>{% endfor %}</div>
-</div>
-</div>
-</section>
+<section class="section" id="veranstaltungen"><div class="container"><div class="section-heading"><h2>Gemeinsam etwas erleben.</h2><a href="{{ path('event_index') }}">Alle Veranstaltungen</a></div>{% if upcoming_events is empty %}<p>Aktuell sind keine Veranstaltungen verfügbar.</p>{% else %}<div class="row g-4">{% for occurrence in upcoming_events %}<div class="col-md-6 col-lg-4">{% include 'frontend/event/_card.html.twig' %}</div>{% endfor %}</div>{% endif %}</div></section>
 <section class="section bg-light" id="unternehmen">
 <div class="container">
 <div class="section-heading">

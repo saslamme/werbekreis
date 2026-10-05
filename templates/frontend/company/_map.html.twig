@@ -1,5 +1,5 @@
 {% if map_data.markers is not empty %}
-<div class="company-map mb-3" data-company-map data-map="{{ map_data|json_encode|e('html_attr') }}" role="region" aria-label="Karte der Unternehmen">
+<div class="company-map mb-3" data-company-map data-map="{{ map_data|json_encode|e('html_attr') }}" role="region" aria-label="{{ map_label|default('Karte der Unternehmen') }}">
 <p class="p-3" data-map-placeholder>Die Karte wird erst auf Wunsch geladen. Dabei wird Ihre IP-Adresse an den Kartenanbieter OpenStreetMap übertragen.</p>
 <button type="button" class="btn btn-outline-primary m-3" data-map-load>Karte laden</button>
 <p class="visually-hidden" data-map-status role="status"></p>

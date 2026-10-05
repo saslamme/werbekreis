@@ -1,3 +1,3 @@
 {% if offer.startsAt or offer.endsAt %}<p class="offer-validity small text-secondary">
-{% if offer.startsAt %}Gültig ab {{ offer.startsAt|date('d.m.Y., H:i', 'Europe/Berlin') }}{% endif %}{% if offer.endsAt %}{{ offer.startsAt ? ' bis ' : 'Gültig bis ' }}{{ offer.endsAt|date('d.m.Y., H:i', 'Europe/Berlin') }}{% endif %} Uhr
+{% if offer.startsAt %}Gültig ab {{ offer.startsAt|date('d.m.Y., H:i', portal_timezone) }}{% endif %}{% if offer.endsAt %}{{ offer.startsAt ? ' bis ' : 'Gültig bis ' }}{{ offer.endsAt|date('d.m.Y., H:i', portal_timezone) }}{% endif %} Uhr
 </p>{% endif %}

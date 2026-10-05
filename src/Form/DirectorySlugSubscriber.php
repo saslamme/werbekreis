@@ -7,6 +7,8 @@ namespace App\Form;
 use App\Entity\Category;
 use App\Entity\Company;
 use App\Entity\Offer;
+use App\Entity\Event;
+use App\Entity\EventCategory;
 use App\Service\DirectorySlugger;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Form\FormEvent;
@@ -24,7 +26,7 @@ final class DirectorySlugSubscriber implements EventSubscriberInterface
     public function assign(FormEvent $event): void
     {
         $data = $event->getForm()->getData();
-        if ($event->getForm()->isSynchronized() && ($data instanceof Company || $data instanceof Category || $data instanceof Offer)) {
+        if ($event->getForm()->isSynchronized() && ($data instanceof Company || $data instanceof Category || $data instanceof Offer || $data instanceof Event || $data instanceof EventCategory)) {
             $this->slugger->assign($data);
         }
     }

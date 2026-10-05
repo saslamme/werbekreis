@@ -1,0 +1,17 @@
+{% extends 'base.html.twig' %}
+{% block title %}Veranstaltungen in {{ portal_city }} | {{ portal_name }}{% endblock %}
+{% block meta_description %}Entdecken Sie kommende Veranstaltungen, Kultur, Märkte und Begegnungen in {{ portal_city }} – mit Zeitraumfiltern und Monatskalender.{% endblock %}
+{% block canonical %}<link rel="canonical" href="{{ url('event_index') }}">{% if calendar or parameters is not empty or page > 1 %}<meta name="robots" content="noindex,follow">{% endif %}{% endblock %}
+{% block body %}
+<header class="directory-hero"><div class="container"><h1>Veranstaltungen in {{ portal_city }}</h1><p class="lead">Gemeinsam erleben, was vor Ort passiert.</p>
+{% if company %}<p>Veranstaltungen von {{ company.name }}</p>{% endif %}
+<form method="get" action="{{ path(calendar ? 'event_calendar' : 'event_index') }}" class="row g-3">
+{% if company %}<input type="hidden" name="unternehmen" value="{{ company.slug }}">{% endif %}
+{% if calendar %}<input type="hidden" name="month" value="{{ month|date('Y-m', portal_timezone) }}">{% else %}<div class="col-md-5"><label class="form-label" for="event-period">Zeitraum</label><select class="form-select" id="event-period" name="zeitraum">{% for value, label in periods %}<option value="{{ value }}"{{ period == value ? ' selected' }}>{{ label }}</option>{% endfor %}</select></div>{% endif %}
+<div class="col-md-5"><label class="form-label" for="event-category">Kategorie</label><select class="form-select" id="event-category" name="kategorie"><option value="">Alle Kategorien</option>{% for item in categories %}<option value="{{ item.slug }}"{{ category and category.id == item.id ? ' selected' }}>{{ item.name }}</option>{% endfor %}</select></div><div class="col-md-2 align-self-end"><button class="btn btn-primary w-100" type="submit">Filtern</button></div></form>
+<nav class="mt-4" aria-label="Veranstaltungsansicht"><a class="btn btn-outline-primary" href="{{ path('event_index', parameters) }}">Liste</a> <a class="btn btn-outline-primary" href="{{ path('event_calendar', parameters|filter((v, k) => k != 'zeitraum')) }}">Monatskalender</a></nav>
+</div></header><div class="section"><div class="container">
+{% if calendar %}{% include 'frontend/event/_calendar.html.twig' %}{% else %}
+{% if occurrences is empty %}<p>Aktuell sind keine Veranstaltungen für diesen Zeitraum verfügbar.</p>{% else %}<div class="row g-4">{% for occurrence in occurrences %}<div class="col-md-6 col-lg-4">{% include 'frontend/event/_card.html.twig' %}</div>{% endfor %}</div>{% endif %}
+{% include 'partials/_pagination.html.twig' with {route: 'event_index'} %}{% endif %}
+</div></div>{% endblock %}

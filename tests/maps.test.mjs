@@ -57,3 +57,15 @@ test('empty or corrupt map data produces a readable fallback without throwing', 
         dom.window.close();
     }
 });
+
+
+test('event markers reuse opt-in maps and reject lookalike or unsafe paths', () => {
+    const dom = fixture([{ ...valid, url: '/veranstaltungen/test' }, { ...valid, url: '/veranstaltungen/../admin' }, { ...valid, url: '//evil.example/veranstaltungen/test' }, { ...valid, url: '/veranstaltungen/test?redirect=evil' }]);
+    const { leaflet, state } = library();
+    initializeMaps(dom.window.document, leaflet);
+    dom.window.document.querySelector('[data-map-load]').click();
+    assert.equal(state.markers.length, 1);
+    assert.equal(state.markers[0].popup.querySelector('a').textContent, 'Veranstaltung ansehen');
+    assert.equal(state.markers[0].popup.querySelector('a').getAttribute('href'), '/veranstaltungen/test');
+    dom.window.close();
+});

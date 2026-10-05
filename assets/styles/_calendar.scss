@@ -1,0 +1,13 @@
+.calendar-weekdays, .calendar-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
+.calendar-weekdays span { padding: .5rem; text-align: center; font-weight: 600; }
+.calendar-day { border: 1px solid #dce3d7; padding: .75rem; min-height: 130px; overflow-wrap: anywhere; }
+.calendar-day h3 { font-size: 1rem; }
+.calendar-day li { margin-bottom: .75rem; font-size: .9rem; }
+.calendar-day.outside-month { background: #f4f6f3; }
+@media (max-width: 767px) {
+    .calendar-weekdays { display: none; }
+    .calendar-days { grid-template-columns: 1fr; }
+    .calendar-day { min-height: 0; }
+    .calendar-day.outside-month { display: none; }
+    .calendar-day ul:empty { margin-bottom: 0; }
+}

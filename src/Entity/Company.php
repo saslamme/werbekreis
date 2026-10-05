@@ -117,10 +117,15 @@ final class Company
     #[ORM\OneToMany(targetEntity: Offer::class, mappedBy: 'company', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $offers;
 
+    /** @var Collection<int, Event> */
+    #[ORM\OneToMany(targetEntity: Event::class, mappedBy: 'company')]
+    private Collection $events;
+
     public function __construct()
     {
         $this->initializeTimestamps();
         $this->offers = new ArrayCollection();
+        $this->events = new ArrayCollection();
         $this->categories = new ArrayCollection();
         $this->images = new ArrayCollection();
         $this->openingHours = new ArrayCollection();
@@ -465,6 +470,19 @@ final class Company
             $offer->setCompany(null);
         }
 
+        return $this;
+    }
+
+    /** @return Collection<int, Event> */
+    public function getEvents(): Collection { return $this->events; }
+    public function addEvent(Event $event): self
+    {
+        if (!$this->events->contains($event)) { $this->events->add($event); $event->setCompany($this); }
+        return $this;
+    }
+    public function removeEvent(Event $event): self
+    {
+        if ($this->events->removeElement($event) && $event->getCompany() === $this) { $event->setCompany(null); }
         return $this;
     }
 

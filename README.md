@@ -1,6 +1,6 @@
 # Werbekreis Haselünne
 
-Technisches Grundgerüst für ein lokales Stadtportal. PR1 enthält Anmeldung, Benutzerverwaltung, Admin-Dashboard, einen Mitglieder-Platzhalter und eine statische öffentliche Startseite. PR2 ergänzt die Stammdatenverwaltung für Unternehmen und Kategorien im bestehenden Adminbereich. PR3 macht daraus das öffentliche Unternehmensverzeichnis mit Suche, Kategorie-Filter, Detailseiten und datengetriebener Startseite. PR4 ergänzt Karte und Umkreissuche. PR5 ergänzt echte Angebote und Aktionen; Veranstaltungen und Jobs auf der Startseite bleiben ausdrücklich Beispielinhalte.
+Technisches Grundgerüst für ein lokales Stadtportal. PR1 enthält Anmeldung, Benutzerverwaltung, Admin-Dashboard, einen Mitglieder-Platzhalter und eine statische öffentliche Startseite. PR2 ergänzt die Stammdatenverwaltung für Unternehmen und Kategorien im bestehenden Adminbereich. PR3 macht daraus das öffentliche Unternehmensverzeichnis mit Suche, Kategorie-Filter, Detailseiten und datengetriebener Startseite. PR4 ergänzt Karte und Umkreissuche. PR5 ergänzt echte Angebote und Aktionen. PR6 ergänzt Veranstaltungen, begrenzte Wiederholungen und einen Monatskalender. Jobs auf der Startseite bleiben ausdrücklich Beispielinhalte.
 
 ## Technik
 
@@ -360,3 +360,54 @@ Die bestehende `app:company-images:cleanup`-Bereinigung berücksichtigt zusätzl
 `OfferFixtures` erzeugt zehn vollständig fiktive Angebote relativ zum injizierten Clock: mehrere Unternehmen, Featured/normal, laufend/geplant/abgelaufen/deaktiviert, inaktives Unternehmen, Preise/kein Preis/Rabatt sowie generierte Bildmotive und Bild-Fallbacks. Fixture-Bilder nutzen dieselbe PNG-Erzeugung wie die vorhandenen DirectoryImageFixtures. Niemals Fixtures gegen produktive Daten laden. Neue Tests decken Domainzeit und -preise, Slugs, Queryfilter/Pagination, öffentliche 404-Regeln, Homepage/Company-Integration, echte Admin-/Editor-CRUDs, Rollen/CSRF, Bildvalidierung und den Dateilebenszyklus ab; alle Zeitfälle verwenden MockClock und bleiben unabhängig vom Kalenderjahr.
 
 PR5 umfasst Angebote und Aktionen. **Nicht enthalten:** Gutscheincodes/Voucher-System, Gutscheinverwaltung, Warenkorb, Checkout, Onlinezahlung, Reservierung, Veranstaltungen, News, Jobs, Bewertungen, Push-Benachrichtigungen, Mitglieder-Self-Service und Approval-Workflow. Für PR6 sind diese Bereiche gesondert zu planen; es wurde keine Commerce- oder Sylius-Shop-Architektur eingeführt.
+
+
+## PR6: Veranstaltungen und Kalender
+
+### Datenmodell und Zuordnung
+
+`Event` enthält Titel, eindeutigen stabilen Slug, Kurz-/Langbeschreibung, Aktiv-/Featured-Flag, Zeitstempel, Datum, Ganztagsflag, Wiederholung, Veranstalter, eigene Adresse, optionale Geo-Koordinaten, Hauptbild, externe Informations-/Ticketlinks, Eintrittstext und Absageinformationen. `EventCategory` ist unabhängig von den Unternehmenskategorien: Name, Slug, Beschreibung, Font-Awesome-Icon, Position, Aktivstatus und Zeitstempel. Veranstaltungen können mehrere Kategorien besitzen; deaktivierte Kategorien werden öffentlich weder als Filter noch als Labels ausgegeben.
+
+`Company OneToMany Event` / `Event ManyToOne Company` ist optional und besitzt beidseitige Helper. Adresse und Veranstalter können unabhängig vom Unternehmen gepflegt werden. Eine Veranstaltung bleibt bei Löschung des Unternehmens bestehen (`SET NULL`); ihr Bild und ihre Termine bleiben erhalten. Der Company-Aktivstatus deaktiviert eigenständig gepflegte Veranstaltungen nicht. Links zu inaktiven Companies werden öffentlich nicht ausgegeben. Bilder bleiben Bestandteil der vorhandenen privaten Upload-Verwaltung, inklusive MIME-/Größenprüfung, sicherer Namen, Ersetzen, Entfernen und Bereinigung verwaister Dateien; keine zweite Upload-Infrastruktur.
+
+### Zeitmodell, Wiederholung und Status
+
+Beginn und Ende sind verpflichtende `DateTimeImmutable`-Zeitpunkte in UTC, Ende darf nicht vor Beginn liegen. Die zentrale Konfiguration `portal.timezone` ist `Europe/Berlin`; Formulare, Kalender und Darstellung verwenden diese Ortszeit. Auch die bisherigen Angebotsformulare und Laufzeitdarstellungen nutzen diese Konfiguration.
+
+Ganztägige Veranstaltungen decken den ersten Tag ab 00:00 bis zum letzten Tag um 23:59:59 in Portal-Ortszeit ab. Es werden keine pauschalen 24-Stunden-Blöcke verwendet: Sommerzeit-/Winterzeit-Tage können 23 bzw. 25 Stunden besitzen. Mehrtägige Veranstaltungen besitzen einen zusammenhängenden Zeitraum.
+
+`EventRecurrence` unterstützt keine, tägliche, wöchentliche und monatliche Wiederholung. `recurrenceUntil` ist ein **Kalendertag**, kein Zeitpunkt, und bezeichnet den letzten erlaubten Beginn einer Wiederholung. Wiederholungen müssen spätestens ein Jahr nach dem ersten Beginn enden; maximal 367 Vorkommen sind möglich. Ein Termin darf über diesen letzten Beginn hinauslaufen. Monatliche Wiederholungen sind am ursprünglichen Monatstag verankert: z. B. 31. Januar → 31. März, ohne Überlauf in den Februar. Fehlende Monatstage werden übersprungen. Lokale Uhrzeiten und mehrtägige Dauern folgen Kalenderarithmetik über Zeitumstellungen hinweg. Symfony übernimmt die Umwandlung eingegebener Ortszeiten; nicht existierende Uhrzeiten werden entsprechend der PHP-Zeitzonenregeln normalisiert. Falls dadurch ein Wiederholungsende vor seinen Beginn fallen würde, wird die Serie mit einem Formularfehler abgelehnt.
+
+`EventSchedule` materialisiert die begrenzten Termine als `EventOccurrence` beim Speichern in derselben ORM-Transaktion wie Event und Bildmetadaten. Die Zeitabfragen verwenden diese indizierten Termine. Keine endlosen Serien, Hintergrundjobs oder RFC-5545-Abhängigkeiten. Unveränderte Starttermine behalten ihre Vorkommens-ID, auch bei Änderung des Inhalts oder der Endzeit. Verkürzte Serien entfernen weggefallene Termine per Orphan Removal. Ein eindeutiger Index verhindert doppelte Starttermine derselben Serie.
+
+Der zentrale Vorkommensstatus lautet Deaktiviert, Abgesagt, Vergangen, Geplant oder Läuft. Zeitgrenzen sind einschließlich: `endsAt >= Clock::now()` ist noch nicht vergangen. Standardlisten enthalten aktive kommende und laufende Termine; vergangene aktive Detailseiten bleiben 200. Inaktive Events und fremde/unbekannte Vorkommens-IDs liefern 404. Abgesagte aktive Events bleiben öffentlich mit Textkennzeichnung und Absagehinweis sichtbar.
+
+### Öffentliche Routen, Filter und Kalender
+
+- `/veranstaltungen`: chronologische Liste mit Pagination (12 Termine). Kategorie/Company werden gezielt fetch-gejoint, Company-Collections bleiben ungeladen; ORM-Pagination berücksichtigt die Kategorie-Collection ohne Duplikate.
+- GET `zeitraum`: `upcoming`, `today`, `tomorrow`, `weekend`, `week`, `month`. `EventDateRangeResolver` bildet lokale, halb offene Kalenderbereiche in UTC ab. Das Wochenende ist Samstag/Sonntag der laufenden Woche; laufende mehrtägige Events werden nach Zeitraumüberschneidung gefunden. Abgelaufene Termine erscheinen nicht in diesen Standardlisten.
+- GET `kategorie=<slug>` und optional `unternehmen=<slug>` sind kombinierbar; Filterzustand bleibt erhalten. Unbekannte/inaktive Filterentitäten liefern 404, unbekannte Zeitraumwerte fallen auf kommende Termine zurück.
+- `/veranstaltungen/kalender?month=YYYY-MM`: serverseitiger Monatskalender mit vorherigem/nächstem Monat und Kategorie-/Company-Filter. Ungültige oder nicht skalare Monatswerte fallen auf den aktuellen Clock-Monat zurück. Der Monatsfilter umfasst die angezeigten Randtage der Kalenderwochen. Hier bleiben auch vergangene aktive Termine sichtbar. Mehrtägige Termine erscheinen an jedem betroffenen Tag, ohne neue Entities dafür zu erzeugen. Auf Mobile wird der Kalender zu einer semantischen Tagesliste; die alternative Eventliste bleibt erreichbar. Der Listen-Zeitraumfilter gilt nicht zusätzlich im Kalender.
+- `/veranstaltungen/{slug}`: nächste laufende/kommende Instanz einer aktiven Serie, nach Serienende die letzte Instanz.
+- `/veranstaltungen/{slug}/termine/{id}`: spezifisches Vorkommen derselben Serie mit eigener Canonical-URL; Kalender und Karten verlinken auf diesen Termin.
+- `/veranstaltungen/{slug}/bilder/{fileName}`: geprüftes öffentliches Hauptbild, nur für aktive Events, `nosniff` und keine dauerhafte Cache-Freigabe.
+
+Die Startseite zeigt drei kommende Featured-Termine, füllt bei Bedarf mit normalen Terminen auf und sortiert die Auswahl chronologisch. Unternehmensdetailseiten zeigen die nächsten drei Company-Termine und bei Bedarf einen gefilterten Link zu allen Veranstaltungen. Ohne Termine wird der Company-Abschnitt ausgeblendet. Navigation und Footer führen auf die echte Veranstaltungsroute.
+
+### Administration, Geo und SEO
+
+Admins und Editoren verwalten Veranstaltungen unter `/admin/events` sowie Veranstaltungskategorien unter `/admin/event-categories`; Mitglieder bleiben ausgeschlossen. Eventliste mit Titel-, Company-, Kategorie-, Aktiv-, Featured-, Status- und Zeitraumfiltern sowie Pagination (25 Events), vollständigem CRUD, Absage und Company-Kontextlinks. Zugeordnete Eventkategorien müssen vor der Löschung von ihren Events gelöst werden. Alle schreibenden Formulare und Löschaktionen sind CSRF-geschützt. Das Dashboard zählt kommende Termine, kommende Termine im aktuellen Monat und hervorgehobene Termine; es zählt Vorkommen, nicht Serien.
+
+Geo-Koordinaten werden als Paar validiert. Die Eventdetailkarte erweitert die vorhandenen `DirectoryMap`-/Leaflet-Komponenten aus PR4, mit bewusstem Laden, bestehendem OSM-Tile-Anbieter, sicheren Text-Popups und externem Route-planen-Link. Ohne Koordinaten erscheint keine leere Karte. Koordinaten können im Admin manuell gepflegt werden; automatisches Event-Geocoding und eine zusätzliche Übersichtskarte sind nicht Teil dieser Umsetzung.
+
+Übersicht/Detail besitzen Titel, Beschreibung und Canonical; Kalender, Filter- und Paginationvarianten werden nicht zusätzlich indexiert. Detailseiten enthalten Open Graph und sicher hex-kodiertes Schema.org-`Event` für das konkret ausgewählte Vorkommen: Datum/Zeiten, optional Bild, tatsächlichen Ort, Veranstalter und `EventCancelled` bei Absage. Keine erfundenen Preise, Tickets oder Verfügbarkeiten. Ganztägige Structured-Data-Daten verwenden Kalendertage statt künstlicher Uhrzeiten.
+
+### Migration, Fixtures und Prüfung
+
+`Version20261005192631` ergänzt ausschließlich Event, EventCategory, EventOccurrence und die Kategorie-Zuordnung, inklusive Indizes und Fremdschlüsseln. Bestehende Migrationen bleiben unverändert.
+
+`EventFixtures` erzeugt zwölf fiktive Veranstaltungen und neun aktive Kategorien sowie eine inaktive Testkategorie relativ zur injizierbaren Clock: heute, morgen, Wochenende, nächster Monat, Featured/normal, vergangen, inaktiv, ganztägig, mehrtägig, externe Veranstalter, Company, Bilder/Fallback, Geo/kein Geo, Absage und begrenzte wöchentliche Serie. Entwicklung mit `doctrine:fixtures:load` wie zuvor; dies löscht vorhandene Daten und gehört nicht in Produktivsysteme.
+
+Neue Domain-/Integrationstests decken Statusgrenzen, Relations, Slugs, Datumskonsistenz, tägliche/wöchentliche/monatliche Serien, Serienende, maximale Anzahl, fehlende Monatstage, stabile Vorkommens-URLs, DST, Datumsfilter, Monatsnavigation, mehrtägige Kalenderbelegung, Rollen/CSRF, CRUD, Kategorie-Löschschutz, Uploads/Cleanup, Company-Löschung, SEO und Pagination mit Collection-Fetch-Joins ab. Die bestehenden PR1–PR5-Tests bleiben unverändert erhalten. JavaScript-Tests prüfen zusätzlich Eventmarker und die Ablehnung unsicherer Popup-URLs. Vollständige Checks entsprechen dem bestehenden CI-Workflow.
+
+**Außerhalb von PR6:** Ticketshop, Reservierungen, Zahlungsabwicklung, Sitzplätze, QR-Tickets, Gutscheine, News, Jobs, Bewertungen, Push Notifications, Mitglieder-Self-Service und Approval-Workflow. Ein Ticketlink ist ausschließlich ein externer Link. Weitere Kalenderfunktionen wie individuelle Ausnahmen/verschobene Serientermine, ICS und ausgewählte Wochentage sind mögliche spätere Erweiterungen.
