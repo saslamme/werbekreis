@@ -21,7 +21,7 @@
 <ul class="navbar-nav ms-auto me-3 gap-xl-2">{% for label, anchor in {'Entdecken':'entdecken','Angebote':'angebote','Veranstaltungen':'veranstaltungen','Gutschein':'gutschein','Jobs':'jobs','Werbekreis':'mitglied'} %}<li class="nav-item">
 <a class="nav-link" href="{{ path('app_home') }}#{{ anchor }}">{{ label }}</a>
 </li>{% endfor %}</ul>
-<a class="btn btn-primary" href="{{ path('app_home') }}#unternehmen">Unternehmen finden</a>
+<a class="btn btn-primary" href="{{ path('company_index') }}">Unternehmen finden</a>
 </div>
 </div>
 </nav>

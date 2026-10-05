@@ -8,7 +8,9 @@
 </div>
 <div class="col-6 col-md-3">
 <h2>Entdecken</h2>
-<ul class="list-unstyled">{% for label, anchor in {'Unternehmen':'unternehmen','Angebote':'angebote','Veranstaltungen':'veranstaltungen','Gutschein':'gutschein','Jobs':'jobs'} %}<li>
+<ul class="list-unstyled"><li>
+<a href="{{ path('company_index') }}">Unternehmen</a>
+</li>{% for label, anchor in {'Angebote':'angebote','Veranstaltungen':'veranstaltungen','Gutschein':'gutschein','Jobs':'jobs'} %}<li>
 <a href="{{ path('app_home') }}#{{ anchor }}">{{ label }}</a>
 </li>{% endfor %}</ul>
 </div>

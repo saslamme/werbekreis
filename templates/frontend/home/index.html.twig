@@ -7,14 +7,12 @@
 <p class="eyebrow">EINKAUFEN. GENIESSEN. ERLEBEN.</p>
 <h1>{{ portal_city }} hat mehr zu bieten.</h1>
 <p class="lead">Entdecken Sie lokale Geschäfte, Gastronomie, Dienstleistungen und Veranstaltungen direkt vor Ihrer Haustür.</p>
-<div class="search-box d-flex gap-2">
+<form class="search-box d-flex gap-2" method="get" action="{{ path('company_index') }}" role="search">
 <label class="visually-hidden" for="portal-search">Unternehmen suchen</label>
-<input id="portal-search" class="form-control border-0" type="search" placeholder="z. B. Schuhe, Café, Friseur" aria-describedby="search-note">
-<button class="btn btn-primary" type="button" disabled>Suchen</button>
-</div>
-<p id="search-note" class="demo-note mt-2">Die Suche ist eine Vorschau und noch nicht verfügbar.</p>
-<p class="small mt-3">Beliebt: <span class="ms-2">Mode · Gastronomie · Gesundheit · Handwerk</span>
-</p>
+<input id="portal-search" class="form-control border-0" type="search" name="q" maxlength="100" placeholder="z. B. Schuhe, Café, Friseur">
+<button class="btn btn-primary" type="submit">Suchen</button>
+</form>
+{% if categories is not empty %}<p class="small mt-3">Beliebt: {% for row in categories|slice(0, 4) %}<a class="ms-2 text-reset" href="{{ path('company_index', {kategorie: row.category.slug}) }}">{{ row.category.name }}</a>{% if not loop.last %} ·{% endif %}{% endfor %}</p>{% endif %}
 </div>
 <div class="col-lg-3">
 <div class="hero-aside">
@@ -31,11 +29,9 @@
 <h2>Was möchten Sie entdecken?</h2>
 <span class="text-secondary">Vielfalt direkt vor der Haustür</span>
 </div>
-<div class="row g-3">{% for label, icon in {'Einkaufen':'bag-shopping','Gastronomie':'utensils','Dienstleistungen':'briefcase','Gesundheit':'heart-pulse','Freizeit':'person-biking','Handwerk':'hammer'} %}<div class="col-6 col-md-4 col-lg-2">
-<a class="category" href="#unternehmen">
-<i class="fa-solid fa-{{ icon }}" aria-hidden="true">
-</i>{{ label }}</a>
-</div>{% endfor %}</div>
+{% if categories is empty %}<p class="text-secondary">Kategorien werden in Kürze ergänzt.</p>{% else %}<div class="row g-3">{% for row in categories %}<div class="col-6 col-md-4 col-lg-2">
+{% include 'frontend/category/_card.html.twig' with {category: row.category, count: row.companyCount} %}
+</div>{% endfor %}</div>{% endif %}
 </div>
 </section>
 <section class="section bg-light" id="angebote">
@@ -86,20 +82,8 @@
 <h2>Unternehmen entdecken</h2>
 <span class="text-secondary">Menschen und Ideen von hier</span>
 </div>
-<p class="demo-note">Statische Vorschau – noch kein Unternehmensverzeichnis.</p>
-<div class="row g-4">{% for item in [{name:'Ihr Lieblingsgeschäft',category:'Mode & Lifestyle',icon:'shirt'},{name:'Genuss um die Ecke',category:'Café & Gastronomie',icon:'utensils'},{name:'Kompetenz vor Ort',category:'Dienstleistungen',icon:'briefcase'},{name:'Mit Hand und Herz',category:'Handwerk',icon:'hammer'}] %}<div class="col-sm-6 col-lg-3">
-<article class="editorial-card bg-white">
-<div class="card-art">
-<i class="fa-solid fa-{{ item.icon }}" aria-hidden="true">
-</i>
-</div>
-<div class="card-copy">
-<p class="eyebrow">{{ item.category }}</p>
-<h3>{{ item.name }}</h3>
-<p class="small text-secondary mb-0">{{ portal_city }} · Beispielbetrieb</p>
-</div>
-</article>
-</div>{% endfor %}</div>
+{% if featured_companies is empty %}<p class="text-secondary">Es sind noch keine Unternehmen eingetragen.</p>{% else %}<div class="row g-4">{% for company in featured_companies %}<div class="col-sm-6 col-lg-4">{% include 'frontend/company/_card.html.twig' %}</div>{% endfor %}</div>{% endif %}
+<p class="mt-4 mb-0"><a class="btn btn-outline-primary" href="{{ path('company_index') }}">Alle Unternehmen <i class="fa-solid fa-arrow-right ms-2" aria-hidden="true"></i></a></p>
 </div>
 </section>
 <section class="section gift-section" id="gutschein">
