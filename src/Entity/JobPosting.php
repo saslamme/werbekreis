@@ -17,10 +17,11 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 #[ORM\HasLifecycleCallbacks]
 #[ORM\Index(name: 'job_publication', columns: ['status', 'publishedAt', 'validThrough'])]
 #[ORM\Index(name: 'job_employment', columns: ['employmentType', 'workModel'])]
-#[UniqueEntity(fields: ['slug'], message: 'Dieser Slug ist bereits vergeben.')]
-final class JobPosting
+#[UniqueEntity(fields: ['slug'], service: \App\Validator\DraftAwareUniqueEntityValidator::class, message: 'Dieser Slug ist bereits vergeben.')]
+final class JobPosting implements \App\Moderation\ModeratedContent
 {
     use TimestampedTrait;
+    use \App\Entity\Traits\ModerationTrait;
 
     #[ORM\Id, ORM\GeneratedValue, ORM\Column]
     private ?int $id = null;
@@ -250,7 +251,7 @@ final class JobPosting
     }
     public function isPubliclyVisible(\DateTimeImmutable $now): bool
     {
-        return $this->company?->isActive() === true
+        return $this->isModerationApproved() && $this->company?->isModerationApproved() === true && $this->company?->isActive() === true
             && in_array($this->status->value, NewsStatus::publishableValues(), true)
             && ($this->status !== NewsStatus::Scheduled || $this->publishedAt !== null)
             && ($this->publishedAt === null || $this->publishedAt <= $now)

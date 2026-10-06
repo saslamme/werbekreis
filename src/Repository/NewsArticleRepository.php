@@ -29,7 +29,7 @@ final class NewsArticleRepository extends ServiceEntityRepository
     public function createPublicQueryBuilder(?NewsCategory $category = null, ?Company $company = null): QueryBuilder
     {
         $query = $this->createQueryBuilder('article')->leftJoin('article.company', 'company')
-            ->where('article.status IN (:publicStatuses)')
+            ->where('article.status IN (:publicStatuses)', "article.moderationStatus = 'approved'", "company.id IS NULL OR company.moderationStatus = 'approved'")
             ->andWhere('article.status != :scheduled OR article.publishedAt IS NOT NULL')
             ->andWhere('article.publishedAt IS NULL OR article.publishedAt <= :now')
             ->setParameter('publicStatuses', NewsStatus::publishableValues())->setParameter('scheduled', NewsStatus::Scheduled->value)

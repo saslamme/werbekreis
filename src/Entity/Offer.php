@@ -15,10 +15,11 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 #[ORM\Entity(repositoryClass: OfferRepository::class)]
 #[ORM\HasLifecycleCallbacks]
 #[ORM\Index(name: 'offer_schedule', columns: ['active', 'startsAt', 'endsAt'])]
-#[UniqueEntity(fields: ['slug'], message: 'Dieser Slug ist bereits vergeben.')]
-final class Offer
+#[UniqueEntity(fields: ['slug'], service: \App\Validator\DraftAwareUniqueEntityValidator::class, message: 'Dieser Slug ist bereits vergeben.')]
+final class Offer implements \App\Moderation\ModeratedContent
 {
     use TimestampedTrait;
+    use \App\Entity\Traits\ModerationTrait;
 
     #[ORM\Id, ORM\GeneratedValue, ORM\Column]
     private ?int $id = null;
@@ -313,7 +314,7 @@ final class Offer
     /** Shared scheduling semantics: inclusive boundaries, with inactive companies hidden too. */
     public function isCurrentlyActive(\DateTimeImmutable $now): bool
     {
-        return $this->active && $this->company?->isActive() === true
+        return $this->isModerationApproved() && $this->company?->isModerationApproved() === true && $this->active && $this->company?->isActive() === true
             && ($this->startsAt === null || $this->startsAt <= $now)
             && ($this->endsAt === null || $this->endsAt >= $now);
     }

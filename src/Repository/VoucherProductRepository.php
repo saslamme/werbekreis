@@ -22,12 +22,12 @@ final class VoucherProductRepository extends ServiceEntityRepository
     }
     public function acceptanceCount(): int
     {
-        return (int) $this->createQueryBuilder('product')->select('COUNT(DISTINCT company.id)')->innerJoin('product.acceptingCompanies', 'company')->where('product.active = true', 'company.active = true')->getQuery()->getSingleScalarResult();
+        return (int) $this->createQueryBuilder('product')->select('COUNT(DISTINCT company.id)')->innerJoin('product.acceptingCompanies', 'company')->where('product.active = true', 'company.active = true', "company.moderationStatus = 'approved'")->getQuery()->getSingleScalarResult();
     }
     public function publicSellers(): array
     {
         $rows = $this->createQueryBuilder('product')->select('product.id AS productId', 'company.name AS name', 'company.slug AS slug', 'company.city AS city')
-            ->innerJoin('product.sellingCompanies', 'company')->where('product.active = true', 'company.active = true')->orderBy('company.name', 'ASC')->getQuery()->getArrayResult();
+            ->innerJoin('product.sellingCompanies', 'company')->where('product.active = true', 'company.active = true', "company.moderationStatus = 'approved'")->orderBy('company.name', 'ASC')->getQuery()->getArrayResult();
         $groups = []; foreach ($rows as $row) { $groups[$row['productId']][] = $row; } return $groups;
     }
     public function existingSlugs(string $base, ?int $excludeId): array

@@ -565,3 +565,43 @@ Das Dashboard zeigt Finanzkennzahlen ausschließlich Admins: aktuell verwendbare
 Neue Tests prüfen Decimal-/Domain-Grenzen, Aktivierung/Monatsende/Ablauf mit MockClock, sichere Codes und echte DB-Kollisionswiederholung, Rollen/Company-/Netzwerkprüfung, frische Zustände, Idempotenz, Ledger-Unveränderlichkeit, Rollback bei erzwungenem Ledger-Schreibfehler, öffentliche Datensparsamkeit/CSRF/Rate-Limit, Admin-/Editor-Verwaltung, Bestätigung und PRG sowie SQL-Summen und lokale/DST-Grenzen. Zwei separate PHP-Prozesse prüfen echte Row-Lock-Konkurrenz: zwei 40-€-Einlösungen auf 50 € und zwei identische 10-€-Bestätigungen. Alle vorhandenen PR1–PR8-Tests bleiben unverändert; Composer/Symfony/Doctrine/Twig, npm und AssetMapper laufen nach dem bestehenden CI-Workflow. Browserprüfungen erfolgen auf Desktop, Tablet und Mobil.
 
 **Außerhalb von PR9:** Onlinekauf, Zahlungsanbieter, Rechnungen, Gutscheindruck/-PDF, Versand, Wallet, ERP/POS-Integration, Storno/Rückerstattung, Checkout und rechtliche/steuerliche Abrechnungsautomatisierung. Produktbeschreibungen sind redaktionelle Hinweise und keine Behauptung geprüfter Gutscheinbedingungen.
+
+## PR10: Mitglieder-Self-Service und Freigaben
+
+### Benutzer, Unternehmen und Rechte
+
+`User ManyToMany Company` bildet die Unternehmen ab, die ein Mitglied pflegen darf. Ein Benutzer kann damit ein oder mehrere Unternehmen verwalten; mehrere Benutzer dürfen demselben Unternehmen zugeordnet sein. Die nullable PR9-Zuordnung `User.company` bleibt getrennt bestehen und bezeichnet weiterhin ausschließlich die Einlösestelle eines `ROLE_VOUCHER_REDEEMER`. Administratoren pflegen die Mehrfachauswahl in der Benutzerverwaltung. Die Migration übernimmt vorhandene ROLE_MEMBER-/PR9-Company-Zuordnungen in `user_company`, ohne die bestehende Voucher-Zuordnung umzudeuten.
+
+`ROLE_MEMBER` erhält Zugang zu `/member`, während `ROLE_EDITOR` und `ROLE_ADMIN` globale Inhalte prüfen dürfen. Es wurde keine zusätzliche Reviewer-Rolle eingeführt. `ContentOwnershipVoter` und `ContentAccess` bündeln `VIEW`, `EDIT`, `CREATE`, `SUBMIT` und `REVIEW`. Member-Zugriffe werden gegen die Company-Zuordnung geprüft; der Moderationsservice liest Benutzer und Zuordnung innerhalb seiner Transaktion erneut. Fremde IDs in Listen-, Edit-, Submit-, Bild- oder Create-Routen führen zu 403/404. Das Entfernen einer Company-Zuordnung entzieht den Zugriff sofort und löscht keine Inhalte. Inaktive eigene Unternehmen bleiben bearbeitbar, bleiben durch die bestehende Public-Logik aber öffentlich verborgen.
+
+### Member-Portal
+
+Das eigenständige Member-Layout bietet Dashboard, Unternehmen, Angebote, Veranstaltungen, News und Jobs. Das Dashboard aggregiert ausschließlich Inhalte der zugeordneten Companies und zeigt Entwürfe, offene Prüfungen, veröffentlichte Inhalte, Änderungswünsche, Ablehnungen und letzte Änderungen. Benutzer ohne Company sehen einen verständlichen Hinweis statt eines Fehlers. Voucher-Einlösung bleibt an `ROLE_VOUCHER_REDEEMER` gebunden und wird nicht Teil des Content-Dashboards.
+
+Mitglieder können ihr vollständiges Unternehmensprofil einschließlich Kategorien, Öffnungszeiten, Ansprechpartnern und Bildern als Entwurf bearbeiten. Für eigene Companies können sie Angebote, Veranstaltungen, News und Jobs erstellen, bearbeiten, verwerfen und einreichen. Bei mehreren Companies wird die Company vor der Erstellung aus der persönlichen Zuordnung gewählt. Die Company wird serverseitig gesetzt; die Formulare enthalten keine globale Company-Auswahl, technischen IDs, Slugs, `active`, `featured`, Publishing-Status oder Moderationsfelder. Companys können durch Mitglieder nie gelöscht werden. Bei den übrigen Typen entfernt „Entwurf verwerfen“ nur einen bearbeitbaren, noch nie freigegebenen Inhalt; veröffentlichte Inhalte bleiben erhalten.
+
+### Moderation und Revisionen
+
+`ModerationStatus` ergänzt das fachliche Publishing-Modell mit `draft`, `pending_review`, `changes_requested`, `approved` und `rejected`. Erlaubt sind Entwurf/Änderungswunsch/Ablehnung → Prüfung sowie Prüfung → freigegeben/Änderungswunsch/abgelehnt. Die bestehende News-/Job-Planung und die Offer-/Event-Zeitlogik bleiben eigenständig. Öffentliche Sichtbarkeit setzt sowohl den bisherigen fachlichen Zustand als auch `moderationStatus=approved` voraus.
+
+`ContentRevision` hält je Ziel genau einen isolierten Entwurf mit explizit erlaubtem Payload, Bildreferenzen, Besitzer-Company und Fingerprint des aktuellen Live-Stands. Dadurch bleibt die bisher freigegebene Version während Bearbeitung und Prüfung öffentlich unverändert. Nach Freigabe überträgt `ContentModerationService` den Payload atomar auf Company, Offer, Event, NewsArticle oder JobPosting, aktualisiert Event-Termine und führt News-/Job-Drafts entsprechend Zeitpunkt in `published` oder `scheduled` über. Das Modell speichert bewusst nur Live-Stand plus aktuellen Entwurf und keine vollständige Versionshistorie.
+
+Der Service kapselt Speichern, Einreichen, Freigeben, Änderungswunsch, Ablehnen und Verwerfen. Alle Operationen laufen in DB-Transaktionen mit einheitlicher Sperrreihenfolge (Ziel vor Revision), pessimistischen Locks, Doctrine-Version und vom Formular übermittelter erwarteter Version. Ein stabiler Live-Fingerprint verhindert, dass ein Reviewer eine inzwischen im Admin geänderte Version überschreibt. Reine Öffnungszeiten und ungeordnet geladene Company-Kinddaten werden kanonisch verglichen. `submittedBy/submittedAt`, `reviewedBy/reviewedAt`, Ergebnis und letzter Kommentar bilden das Audit; Benutzer-FKs sind nullable mit `ON DELETE SET NULL`. Nach erfolgreichem Commit dispatcht der Service ein `ContentModerationEvent` als Grundlage für spätere Benachrichtigungen. PR10 versendet keine E-Mails.
+
+### Review Queue, Uploads und Veröffentlichung
+
+Unter `/admin/reviews` sehen Editor und Admin alle offenen Einreichungen, paginiert und filterbar nach Typ, Company, Einreicher und Datum. Die Detailseite zeigt Vorschlag und aktuellen Stand nebeneinander sowie Einreicher und Zeitpunkt. Freigeben, Änderungen anfordern und Ablehnen erfolgen ausschließlich über CSRF-geschützte POST-Formulare; Änderungswunsch und Ablehnung erfordern einen sichtbaren Kommentar. Bereits entschiedene oder veraltete Formulare können nicht erneut entscheiden.
+
+Entwurfsbilder verwenden dieselbe MIME-, Größen-, Pixel- und Zufallsnamen-Prüfung wie Admin-Uploads. Geschützte Member-/Reviewer-Routen liefern sie mit `no-store`; öffentliche Bildrouten bleiben an die vollständige Public-Sichtbarkeit gebunden. Das Cleanup berücksichtigt zusätzlich alle von Revisionen referenzierten Dateien, sodass ein Live-Bild beim Ersetzen im Entwurf nicht vorzeitig gelöscht wird.
+
+Alle öffentlichen Company-, Offer-, Event-, News- und Job-Abfragen prüfen den Moderationsstatus. Company-abhängige Inhalte verlangen zusätzlich eine freigegebene Company. Vorhandene PR1–PR9-Inhalte erhalten in der Migration den DB-Default `approved` und bleiben damit sichtbar. Member-Drafts und offene Einreichungen bleiben unsichtbar; bei einer Revision bleibt der frühere freigegebene Stand sichtbar, bis die Prüfung erfolgreich abgeschlossen ist.
+
+### Migration, Fixtures und Tests
+
+`Version20261005230506` ergänzt `user_company`, Moderations-/Audit-/Versionsfelder an fünf Inhaltstypen und die generische `ContentRevision` einschließlich eindeutiger Ziel-FKs, Queue-Index und Audit-FKs. Die Migration backfillt vorhandene Member-Company-Zuordnungen und behandelt bestehende Inhalte als vertrauenswürdig/freigegeben. Beim Rollback werden ausschließlich diese PR10-Strukturen entfernt.
+
+`MemberFixtures` ergänzt ausschließlich fiktive Member für Company A, Company B und beide Companies sowie Inhalte aller Moderationszustände und eine Company-Revision. `member@example.local` aus den bestehenden User-Fixtures bildet weiterhin den Member ohne Company ab. Fixture-Passwort der neuen Testmitglieder ist `member123`; Fixtures löschen Daten und dürfen nicht in Produktion geladen werden.
+
+Die Tests decken Statusübergänge, Audit, optimistische und pessimistische Konkurrenzkontrolle, Live-Konflikte, Revisionen, Public-Sichtbarkeit aller Typen, Company-Übernahme, Ownership-Voter, sofortigen Rechteentzug, direkte fremde IDs, sichere Formfelder, CRUD/Submit aller Member-Inhaltstypen, Company-Auswahl und die CSRF-geschützte Review Queue ab. Die vorhandenen PR1–PR9-Suiten bleiben Bestandteil der vollständigen Prüfung.
+
+**Außerhalb von PR10:** Mitgliedsbeiträge und Abrechnung, Payment, komplexe Revisionshistorie/Undo/Branching, Messaging/Chat, E-Mail-Automation, SSO und ein vollständiges Multi-Tenant-SaaS-Modell.

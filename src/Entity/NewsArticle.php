@@ -17,10 +17,11 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 #[ORM\Entity(repositoryClass: NewsArticleRepository::class)]
 #[ORM\HasLifecycleCallbacks]
 #[ORM\Index(name: 'news_publication', columns: ['status', 'publishedAt'])]
-#[UniqueEntity(fields: ['slug'], message: 'Dieser Slug ist bereits vergeben.')]
-final class NewsArticle
+#[UniqueEntity(fields: ['slug'], service: \App\Validator\DraftAwareUniqueEntityValidator::class, message: 'Dieser Slug ist bereits vergeben.')]
+final class NewsArticle implements \App\Moderation\ModeratedContent
 {
     use TimestampedTrait;
+    use \App\Entity\Traits\ModerationTrait;
 
     #[ORM\Id, ORM\GeneratedValue, ORM\Column]
     private ?int $id = null;
@@ -246,12 +247,12 @@ final class NewsArticle
     }
     public function addCategory(NewsCategory $category): self
     {
-        if (!$this->categories->contains($category)) { $this->categories->add($category); $category->addArticle($this); }
+        if (!$this->categories->contains($category)) { $this->categories->add($category); if (!$this->isRevisionShadow()) { $category->addArticle($this); } }
         return $this;
     }
     public function removeCategory(NewsCategory $category): self
     {
-        if ($this->categories->removeElement($category)) { $category->removeArticle($this); }
+        if ($this->categories->removeElement($category)) { if (!$this->isRevisionShadow()) { $category->removeArticle($this); } }
         return $this;
     }
     public function getFileName(): string { return $this->imagePath ?? ''; }
@@ -260,7 +261,7 @@ final class NewsArticle
 
     public function isPubliclyVisible(\DateTimeImmutable $now): bool
     {
-        return in_array($this->status->value, NewsStatus::publishableValues(), true)
+        return $this->isModerationApproved() && ($this->company === null || $this->company->isModerationApproved()) && in_array($this->status->value, NewsStatus::publishableValues(), true)
             && ($this->status !== NewsStatus::Scheduled || $this->publishedAt !== null)
             && ($this->publishedAt === null || $this->publishedAt <= $now);
     }

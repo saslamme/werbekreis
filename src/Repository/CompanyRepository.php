@@ -56,7 +56,7 @@ final class CompanyRepository extends ServiceEntityRepository
         $query = $this->createQueryBuilder('company')
             ->leftJoin('company.categories', 'category')->addSelect('category')
             ->leftJoin('company.images', 'image')->addSelect('image')
-            ->where('company.active = true');
+            ->where("company.active = true", "company.moderationStatus = 'approved'");
         $search = trim($search);
         if ($search !== '') {
             $categoryMatch = $this->getEntityManager()->createQueryBuilder()->select('searchCategory.id')->from(Category::class, 'searchCategory')
@@ -112,7 +112,7 @@ final class CompanyRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('company')
             ->leftJoin('company.categories', 'category')->addSelect('category')
             ->leftJoin('company.images', 'image')->addSelect('image')
-            ->where('company.slug = :slug', 'company.active = true')->setParameter('slug', $slug)
+            ->where('company.slug = :slug', "company.active = true", "company.moderationStatus = 'approved'")->setParameter('slug', $slug)
             ->getQuery()->getOneOrNullResult();
     }
 
@@ -121,7 +121,7 @@ final class CompanyRepository extends ServiceEntityRepository
     {
         return $this->getEntityManager()->createQueryBuilder()->select('image')->from(CompanyImage::class, 'image')
             ->innerJoin('image.company', 'company')
-            ->where('company.slug = :slug', 'company.active = true', 'image.fileName = :fileName')
+            ->where('company.slug = :slug', 'company.active = true', 'image.fileName = :fileName', "company.moderationStatus = 'approved'")
             ->setParameter('slug', $slug)->setParameter('fileName', $fileName)
             ->getQuery()->getOneOrNullResult();
     }
@@ -137,12 +137,12 @@ final class CompanyRepository extends ServiceEntityRepository
     /** @return list<Company> */
     public function findActive(): array
     {
-        return $this->findBy(['active' => true], ['name' => 'ASC', 'id' => 'ASC']);
+        return $this->findBy(['active' => true, 'moderationStatus' => \App\Enum\ModerationStatus::Approved], ['name' => 'ASC', 'id' => 'ASC']);
     }
     /** @return list<Company> */
     public function findFeatured(): array
     {
-        return $this->findBy(['active' => true, 'featured' => true], ['name' => 'ASC', 'id' => 'ASC']);
+        return $this->findBy(['active' => true, 'featured' => true, 'moderationStatus' => \App\Enum\ModerationStatus::Approved], ['name' => 'ASC', 'id' => 'ASC']);
     }
     /** @return list<Company> */
     public function findLatest(int $limit = 5): array

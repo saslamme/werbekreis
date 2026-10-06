@@ -27,7 +27,7 @@ final class JobPostingRepository extends ServiceEntityRepository
     public function createPublicQueryBuilder(?Company $company = null): QueryBuilder
     {
         $query = $this->createQueryBuilder('job')->innerJoin('job.company', 'company')
-            ->where('company.active = true')->andWhere('job.status IN (:statuses)')
+            ->where('company.active = true', "job.moderationStatus = 'approved'", "company.moderationStatus = 'approved'")->andWhere('job.status IN (:statuses)')
             ->andWhere('job.status != :scheduled OR job.publishedAt IS NOT NULL')
             ->andWhere('job.publishedAt IS NULL OR job.publishedAt <= :now')
             ->andWhere('job.validThrough IS NULL OR job.validThrough >= :now')
@@ -117,7 +117,7 @@ final class JobPostingRepository extends ServiceEntityRepository
     }
     public function countUpcoming(): int
     {
-        return (int) $this->createQueryBuilder('job')->select('COUNT(job.id)')->innerJoin('job.company', 'company')->where('company.active = true', 'job.status IN (:statuses)', 'job.publishedAt > :now')
+        return (int) $this->createQueryBuilder('job')->select('COUNT(job.id)')->innerJoin('job.company', 'company')->where('company.active = true', 'job.status IN (:statuses)', 'job.publishedAt > :now', "job.moderationStatus = 'approved'", "company.moderationStatus = 'approved'")
             ->andWhere('job.validThrough IS NULL OR job.validThrough >= job.publishedAt')->setParameter('statuses', NewsStatus::publishableValues())->setParameter('now', $this->publishing->now(), 'datetime_immutable')->getQuery()->getSingleScalarResult();
     }
     public function countExpiring(): int
