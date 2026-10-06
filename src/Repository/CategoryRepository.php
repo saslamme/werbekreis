@@ -55,7 +55,7 @@ final class CategoryRepository extends ServiceEntityRepository
     public function findActiveWithPublicCompanyCount(): array
     {
         $rows = $this->createQueryBuilder('category')->select('category', 'COUNT(company.id) AS companyCount')
-            ->leftJoin('category.companies', 'company', 'WITH', 'company.active = true')
+            ->leftJoin('category.companies', 'company', 'WITH', "company.active = true AND company.moderationStatus = 'approved'")
             ->where('category.active = true')
             ->groupBy('category.id, category.name, category.slug, category.description, category.icon, category.position, category.active, category.createdAt, category.updatedAt')
             ->orderBy('category.position', 'ASC')->addOrderBy('category.name', 'ASC')->addOrderBy('category.id', 'ASC')

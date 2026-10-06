@@ -1,0 +1,4 @@
+{% extends 'base.html.twig' %}
+{% block title %}Mitgliederbereich | {{ portal_name }}{% endblock %}
+{% block canonical %}<meta name="robots" content="noindex,nofollow">{% endblock %}
+{% block body %}<section class="section"><div class="container"><h1 class="h3">Mitgliederbereich</h1><nav class="member-nav mb-4" aria-label="Mitgliederbereich"><a href="{{ path('member_dashboard') }}">Dashboard</a>{% for type in types %}<a href="{{ path('member_content', {type: type.value}) }}">{{ type.label }}</a>{% endfor %}{% if is_granted('ROLE_VOUCHER_REDEEMER') %}<a href="{{ path('voucher_redeem') }}">Gutschein einlösen</a>{% endif %}</nav>{% if app.user.companies is empty %}<p class="alert alert-info">Ihrem Benutzerkonto ist noch kein Unternehmen zugeordnet.</p>{% endif %}{% block member_body %}{% endblock %}</div></section>{% endblock %}

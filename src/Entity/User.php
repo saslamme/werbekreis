@@ -40,9 +40,20 @@ final class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Company $company = null;
+    /** Member ownership is deliberately separate from the single voucher redemption company. */
+    #[ORM\ManyToMany(targetEntity: Company::class)]
+    #[ORM\JoinTable(name: 'user_company')]
+    private \Doctrine\Common\Collections\Collection $companies;
+    public function getCompanies(): \Doctrine\Common\Collections\Collection { return $this->companies; }
+    public function addCompany(Company $company): self { if (!$this->companies->contains($company)) { $this->companies->add($company); } return $this; }
+    public function removeCompany(Company $company): self { $this->companies->removeElement($company); return $this; }
+    public function canManageCompany(Company $company): bool
+    {
+        return $this->active && $this->companies->exists(static fn ($key, Company $owned): bool => $owned === $company || ($company->getId() !== null && $owned->getId() === $company->getId()));
+    }
     public function getCompany(): ?Company { return $this->company; }
     public function setCompany(?Company $company): self { $this->company = $company; return $this; }
-    public function __construct() { $this->createdAt = $this->updatedAt = new \DateTimeImmutable(); }
+    public function __construct() { $this->companies = new \Doctrine\Common\Collections\ArrayCollection(); $this->createdAt = $this->updatedAt = \Symfony\Component\Clock\Clock::get()->now(); }
     public function getId(): ?int { return $this->id; }
     public function getEmail(): string { return $this->email; }
     public function setEmail(string $email): self { $this->email = strtolower(trim($email)); return $this; }
@@ -60,6 +71,6 @@ final class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
     public function getUpdatedAt(): \DateTimeImmutable { return $this->updatedAt; }
     #[ORM\PreUpdate]
-    public function touch(): void { $this->updatedAt = new \DateTimeImmutable(); }
+    public function touch(): void { $this->updatedAt = \Symfony\Component\Clock\Clock::get()->now(); }
     public function eraseCredentials(): void {}
 }

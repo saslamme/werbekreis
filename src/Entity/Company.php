@@ -15,10 +15,11 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: CompanyRepository::class)]
 #[ORM\HasLifecycleCallbacks]
-#[UniqueEntity(fields: ['slug'], message: 'Dieser Slug ist bereits vergeben.')]
-final class Company
+#[UniqueEntity(fields: ['slug'], service: \App\Validator\DraftAwareUniqueEntityValidator::class, message: 'Dieser Slug ist bereits vergeben.')]
+final class Company implements \App\Moderation\ModeratedContent
 {
     use TimestampedTrait;
+    use \App\Entity\Traits\ModerationTrait;
 
     #[ORM\Id, ORM\GeneratedValue, ORM\Column]
     private ?int $id = null;
@@ -373,7 +374,7 @@ final class Company
     {
         if (!$this->categories->contains($category)) {
             $this->categories->add($category);
-            $category->addCompany($this);
+            if (!$this->isRevisionShadow()) { $category->addCompany($this); }
         }
 
         return $this;
@@ -382,7 +383,7 @@ final class Company
     public function removeCategory(Category $category): self
     {
         if ($this->categories->removeElement($category)) {
-            $category->removeCompany($this);
+            if (!$this->isRevisionShadow()) { $category->removeCompany($this); }
         }
 
         return $this;

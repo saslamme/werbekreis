@@ -28,7 +28,7 @@ final class OfferRepository extends ServiceEntityRepository
     public function createCurrentPublicQueryBuilder(?OfferType $type = null, ?Company $company = null): QueryBuilder
     {
         $query = $this->createQueryBuilder('offer')->innerJoin('offer.company', 'company')->addSelect('company')
-            ->where('offer.active = true', 'company.active = true')
+            ->where('offer.active = true', 'company.active = true', "offer.moderationStatus = 'approved'", "company.moderationStatus = 'approved'")
             ->andWhere('offer.startsAt IS NULL OR offer.startsAt <= :now')
             ->andWhere('offer.endsAt IS NULL OR offer.endsAt >= :now')
             ->setParameter('now', $this->clock->now(), 'datetime_immutable');

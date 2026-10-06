@@ -1,4 +1,2 @@
-{% extends 'base.html.twig' %}{% block body %}<div class="container section">
-<h1>Mitgliederbereich</h1>
-<p>Der Mitgliederbereich wird in einer späteren Ausbaustufe erweitert.</p>
-</div>{% endblock %}
+{% extends 'member/base.html.twig' %}
+{% block member_body %}<h2>Ihr Überblick</h2><p>Sie bearbeiten Entwürfe für Ihre Unternehmen. Änderungen werden erst nach Prüfung übernommen; der freigegebene Stand bleibt bis dahin erhalten.</p><div class="row g-3 mb-4">{% for label, count in counts %}<div class="col-sm-6 col-lg-3"><div class="dashboard-stat"><strong>{{ count }}</strong><span>{{ label }}</span></div></div>{% endfor %}{% for label, count in states %}<div class="col-sm-6 col-lg-3"><div class="dashboard-stat"><strong>{{ count }}</strong><span>{{ label }}</span></div></div>{% endfor %}</div><h2 class="h4">Ihre Unternehmen</h2><ul>{% for company in app.user.companies %}<li><a href="{{ path('member_content_edit', {type:'companies', id:company.id}) }}">{{ company.name }}</a></li>{% else %}<li>Keine Unternehmenszuordnung vorhanden.</li>{% endfor %}</ul><h2 class="h4">Letzte Entwurfsänderungen</h2><ul>{% for row in latest %}<li>{{ row.companyName }} · {{ row.type.label }} · {{ row.moderationStatus.label }} · {{ row.updatedAt|date('d.m.Y H:i',portal_timezone) }}</li>{% else %}<li>Noch keine Entwürfe.</li>{% endfor %}</ul>{% endblock %}

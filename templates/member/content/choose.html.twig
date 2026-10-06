@@ -1,0 +1,2 @@
+{% extends 'member/base.html.twig' %}
+{% block member_body %}<h2>{{ kind.label }}: Unternehmen wählen</h2><p>Für welches Ihrer Unternehmen möchten Sie einen Entwurf anlegen?</p><ul>{% for company in companies %}<li><a href="{{ path('member_content_new',{type:kind.value,company:company.id}) }}">{{ company.name }}</a></li>{% else %}<li>Keine Unternehmenszuordnung vorhanden.</li>{% endfor %}</ul>{% endblock %}

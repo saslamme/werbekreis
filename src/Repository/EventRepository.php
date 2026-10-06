@@ -23,7 +23,7 @@ final class EventRepository extends ServiceEntityRepository
     {
         $query = $this->getEntityManager()->createQueryBuilder()->select('occurrence', 'event', 'company', 'categories')->from(EventOccurrence::class, 'occurrence')
             ->innerJoin('occurrence.event', 'event')->leftJoin('event.company', 'company')->leftJoin('event.categories', 'categories')
-            ->where('event.active = true')->orderBy('occurrence.startsAt', 'ASC')->addOrderBy('event.featured', 'DESC')->addOrderBy('event.title', 'ASC')->addOrderBy('occurrence.id', 'ASC');
+            ->where('event.active = true', "event.moderationStatus = 'approved'", "company.id IS NULL OR company.moderationStatus = 'approved'")->orderBy('occurrence.startsAt', 'ASC')->addOrderBy('event.featured', 'DESC')->addOrderBy('event.title', 'ASC')->addOrderBy('occurrence.id', 'ASC');
         if ($category !== null) { $query->andWhere(':category MEMBER OF event.categories')->setParameter('category', $category); }
         if ($company !== null) { $query->andWhere('event.company = :company')->setParameter('company', $company); }
         return $query;
@@ -70,7 +70,7 @@ final class EventRepository extends ServiceEntityRepository
     public function findPublicBySlug(string $slug): ?Event
     {
         return $this->createQueryBuilder('event')->addSelect('company', 'categories', 'occurrences')->leftJoin('event.company', 'company')->leftJoin('event.categories', 'categories')->leftJoin('event.occurrences', 'occurrences')
-            ->where('event.active = true', 'event.slug = :slug')->setParameter('slug', $slug)->orderBy('occurrences.startsAt', 'ASC')->getQuery()->getOneOrNullResult();
+            ->where('event.active = true', 'event.slug = :slug', "event.moderationStatus = 'approved'", "company.id IS NULL OR company.moderationStatus = 'approved'")->setParameter('slug', $slug)->orderBy('occurrences.startsAt', 'ASC')->getQuery()->getOneOrNullResult();
     }
     public function upcomingCount(bool $featured = false, bool $month = false): int
     {

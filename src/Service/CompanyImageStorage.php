@@ -35,6 +35,15 @@ final class CompanyImageStorage
         return $this->directory.DIRECTORY_SEPARATOR.$fileName;
     }
 
+    /** Same storage/naming/security as live uploads, without persisting a detached draft entity. */
+    public function stage(UploadedFile $file): string
+    {
+        $errors = \Symfony\Component\Validator\Validation::createValidator()->validate($file, \App\Form\CompanyImageType::imageConstraints());
+        if (count($errors) !== 0) { throw new \InvalidArgumentException('Bitte eine gültige JPEG-, PNG- oder WebP-Datei bis 5 MB wählen.'); }
+        $extension = match ($file->getMimeType()) { 'image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp', default => throw new \InvalidArgumentException('Ungültiges Bildformat.') };
+        $this->files->mkdir($this->directory, 0750); $name = bin2hex(random_bytes(16)).'.'.$extension; $file->move($this->directory, $name); return $name;
+    }
+
     public function save(CompanyImage|Offer|Event|NewsArticle $image, ?UploadedFile $file, bool $removeImage = false): void
     {
         $oldName = $image->getFileName();
@@ -97,6 +106,7 @@ final class CompanyImageStorage
 
     private function removeFile(string $fileName): void
     {
+        foreach ($this->em->createQueryBuilder()->select('revision.imageNames')->from(\App\Entity\ContentRevision::class, 'revision')->getQuery()->getArrayResult() as $row) { if (in_array($fileName, $row['imageNames'], true)) { return; } }
         if ($fileName === '') {
             return;
         }
@@ -124,6 +134,7 @@ final class CompanyImageStorage
         foreach ($this->em->createQueryBuilder()->select('article.imagePath')->from(NewsArticle::class, 'article')->where('article.imagePath IS NOT NULL')->getQuery()->getScalarResult() as $row) {
             $used[$row['imagePath']] = true;
         }
+        foreach ($this->em->createQueryBuilder()->select('revision.imageNames')->from(\App\Entity\ContentRevision::class,'revision')->getQuery()->getArrayResult() as $row) { foreach ($row['imageNames'] as $name) { $used[$name] = true; } }
         $unused = [];
         foreach (new \DirectoryIterator($this->directory) as $file) {
             if (!$file->isFile() || $file->isLink() || $file->getMTime() > time() - 3600 || !preg_match('/^[a-f0-9]{32}\.(?:jpg|png|webp)$/D', $file->getFilename()) || isset($used[$file->getFilename()])) {

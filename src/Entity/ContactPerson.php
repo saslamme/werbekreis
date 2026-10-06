@@ -202,7 +202,7 @@ final class ContactPerson
     #[Assert\Callback]
     public function validateImage(ExecutionContextInterface $context): void
     {
-        if ($this->image !== null && $this->image->getCompany() !== $this->company) {
+        if ($this->image !== null && ($this->image->getCompany() !== $this->company && ($this->company?->getId() === null || $this->image->getCompany()?->getId() !== $this->company->getId()))) {
             $context->buildViolation('Das Bild muss zu diesem Unternehmen gehören.')->atPath('image')->addViolation();
         }
     }

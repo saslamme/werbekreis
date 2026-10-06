@@ -16,7 +16,7 @@ trait TimestampedTrait
 
     private function initializeTimestamps(): void
     {
-        $this->createdAt = $this->updatedAt = new \DateTimeImmutable();
+        $this->createdAt = $this->updatedAt = \Symfony\Component\Clock\Clock::get()->now();
     }
 
     public function getCreatedAt(): \DateTimeImmutable
@@ -31,6 +31,6 @@ trait TimestampedTrait
     #[ORM\PreUpdate]
     public function touch(): void
     {
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->updatedAt = \Symfony\Component\Clock\Clock::get()->now();
     }
 }

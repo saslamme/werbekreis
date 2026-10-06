@@ -16,10 +16,11 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 #[ORM\Entity(repositoryClass: EventRepository::class)]
 #[ORM\HasLifecycleCallbacks]
 #[\App\Validator\EventDates]
-#[UniqueEntity(fields: ['slug'], message: 'Dieser Slug ist bereits vergeben.')]
-final class Event
+#[UniqueEntity(fields: ['slug'], service: \App\Validator\DraftAwareUniqueEntityValidator::class, message: 'Dieser Slug ist bereits vergeben.')]
+final class Event implements \App\Moderation\ModeratedContent
 {
     use TimestampedTrait;
+    use \App\Entity\Traits\ModerationTrait;
     #[ORM\Id, ORM\GeneratedValue, ORM\Column]
     private ?int $id = null;
 
@@ -546,12 +547,12 @@ final class Event
     }
     public function addCategory(EventCategory $category): self
     {
-        if (!$this->categories->contains($category)) { $this->categories->add($category); $category->addEvent($this); }
+        if (!$this->categories->contains($category)) { $this->categories->add($category); if (!$this->isRevisionShadow()) { $category->addEvent($this); } }
         return $this;
     }
     public function removeCategory(EventCategory $category): self
     {
-        if ($this->categories->removeElement($category)) { $category->removeEvent($this); }
+        if ($this->categories->removeElement($category)) { if (!$this->isRevisionShadow()) { $category->removeEvent($this); } }
         return $this;
     }
     /** @return Collection<int, EventOccurrence> */
