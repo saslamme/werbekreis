@@ -1,0 +1,84 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests\Fixtures;
+
+// Frozen regression data; intentionally independent of the portal demo fixtures.
+use App\DataFixtures\UserFixtures;
+
+use App\Entity\Category;
+use App\Entity\Company;
+use App\Entity\ContactPerson;
+use App\Entity\OpeningHour;
+use App\Service\DirectorySlugger;
+use Doctrine\Bundle\FixturesBundle\Fixture;
+use Doctrine\Common\DataFixtures\DependentFixtureInterface;
+use Doctrine\Persistence\ObjectManager;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+
+/** Entirely fictional development/test data. Never load into production. */
+final class DirectoryFixtures extends Fixture implements DependentFixtureInterface
+{
+    public function __construct(private readonly DirectorySlugger $slugs, #[Autowire('%portal.city%')] private readonly string $city)
+    {
+    }
+    public function getDependencies(): array
+    {
+        return [UserFixtures::class];
+    }
+
+    public function load(ObjectManager $manager): void
+    {
+        $categories = [];
+        foreach (['Handel' => 'fa-bag-shopping', 'Gastronomie' => 'fa-utensils', 'Handwerk' => 'fa-hammer', 'Dienstleistungen' => 'fa-briefcase', 'Gesundheit' => 'fa-heart-pulse', 'Freizeit' => 'fa-person-biking', 'Industrie' => 'fa-industry', 'Tourismus' => 'fa-suitcase'] as $name => $icon) {
+            $category = (new Category())->setName($name)->setIcon($icon)->setPosition(count($categories));
+            $this->slugs->assign($category);
+            $manager->persist($category);
+            $categories[] = $category;
+        }
+        $manager->flush();
+        // A deliberately inactive category: it must never appear publicly, even when assigned.
+        $archive = (new Category())->setName('Archiv')->setIcon('fa-box-archive')->setPosition(count($categories))->setActive(false);
+        $this->slugs->assign($archive);
+        $manager->persist($archive);
+        $names = ['Musterladen Hasebogen', 'Beispielcafé Uferpause', 'Demo-Werkstatt Stadtblick', 'Musterpraxis Wohlgefühl', 'Beispielhotel Lindenhof'];
+        $teasers = ['Mode, Geschenkideen und Wohnaccessoires', 'Frühstück, hausgemachter Kuchen und Kaffeespezialitäten', 'Möbel nach Maß, Reparaturen und Innenausbau', 'Physiotherapie, Massage und Rückenkurse', 'Übernachtung mit Frühstück und Radlerservice'];
+        $assignments = [[0, 3], [1], [2, 6], [4], [7, 5]];
+        foreach ($names as $index => $name) {
+            $company = (new Company())->setName($name)->setCity($this->city)->setStreet('Fiktive Beispielstraße')->setHouseNumber((string) ($index + 1))->setPostalCode('49740')
+                ->setShortDescription($teasers[$index].' – fiktives Entwicklungsunternehmen; keine realen Kontaktdaten.')
+                ->setDescription('Diese Stammdaten dienen ausschließlich der lokalen Entwicklung und automatisierten Tests.')
+                ->setEmail('kontakt@betrieb'.($index + 1).'.example')->setPhone('0000 / 000000')->setActive($index !== 4)->setFeatured($index < 2);
+            // Fictional points: near, intermediate, outside 10 km, and no coordinates.
+            if ($index !== 3) {
+                $company->setLatitude(52.674 + $index * 0.055)->setLongitude(7.484 + $index * 0.03);
+            }
+            if ($index % 2 === 0) {
+                $company->setWebsite('https://betrieb'.($index + 1).'.example');
+            }
+            if ($index === 1) {
+                $company->setFacebookUrl('https://facebook.example/beispiel')->setInstagramUrl('https://instagram.example/beispiel');
+            }
+            foreach ($assignments[$index] as $category) {
+                $company->addCategory($categories[$category]);
+            }
+            for ($day = 1; $day <= 5; ++$day) {
+                $company->addOpeningHour((new OpeningHour())->setDayOfWeek($day)->setOpensAt(new \DateTimeImmutable('09:00'))->setClosesAt(new \DateTimeImmutable($index === 1 ? '17:00' : '12:30')));
+                if ($index !== 1) {
+                    $company->addOpeningHour((new OpeningHour())->setDayOfWeek($day)->setOpensAt(new \DateTimeImmutable('14:00'))->setClosesAt(new \DateTimeImmutable('18:00'))->setPosition(1));
+                }
+            }
+            $company->addOpeningHour((new OpeningHour())->setDayOfWeek(7)->setClosed(true));
+            $company->addContactPerson((new ContactPerson())->setFirstName('Alex')->setLastName('Beispiel')->setPosition('Ansprechpartner (fiktiv)')->setEmail('kontakt@betrieb'.($index + 1).'.example')->setPrimaryContact(true));
+            if ($index === 0) {
+                $company->addCategory($archive);
+                $company->addContactPerson((new ContactPerson())->setFirstName('Robin')->setLastName('Exempel')->setPosition('Verkauf (fiktiv)')->setPhone('0000 / 000001')->setMobile('0000 / 000002')->setSortOrder(2));
+                $company->addContactPerson((new ContactPerson())->setFirstName('Sam')->setLastName('Muster')->setPosition('Vertretung (fiktiv)')->setSortOrder(1)->setActive(false));
+            }
+            $this->slugs->assign($company);
+            $manager->persist($company);
+        }
+        $manager->flush();
+    }
+}

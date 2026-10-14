@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 namespace App\Tests\Functional;
-use App\DataFixtures\EventFixtures;
+use App\Tests\Fixtures\EventFixtures;
 use App\Entity\Event;
 use App\Repository\EventRepository;
 use Doctrine\ORM\EntityManagerInterface;

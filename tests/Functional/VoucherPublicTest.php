@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 namespace App\Tests\Functional;
-use App\DataFixtures\VoucherFixtures;
+use App\Tests\Fixtures\VoucherFixtures;
 
 final class VoucherPublicTest extends VoucherDatabaseTestCase
 {

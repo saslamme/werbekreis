@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional;
 
-use App\DataFixtures\NewsFixtures;
+use App\Tests\Fixtures\NewsFixtures;
 use App\Entity\NewsArticle;
 use App\Repository\NewsArticleRepository;
 use Doctrine\ORM\EntityManagerInterface;

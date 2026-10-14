@@ -3,7 +3,7 @@
 declare(strict_types=1);
 namespace App\Tests\Functional;
 
-use App\DataFixtures\VoucherFixtures;
+use App\Tests\Fixtures\VoucherFixtures;
 use App\Entity\{Voucher, VoucherProduct, VoucherRedemption};
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Clock\{Clock, ClockInterface, MockClock};
