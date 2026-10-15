@@ -3,6 +3,16 @@
 <div class="admin-page-header"><div><h1>Einstellungen</h1><p>Globale Einstellungen für das öffentliche Portal.</p></div></div>
 {{ form_start(form, {attr: {class: 'admin-edit-form'}}) }}
 {{ form_errors(form) }}
+<section class="admin-panel"><h2 class="h4">Branding</h2>
+{% if form.vars.data.logoFileName %}
+<div class="mb-3">
+<img class="admin-logo-preview" src="{{ path('portal_logo', {v: form.vars.data.logoFileName}) }}" alt="{{ portal_name }}">
+{% if form.vars.data.logoOriginalName %}<p class="mt-2 text-break">{{ form.vars.data.logoOriginalName }}</p>{% endif %}
+</div>
+{{ form_row(form.removeLogo) }}
+{% endif %}
+{{ form_row(form.logoFile) }}
+</section>
 <section class="admin-panel"><h2 class="h4">Social Media</h2>
 {{ form_row(form.facebookUrl) }}
 {{ form_row(form.instagramUrl) }}

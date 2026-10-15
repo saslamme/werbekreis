@@ -1,3 +1,4 @@
+{% set settings = portal_settings() %}
 <div class="utility-bar">
 <div class="container d-flex justify-content-between flex-wrap gap-2">
 <span>Gemeinsam für einen starken Standort {{ portal_city }}</span>
@@ -11,8 +12,12 @@
 <header>
 <nav class="navbar navbar-expand-xl" aria-label="Hauptnavigation">
 <div class="container">
+{% if settings.logoFileName %}
+<a class="brand brand-logo" href="{{ path('app_home') }}"><img src="{{ path('portal_logo', {v: settings.logoFileName}) }}" alt="{{ portal_name }}"></a>
+{% else %}
 <a class="brand" href="{{ path('app_home') }}">Werbekreis<span>{{ portal_city }}</span>
 </a>
+{% endif %}
 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navigation" aria-controls="navigation" aria-expanded="false" aria-label="Navigation öffnen">
 <span class="navbar-toggler-icon">
 </span>

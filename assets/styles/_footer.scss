@@ -35,3 +35,6 @@
     }
   }
 }
+
+.footer-logo { display: inline-flex; }
+.footer-logo img { display: block; max-width: min(220px, 100%); max-height: 70px; width: auto; height: auto; object-fit: contain; }

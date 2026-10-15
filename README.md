@@ -13,7 +13,7 @@ Technisches Grundgerüst für ein lokales Stadtportal. PR1 enthält Anmeldung, B
 
 ## Installation
 
-Voraussetzungen: PHP 8.4 mit PDO MySQL, Intl, Zip, Ctype und Iconv, Composer 2, Node.js 22 oder neuer und MariaDB 10.11. Alternativ steht die unten beschriebene Docker-Umgebung bereit.
+Voraussetzungen: PHP 8.4 mit PDO MySQL, Intl, Zip, GD (PNG/JPEG), DOM, Fileinfo, Ctype und Iconv, Composer 2, Node.js 22 oder neuer und MariaDB 10.11. Alternativ steht die unten beschriebene Docker-Umgebung bereit.
 
 ```sh
 composer install
@@ -656,3 +656,15 @@ festen Platzhalter `{organization}`, `{contact_name}`, `{contact_role}`,
 verfügbar; die Admin-Hilfe zeigt sie ebenfalls an. Sie werden ausschließlich durch
 Portalwerte ersetzt und anschließend escaped. Meta-Titel können `{portal_name}`
 verwenden. Leere SEO-Felder verwenden öffentliche Standardwerte.
+
+## Website-Logo
+
+Unter **Admin → Einstellungen → Branding** können Administratoren das Website-Logo hochladen, ersetzen oder entfernen. Unterstützt werden **SVG, PNG und JPG/JPEG bis maximal 5 MB** (5.000.000 Bytes). PNG/JPEG müssen dekodierbar sein und dürfen höchstens 8000 × 8000 Pixel groß sein; PHP benötigt dafür GD mit PNG-/JPEG-Unterstützung. Ein neuer Upload hat Vorrang vor „Vorhandenes Logo entfernen“.
+
+SVG-Dateien werden aus Sicherheitsgründen mit `enshrined/svg-sanitize` geprüft/sanitized und anschließend erneut als DOM validiert. Zugelassen ist ein statischer SVG-Teilumfang: Skripte, Event-Handler, HTML/foreignObject, Animationen, Styles/CSS, Ressourcen-URLs, DOCTYPE/Entities und Processing Instructions werden abgelehnt. Lokale `#id`-Referenzen sind erlaubt. SVG mit Styles bitte vor dem Upload als statisches SVG mit Präsentationsattributen exportieren. Das Logo wird ausschließlich per `<img>` eingebunden.
+
+`PORTAL_UPLOAD_DIR` zeigt standardmäßig auf `%kernel.project_dir%/var/uploads/portal`, außerhalb des Webroots (Tests: `var/uploads/test_portal`). Das Verzeichnis wird bei Bedarf mit 0750 angelegt, Dateien mit 0640. Für Deployments ein persistentes, für PHP beschreibbares Verzeichnis verwenden und zusammen mit der Datenbank sichern. Die Datenbank speichert nur zufällige Dateinamen und den bereinigten Originalnamen als Anzeigemetadatum. Migration `Version20261015120000` vor der Nutzung ausführen; Social-Media-Werte und der Singleton bleiben erhalten.
+
+Die feste öffentliche Route `/media/portal/logo` liefert ausschließlich das aktuell konfigurierte Logo mit passendem MIME-Type, `nosniff` und restriktiver CSP. Der zufällige Dateiname als URL-Version und ETag verhindern veraltete Logos auch bei schnellen Wechseln. Alte Dateien werden erst nach erfolgreichem DB-Speichern gelöscht; bei DB-Fehlern wird der neue Upload entfernt. Gewöhnliche Fixture-Reloads erhalten Einstellungen und Logo-Dateien.
+
+Header und Footer verwenden das Logo ohne Farbfilter. Ohne Logo bleibt die bisherige Textmarke „Werbekreis Haselünne“ bestehen. Die dunkle Footer-Farbe und alle Social-Media-Einstellungen bleiben unverändert; die Eignung des Logos für helle und dunkle Hintergründe liegt beim gewählten Motiv.

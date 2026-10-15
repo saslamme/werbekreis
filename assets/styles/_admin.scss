@@ -130,3 +130,5 @@
   }
   @media (max-width: 349.98px) { .admin-kpi-grid, .admin-voucher-stats { grid-template-columns: minmax(0, 1fr); } }
 }
+
+.admin-logo-preview { display: block; width: auto; height: auto; max-width: min(300px, 100%); max-height: 100px; object-fit: contain; padding: .75rem; background: #fff; border: 1px solid #dce2dc; border-radius: .25rem; }
