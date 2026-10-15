@@ -92,3 +92,19 @@
     .hero-aside strong { font-size: 2.5rem; }
   }
 }
+
+// Information pages use the shared public surfaces and spacing tokens.
+.public-frontend {
+  .page-content { max-width: $wk-content-width; line-height: 1.75; overflow-wrap: anywhere; }
+  .page-content h2:not(:first-child) { margin-top: 2rem; }
+  .page-card {
+    height: 100%; padding: $wk-card-padding; border: 1px solid $wk-border;
+    border-radius: $wk-card-radius; background: $wk-surface; overflow-wrap: anywhere;
+    h2 { font-size: 1.15rem; letter-spacing: normal; }
+    p:last-child { margin-bottom: 0; }
+  }
+  .page-cta {
+    padding: clamp(1.5rem, 4vw, 3rem); border: 1px solid $wk-border;
+    border-radius: $wk-card-radius; background: $wk-surface-soft; overflow-wrap: anywhere;
+  }
+}

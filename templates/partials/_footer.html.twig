@@ -18,27 +18,27 @@
 <h2>Werbekreis</h2>
 <ul class="list-unstyled">
 <li>
-<a href="{{ path('app_home') }}#mitglied">Über uns</a>
+<a href="{{ path('about') }}">Über uns</a>
 </li>
 <li>
-<span>Vorstand – folgt</span>
+<a href="{{ path('board') }}">Vorstand</a>
 </li>
 <li>
-<a href="{{ path('app_home') }}#mitglied">Mitglied werden</a>
+<a href="{{ path('membership') }}">Mitglied werden</a>
 </li>
 <li>
-<a href="mailto:{{ portal_contact_email }}">Kontakt</a>
+<a href="{{ path('contact') }}">Kontakt</a>
 </li>
 </ul>
 </div>
 <div class="col-md-2">
 <h2>Rechtliches</h2>
 <ul class="list-unstyled">
-<li>Impressum – folgt</li>
-<li>Datenschutz – folgt</li>
+<li><a href="{{ path('imprint') }}">Impressum</a></li>
+<li><a href="{{ path('privacy') }}">Datenschutz</a></li>
 </ul>
 </div>
 </div>
-<div class="footer-bottom">© {{ 'now'|date('Y') }} {{ portal_name }} · Entwicklungsstand: Inhalte und Kontaktdaten sind Platzhalter.</div>
+<div class="footer-bottom">© {{ 'now'|date('Y') }} {{ portal_name }} · Website im Aufbau.</div>
 </div>
 </footer>

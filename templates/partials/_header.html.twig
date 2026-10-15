@@ -2,7 +2,7 @@
 <div class="container d-flex justify-content-between flex-wrap gap-2">
 <span>Gemeinsam für einen starken Standort {{ portal_city }}</span>
 <div class="d-flex gap-3">
-<a href="{{ path('app_home') }}#mitglied">Mitglied werden</a>{% if app.user %}<form action="{{ path('app_logout') }}" method="post">
+<a href="{{ path('membership') }}">Mitglied werden</a>{% if app.user %}<form action="{{ path('app_logout') }}" method="post">
 <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
 <button class="btn btn-link text-white p-0 small" type="submit">Abmelden</button>
 </form>{% else %}<a href="{{ path('app_login') }}">Mitglieder-Login</a>{% endif %}</div>
@@ -18,8 +18,8 @@
 </span>
 </button>
 <div class="collapse navbar-collapse" id="navigation">
-<ul class="navbar-nav ms-auto me-3 gap-xl-2">{% for label, anchor in {'Entdecken':'entdecken','Aktuelles':'aktuelles','Angebote':'angebote','Veranstaltungen':'veranstaltungen','Gutschein':'gutschein','Jobs':'jobs','Werbekreis':'mitglied'} %}<li class="nav-item">
-<a class="nav-link" href="{{ label == 'Gutschein' ? path('voucher_index') : label == 'Jobs' ? path('job_index') : (label == 'Aktuelles' ? path('news_index') : (label == 'Angebote' ? path('offer_index') : (label == 'Veranstaltungen' ? path('event_index') : path('app_home') ~ '#' ~ anchor))) }}">{{ label }}</a>
+<ul class="navbar-nav ms-auto me-3 gap-xl-2">{% for label, anchor in {'Entdecken':'entdecken','Aktuelles':'aktuelles','Angebote':'angebote','Veranstaltungen':'veranstaltungen','Gutschein':'gutschein','Jobs':'jobs','Werbekreis':'about'} %}<li class="nav-item">
+<a class="nav-link" href="{{ label == 'Werbekreis' ? path('about') : label == 'Gutschein' ? path('voucher_index') : label == 'Jobs' ? path('job_index') : (label == 'Aktuelles' ? path('news_index') : (label == 'Angebote' ? path('offer_index') : (label == 'Veranstaltungen' ? path('event_index') : path('app_home') ~ '#' ~ anchor))) }}">{{ label }}</a>
 </li>{% endfor %}</ul>
 <a class="btn btn-primary" href="{{ path('company_index') }}">Unternehmen finden</a>
 </div>
