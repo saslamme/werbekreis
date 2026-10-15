@@ -40,6 +40,19 @@ final class PortalSettings
     #[Assert\Length(max: 255)]
     private ?string $logoOriginalName = null;
 
+    #[ORM\Column(nullable: true)]
+    #[Assert\Range(min: 40, max: 1000)]
+    private ?int $logoMaxWidth = null;
+
+    #[ORM\Column(nullable: true)]
+    #[Assert\Range(min: 20, max: 400)]
+    private ?int $logoMaxHeight = null;
+
+    public function getLogoMaxWidth(): ?int { return $this->logoMaxWidth; }
+    public function getLogoMaxHeight(): ?int { return $this->logoMaxHeight; }
+    public function setLogoMaxWidth(?int $width): self { $this->logoMaxWidth = $width; return $this; }
+    public function setLogoMaxHeight(?int $height): self { $this->logoMaxHeight = $height; return $this; }
+
     public function getLogoFileName(): ?string { return $this->logoFileName; }
     public function getLogoOriginalName(): ?string { return $this->logoOriginalName; }
 

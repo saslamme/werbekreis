@@ -13,7 +13,7 @@
 <nav class="navbar navbar-expand-xl" aria-label="Hauptnavigation">
 <div class="container">
 {% if settings.logoFileName %}
-<a class="brand brand-logo" href="{{ path('app_home') }}"><img src="{{ path('portal_logo', {v: settings.logoFileName}) }}" alt="{{ portal_name }}"></a>
+<a class="brand brand-logo" href="{{ path('app_home') }}"><img style="--portal-logo-max-width: {{ settings.logoMaxWidth ?? 240 }}px; --portal-logo-max-height: {{ settings.logoMaxHeight ?? 60 }}px;" src="{{ path('portal_logo', {v: settings.logoFileName}) }}" alt="{{ portal_name }}"></a>
 {% else %}
 <a class="brand" href="{{ path('app_home') }}">Werbekreis<span>{{ portal_city }}</span>
 </a>

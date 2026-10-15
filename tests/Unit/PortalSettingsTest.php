@@ -6,6 +6,7 @@ namespace App\Tests\Unit;
 
 use App\Entity\PortalSettings;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Clock\{Clock, MockClock};
 use Symfony\Component\Validator\Validation;
 
@@ -34,6 +35,27 @@ final class PortalSettingsTest extends TestCase
             self::assertNull($settings->getFacebookUrl());
             self::assertNull($settings->getInstagramUrl());
         } finally { Clock::set($previous); }
+    }
+
+    public static function logoDimensions(): iterable
+    {
+        foreach ([[null, null], [240, 60], [300, 100], [1000, 400], [40, 20], [320, null], [null, 90]] as $values) {
+            yield [...$values, null];
+        }
+        foreach ([39, 1001, 0, -1] as $width) { yield [$width, 60, 'logoMaxWidth']; }
+        foreach ([19, 401, 0, -1] as $height) { yield [240, $height, 'logoMaxHeight']; }
+    }
+
+    #[DataProvider('logoDimensions')]
+    public function testLogoDimensionValidation(?int $width, ?int $height, ?string $invalidField): void
+    {
+        $settings = (new PortalSettings())->setLogoMaxWidth($width)->setLogoMaxHeight($height);
+        self::assertSame($width, $settings->getLogoMaxWidth());
+        self::assertSame($height, $settings->getLogoMaxHeight());
+        $validator = Validation::createValidatorBuilder()->enableAttributeMapping()->getValidator();
+        $violations = $validator->validate($settings);
+        self::assertCount($invalidField === null ? 0 : 1, $violations);
+        if ($invalidField !== null) { self::assertSame($invalidField, $violations[0]->getPropertyPath()); }
     }
 
     public function testValidation(): void
