@@ -1,4 +1,4 @@
-.event-card { height: 100%; border: 1px solid #dce3d7; border-radius: .75rem; background: white; overflow: hidden; }
+.event-card { height: 100%; border: 1px solid $wk-border; border-radius: .75rem; background: white; overflow: hidden; }
 .event-card.is-featured { border-top: 4px solid $wk-green; }
 .event-card-image, .event-card-fallback { height: 180px; width: 100%; object-fit: cover; }
 .event-card-fallback { display: grid; place-items: center; color: $wk-green; background: $wk-light; font-size: 2rem; }

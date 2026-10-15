@@ -1,4 +1,4 @@
-<form class="directory-search" method="get" action="{{ path('company_index') }}" role="search">
+<form class="directory-search public-filters" method="get" action="{{ path('company_index') }}" role="search">
 <div class="row g-2 align-items-end">
 <div class="col-md-4">
 <label class="form-label" for="directory-q">Suchbegriff</label>
@@ -19,6 +19,6 @@
 <select class="form-select" id="directory-radius" name="radius">{% for radius in radii %}<option value="{{ radius }}"{{ radius == location.radius ? ' selected' }}>{{ radius }} km</option>{% endfor %}</select></div>
 {% if location.view == 'karte' %}<input type="hidden" name="ansicht" value="karte">{% endif %}
 {% if location.point and not location.location %}<input type="hidden" name="lat" value="{{ location.point.latitude }}"><input type="hidden" name="lng" value="{{ location.point.longitude }}">{% endif %}
-<div class="col-md-4 d-grid"><button class="btn btn-primary" type="submit">Unternehmen finden</button></div>
+<div class="col-12 filter-actions"><button class="btn btn-primary" type="submit">Unternehmen finden</button></div>
 </div>
 </form>

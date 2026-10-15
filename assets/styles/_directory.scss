@@ -2,7 +2,7 @@
 .directory-hero { background: $wk-light; padding: 2.5rem 0 2rem; }
 .directory-hero h1 { font-size: clamp(2rem, 4vw, 3rem); letter-spacing: -.04em; font-weight: 700; }
 .breadcrumb { font-size: .875rem; margin-bottom: 1rem; }
-.directory-search { background: $wk-white; border: 1px solid #e4e8e1; border-radius: .4rem; padding: 1rem; }
+.directory-search { background: $wk-white; border: 1px solid $wk-border; border-radius: .4rem; padding: 1rem; }
 .category-filter { display: flex; flex-wrap: wrap; gap: .5rem; }
 .category-chip { border: 1px solid #d5ddd0; border-radius: 2rem; padding: .35rem .9rem; font-size: .9rem; text-decoration: none; color: $wk-dark; background: $wk-white; }
 .category-chip:hover, .category-chip:focus-visible { border-color: $wk-green; color: $wk-green-dark; }
@@ -10,7 +10,7 @@
 .category-count { display: block; font-size: .8rem; color: $wk-gray; margin-top: .3rem; }
 .directory-empty { border: 1px dashed #cfd8ca; border-radius: .4rem; padding: 2rem; text-align: center; }
 
-.company-card { position: relative; height: 100%; display: flex; flex-direction: column; gap: .8rem; padding: 1.4rem; background: $wk-white; border: 1px solid #e4e8e1; border-radius: .4rem; transition: border-color .15s ease, box-shadow .15s ease; }
+.company-card { position: relative; height: 100%; display: flex; flex-direction: column; gap: .8rem; padding: 1.4rem; background: $wk-white; border: 1px solid $wk-border; border-radius: .4rem; transition: border-color .15s ease, box-shadow .15s ease; }
 .company-card:hover, .company-card:focus-within { border-color: $wk-green; box-shadow: 0 .4rem 1.2rem rgba($wk-black, .06); }
 .company-card.is-featured { border-top: 3px solid $wk-green; }
 .company-card-head { display: flex; gap: 1rem; align-items: center; min-width: 0; }
@@ -22,11 +22,11 @@
 .company-card-text { color: $wk-gray; margin: 0; }
 .company-card-web { margin-top: auto; }
 .company-card-web a { z-index: 2; }
-.company-badge { background: #e8ede3; color: $wk-green-dark; font-weight: 600; margin-bottom: .3rem; }
+.company-badge { background: $wk-border-subtle; color: $wk-green-dark; font-weight: 600; margin-bottom: .3rem; }
 
-.company-logo { flex: 0 0 auto; width: 4rem; height: 4rem; border: 1px solid #e4e8e1; border-radius: .4rem; background: $wk-white; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.company-logo { flex: 0 0 auto; width: 4rem; height: 4rem; border: 1px solid $wk-border; border-radius: .4rem; background: $wk-white; display: flex; align-items: center; justify-content: center; overflow: hidden; }
 .company-logo img { width: 100%; height: 100%; object-fit: contain; padding: .3rem; }
-.company-logo span { font-size: 1.6rem; font-weight: 700; color: $wk-green; background: #e8ede3; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+.company-logo span { font-size: 1.6rem; font-weight: 700; color: $wk-green; background: $wk-border-subtle; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
 .company-logo-lg { width: 6.5rem; height: 6.5rem; }
 .company-logo-lg span { font-size: 2.6rem; }
 
@@ -44,7 +44,7 @@
 .company-section { margin-bottom: 2.5rem; }
 .company-section h2, .company-panel h2 { font-size: 1.35rem; font-weight: 700; margin-bottom: 1rem; }
 .company-description { max-width: 46rem; }
-.company-panel { border: 1px solid #e4e8e1; border-radius: .4rem; padding: 1.4rem; margin-bottom: 1.5rem; overflow-wrap: anywhere; }
+.company-panel { border: 1px solid $wk-border; border-radius: .4rem; padding: 1.4rem; margin-bottom: 1.5rem; overflow-wrap: anywhere; }
 .company-contact li { display: flex; gap: .7rem; align-items: baseline; margin-bottom: .5rem; }
 .company-contact li > .fa-solid:first-child { color: $wk-green; width: 1rem; flex: 0 0 1rem; }
 
@@ -54,9 +54,9 @@
 .opening-hours dt { font-weight: 600; }
 .opening-hours dd { margin: 0; text-align: right; }
 
-.contact-person { display: flex; gap: 1rem; align-items: flex-start; border: 1px solid #e4e8e1; border-radius: .4rem; padding: 1rem; height: 100%; overflow-wrap: anywhere; }
+.contact-person { display: flex; gap: 1rem; align-items: flex-start; border: 1px solid $wk-border; border-radius: .4rem; padding: 1rem; height: 100%; overflow-wrap: anywhere; }
 .contact-person-image { flex: 0 0 3.5rem; width: 3.5rem; height: 3.5rem; border-radius: 50%; object-fit: cover; }
-.contact-person-fallback { display: flex; align-items: center; justify-content: center; background: #e8ede3; color: $wk-green; }
+.contact-person-fallback { display: flex; align-items: center; justify-content: center; background: $wk-border-subtle; color: $wk-green; }
 .min-w-0 { min-width: 0; }
 
 .company-gallery { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 12rem), 1fr)); gap: .75rem; }
