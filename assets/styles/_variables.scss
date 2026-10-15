@@ -14,3 +14,14 @@ $border-radius: .35rem;
 $btn-padding-y: .75rem;
 $btn-padding-x: 1.3rem;
 $fa-font-path: './webfonts';
+
+// Shared public surfaces; semantic danger remains $wk-red.
+$wk-border: #dce3d7;
+$wk-border-subtle: #e8ede3;
+$wk-surface: $wk-white;
+$wk-surface-soft: #edf2e9;
+$wk-card-radius: .75rem;
+$wk-card-padding: 1.4rem;
+$wk-shadow-soft: 0 .2rem .75rem rgba($wk-black, .045);
+$wk-section-space: clamp(2.5rem, 5vw, 4rem);
+$wk-content-width: 50rem;

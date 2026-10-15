@@ -1,4 +1,4 @@
-.offer-card { position: relative; height: 100%; border: 1px solid #dce3d7; border-radius: .75rem; background: white; overflow: hidden; }
+.offer-card { position: relative; height: 100%; border: 1px solid $wk-border; border-radius: .75rem; background: white; overflow: hidden; }
 .offer-card.is-featured { border-top: 4px solid $wk-green; }
 .offer-card-image, .offer-card-fallback { height: 190px; width: 100%; object-fit: cover; }
 .offer-card-fallback { display: grid; place-items: center; color: $wk-green; background: $wk-light; font-size: 2rem; }

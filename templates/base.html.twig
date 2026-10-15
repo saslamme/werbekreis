@@ -11,7 +11,7 @@
 <script src="{{ asset('generated/app.js') }}" defer>
 </script>
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
 <a class="skip-link" href="#main">Zum Inhalt</a>{% include 'partials/_header.html.twig' %}<main id="main">{% for message in app.flashes('success') %}<div class="container mt-3">
 <div class="alert alert-success" role="status">{{ message }}</div>
 </div>{% endfor %}{% block body %}{% endblock %}</main>{% include 'partials/_footer.html.twig' %}</body>

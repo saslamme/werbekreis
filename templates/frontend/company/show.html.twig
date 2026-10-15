@@ -1,4 +1,5 @@
 {% extends 'base.html.twig' %}
+{% block body_class %}public-frontend{% endblock %}
 {% set cover = company.coverImage %}
 {% set share_image = cover ?: company.logoImage %}
 {% set description = company.teaser ?: company.name ~ (company.city ? ' in ' ~ company.city : '') ~ ' im Unternehmensverzeichnis des ' ~ portal_name ~ '.' %}
@@ -20,7 +21,7 @@
 <header class="company-header">
 {% if cover %}<div class="company-cover"><img src="{{ path('company_image', {slug: company.slug, fileName: cover.fileName}) }}" alt="{{ cover.altText }}" decoding="async"></div>{% endif %}
 <div class="container">
-<nav aria-label="Brotkrumen"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{{ path('app_home') }}">Startseite</a></li><li class="breadcrumb-item"><a href="{{ path('company_index') }}">Unternehmen</a></li><li class="breadcrumb-item active" aria-current="page">{{ company.name }}</li></ol></nav>
+{% include 'partials/_breadcrumb.html.twig' with {items: [{label: 'Unternehmen', url: path('company_index')}, {label: company.name}]} only %}
 <div class="company-header-main">
 {% include 'frontend/company/_logo.html.twig' with {size: 'lg'} %}
 <div class="min-w-0">
@@ -31,7 +32,7 @@
 </div>
 </div>
 </header>
-<div class="section pt-4"><div class="container">
+<div class="section"><div class="container">
 <div class="row g-4 g-lg-5">
 <div class="col-lg-8">
 {% if company.description %}<section class="company-section" aria-labelledby="about-heading"><h2 id="about-heading">Über uns</h2><div class="company-description">{{ company.description|nl2br }}</div></section>{% endif %}
