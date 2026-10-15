@@ -3,8 +3,8 @@
 <div class="container">
 <div class="row gy-4">
 <div class="col-md-4">
-{% if settings.logoFileName %}
-<a class="brand footer-logo" href="{{ path('app_home') }}"><img style="--portal-logo-max-width: {{ settings.logoMaxWidth ?? 220 }}px; --portal-logo-max-height: {{ settings.logoMaxHeight ?? 70 }}px;" src="{{ path('portal_logo', {v: settings.logoFileName}) }}" alt="{{ portal_name }}"></a>
+{% if settings.footerLogoFileName or settings.logoFileName %}
+<a class="brand footer-logo" href="{{ path('app_home') }}"><img style="--portal-footer-logo-max-width: {{ settings.footerLogoMaxWidth ?? 220 }}px; --portal-footer-logo-max-height: {{ settings.footerLogoMaxHeight ?? 70 }}px;" src="{{ path(settings.footerLogoFileName ? 'portal_footer_logo' : 'portal_logo', {v: settings.footerLogoFileName ?? settings.logoFileName}) }}" alt="{{ portal_name }}"></a>
 {% else %}
 <a class="brand" href="{{ path('app_home') }}">Werbekreis<span>{{ portal_city }}</span>
 </a>

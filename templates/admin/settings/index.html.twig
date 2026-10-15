@@ -30,6 +30,35 @@
 {% endfor %}
 </div>
 <p class="small text-muted">Die Werte begrenzen die Darstellung des Logos. Das Seitenverhältnis bleibt erhalten.</p>
+<h3 class="h5 mt-4">Footer-Logo</h3>
+<p>Optional kann für den dunklen Footer ein separates Logo verwendet werden. Ohne separates Footer-Logo wird automatisch das Website-Logo verwendet.</p>
+{% if form.vars.data.footerLogoFileName %}
+<div class="mb-3">
+<div class="admin-footer-logo-preview-container">
+<img style="--portal-footer-logo-max-width: {{ form.vars.data.footerLogoMaxWidth ?? 220 }}px; --portal-footer-logo-max-height: {{ form.vars.data.footerLogoMaxHeight ?? 70 }}px;" class="admin-footer-logo-preview" src="{{ path('portal_footer_logo', {v: form.vars.data.footerLogoFileName}) }}" alt="{{ portal_name }}">
+</div>
+{% if form.vars.data.footerLogoOriginalName %}<p class="mt-2 text-break">{{ form.vars.data.footerLogoOriginalName }}</p>{% endif %}
+</div>
+{% else %}
+<p class="small text-muted">{{ form.vars.data.logoFileName ? 'Es wird aktuell das Website-Logo verwendet.' : 'Es wird aktuell die Textmarke verwendet.' }}</p>
+{% endif %}
+{{ form_row(form.footerLogoFile, {label: 'Footer-Logo hochladen'}) }}
+{% if form.removeFooterLogo is defined %}{{ form_row(form.removeFooterLogo) }}{% endif %}
+<h3 class="h5 mt-4">Darstellung</h3>
+<div class="row">
+{% for field in [form.footerLogoMaxWidth, form.footerLogoMaxHeight] %}
+<div class="col-md-6 mb-3">
+{{ form_label(field) }}
+<div class="input-group has-validation">
+{{ form_widget(field, {attr: {'aria-describedby': field.vars.id ~ '_unit ' ~ field.vars.id ~ '_help'}}) }}
+<span class="input-group-text" id="{{ field.vars.id }}_unit">px</span>
+{{ form_errors(field) }}
+</div>
+{{ form_help(field) }}
+</div>
+{% endfor %}
+</div>
+<p class="small text-muted">Die Werte begrenzen die Darstellung des Logos. Das Seitenverhältnis bleibt erhalten.</p>
 </section>
 <section class="admin-panel"><h2 class="h4">Social Media</h2>
 {{ form_row(form.facebookUrl) }}

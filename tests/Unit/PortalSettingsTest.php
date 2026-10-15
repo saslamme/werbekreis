@@ -58,6 +58,44 @@ final class PortalSettingsTest extends TestCase
         if ($invalidField !== null) { self::assertSame($invalidField, $violations[0]->getPropertyPath()); }
     }
 
+    public static function footerLogoDimensions(): iterable
+    {
+        foreach ([[null, null], [220, 70], [240, 60], [300, 100], [1000, 400], [40, 20], [320, null], [null, 90]] as $values) {
+            yield [...$values, null];
+        }
+        foreach ([39, 1001, 0, -1] as $width) { yield [$width, 60, 'footerLogoMaxWidth']; }
+        foreach ([19, 401, 0, -1] as $height) { yield [240, $height, 'footerLogoMaxHeight']; }
+    }
+
+    #[DataProvider('footerLogoDimensions')]
+    public function testFooterLogoDimensionValidation(?int $width, ?int $height, ?string $invalidField): void
+    {
+        $settings = (new PortalSettings())->setFooterLogoMaxWidth($width)->setFooterLogoMaxHeight($height);
+        self::assertSame($width, $settings->getFooterLogoMaxWidth());
+        self::assertSame($height, $settings->getFooterLogoMaxHeight());
+        $validator = Validation::createValidatorBuilder()->enableAttributeMapping()->getValidator();
+        $violations = $validator->validate($settings);
+        self::assertCount($invalidField === null ? 0 : 1, $violations);
+        if ($invalidField !== null) { self::assertSame($invalidField, $violations[0]->getPropertyPath()); }
+    }
+
+    public function testFooterFileNamesAndOriginalMetadata(): void
+    {
+        $settings = new PortalSettings();
+        self::assertNull($settings->getFooterLogoFileName());
+        foreach (['svg', 'png', 'jpg'] as $extension) {
+            $name = str_repeat('a', 32).'.'.$extension;
+            self::assertSame($name, $settings->setFooterLogoFileName($name)->getFooterLogoFileName());
+        }
+        foreach (['../../.env', '/tmp/a.png', str_repeat('a', 32).'.php', str_repeat('A', 32).'.svg', str_repeat('a', 32).".png\n"] as $name) {
+            try { $settings->setFooterLogoFileName($name); self::fail('Unsafe name accepted'); }
+            catch (\InvalidArgumentException) {}
+        }
+        $settings->setFooterLogoOriginalName(str_repeat('x', 255));
+        $this->expectException(\InvalidArgumentException::class);
+        $settings->setFooterLogoOriginalName(str_repeat('x', 256));
+    }
+
     public function testValidation(): void
     {
         $validator = Validation::createValidatorBuilder()->enableAttributeMapping()->getValidator();

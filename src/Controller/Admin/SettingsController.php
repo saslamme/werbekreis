@@ -23,9 +23,19 @@ final class SettingsController extends AbstractController
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
             try {
-                $assets->save($form->getData(), $form->get('logoFile')->getData(), $form->has('removeLogo') && $form->get('removeLogo')->getData());
+                $assets->save(
+                    $form->getData(),
+                    $form->get('logoFile')->getData(),
+                    $form->has('removeLogo') && $form->get('removeLogo')->getData(),
+                    $form->get('footerLogoFile')->getData(),
+                    $form->has('removeFooterLogo') && $form->get('removeFooterLogo')->getData(),
+                );
             } catch (\InvalidArgumentException $exception) {
-                $form->get('logoFile')->addError(new FormError($exception->getMessage()));
+                foreach (['logoFile', 'footerLogoFile'] as $field) {
+                    if ($form->get($field)->getData() !== null) {
+                        $form->get($field)->addError(new FormError($exception->getMessage()));
+                    }
+                }
             }
             if ($form->isValid()) {
                 $this->addFlash('success', 'Einstellungen gespeichert.');
