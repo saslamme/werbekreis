@@ -48,6 +48,8 @@
 {% set active = route == 'admin_news_categories' or route starts with 'admin_news_category_' %}
 <li><a class="admin-nav-link{{ active ? ' is-active' : '' }}" href="{{ path('admin_news_categories') }}"{% if active %} aria-current="page"{% endif %}><i class="fa-solid fa-folder-tree" aria-hidden="true"></i><span>News-Kategorien</span></a></li>
 {% if is_granted('ROLE_ADMIN') %}
+{% set active = route starts with 'admin_settings' %}
+<li><a class="admin-nav-link{{ active ? ' is-active' : '' }}" href="{{ path('admin_settings') }}"{% if active %} aria-current="page"{% endif %}><i class="fa-solid fa-gear" aria-hidden="true"></i><span>Einstellungen</span></a></li>
 {% set active = route == 'admin_users' or route starts with 'admin_user_' %}
 <li><a class="admin-nav-link{{ active ? ' is-active' : '' }}" href="{{ path('admin_users') }}"{% if active %} aria-current="page"{% endif %}><i class="fa-solid fa-users" aria-hidden="true"></i><span>Benutzer</span></a></li>
 {% endif %}
