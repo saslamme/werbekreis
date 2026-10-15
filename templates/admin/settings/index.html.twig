@@ -1,0 +1,12 @@
+{% extends 'admin/base.html.twig' %}
+{% block admin_body %}
+<div class="admin-page-header"><div><h1>Einstellungen</h1><p>Globale Einstellungen für das öffentliche Portal.</p></div></div>
+{{ form_start(form, {attr: {class: 'admin-edit-form'}}) }}
+{{ form_errors(form) }}
+<section class="admin-panel"><h2 class="h4">Social Media</h2>
+{{ form_row(form.facebookUrl) }}
+{{ form_row(form.instagramUrl) }}
+</section>
+<div class="admin-form-actions"><button class="btn btn-primary" type="submit">Speichern</button></div>
+{{ form_end(form) }}
+{% endblock %}

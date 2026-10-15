@@ -29,6 +29,7 @@ final class CmsMigrationTest extends KernelTestCase
         $connection = DriverManager::getConnection($params);
         try {
             $files = glob(dirname(__DIR__, 2).'/migrations/Version*.php');
+            $files = array_filter($files, static fn (string $file): bool => basename($file) <= 'Version20261015090000.php');
             sort($files);
             $cms = array_pop($files);
             foreach ($files as $file) { $this->executeMigration($connection, $file, 'up'); }

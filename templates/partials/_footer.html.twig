@@ -1,3 +1,4 @@
+{% set settings = portal_settings() %}
 <footer class="site-footer">
 <div class="container">
 <div class="row gy-4">
@@ -5,6 +6,12 @@
 <a class="brand" href="{{ path('app_home') }}">Werbekreis<span>{{ portal_city }}</span>
 </a>
 <p class="mt-4">Nah dran. Gemeinsam mehr bewegen.</p>
+{% if settings.facebookUrl or settings.instagramUrl %}
+<div class="social-links">
+{% if settings.facebookUrl %}<a class="social-link" href="{{ settings.facebookUrl }}" aria-label="Werbekreis Haselünne auf Facebook" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-facebook-f" aria-hidden="true"></i></a>{% endif %}
+{% if settings.instagramUrl %}<a class="social-link" href="{{ settings.instagramUrl }}" aria-label="Werbekreis Haselünne auf Instagram" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-instagram" aria-hidden="true"></i></a>{% endif %}
+</div>
+{% endif %}
 </div>
 <div class="col-6 col-md-3">
 <h2>Entdecken</h2>
