@@ -1,28 +1,5 @@
-{% extends 'base.html.twig' %}
-{% block body_class %}public-frontend{% endblock %}
-{% block title %}Mitglied werden | {{ portal_name }}{% endblock %}
-{% block meta_description %}Mitglied im Werbekreis Haselünne werden: gemeinsamer Auftritt, lokale Sichtbarkeit, Aktionen und Vernetzung.{% endblock %}
-{% block canonical %}<link rel="canonical" href="{{ url('membership') }}">{% endblock %}
-{% block body %}
-<header class="directory-hero"><div class="container">
-{% include 'partials/_breadcrumb.html.twig' with {items: [{label: 'Mitglied werden'}]} only %}
-<h1>Mitglied werden</h1>
-<p class="lead">Gemeinsam mehr für Haselünne bewegen.</p>
-</div></header>
-<section class="section"><div class="container page-content">
-<h2>Was eine Mitgliedschaft bietet</h2>
-<p>Im Werbekreis engagieren sich Unternehmen gemeinsam für einen lebendigen Standort. Als Mitglied können Sie Ihre Angebote sichtbar machen und sich mit anderen Unternehmen austauschen.</p>
-<ul>
-<li>Gemeinsamer Auftritt für die Unternehmen in Haselünne</li>
-<li>Sichtbarkeit im Unternehmensverzeichnis</li>
-<li>Veröffentlichung von Angeboten und Aktionen</li>
-<li>Veranstaltungen bekannt machen</li>
-<li>Stellenangebote veröffentlichen</li>
-<li>Teilnahme an gemeinsamen Aktionen</li>
-<li>Austausch und Vernetzung</li>
-<li>Mitgestaltung des Standortes</li>
-</ul>
-</div></section>
+{% extends 'frontend/page/_layout.html.twig' %}
+{% block page_content %}{{ parent() }}
 <section class="section pt-0"><div class="container"><div class="page-cta">
 <h2>Interesse an einer Mitgliedschaft?</h2>
 <p>Wir informieren Sie gerne persönlich über die Mitgliedschaft und die nächsten Schritte.</p>

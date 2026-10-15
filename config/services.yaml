@@ -7,8 +7,21 @@ services:
         autoconfigure: true
     App\:
         resource: '../src/'
-        exclude: '../src/{Entity,Enum,Doctrine,Geo/GeoPoint.php,Geo/GeocodingResult.php,Geo/DirectoryLocation.php,Kernel.php}'
+        exclude: '../src/{Entity,Enum,Doctrine,DataFixtures/CmsPreservingPurgerFactory.php,Geo/GeoPoint.php,Geo/GeocodingResult.php,Geo/DirectoryLocation.php,Kernel.php}'
 
     App\Geo\GeocodingServiceInterface: '@App\Geo\NominatimGeocodingService'
 
     App\Service\VoucherCodeGeneratorInterface: '@App\Service\VoucherCodeGenerator'
+
+when@dev:
+    services:
+        doctrine.fixtures.purger.orm_purger_factory:
+            class: App\DataFixtures\CmsPreservingPurgerFactory
+            tags: [{ name: doctrine.fixtures.purger_factory, alias: default }]
+
+when@test:
+    services:
+        doctrine.fixtures.purger.orm_purger_factory:
+            class: App\DataFixtures\CmsPreservingPurgerFactory
+            public: true
+            tags: [{ name: doctrine.fixtures.purger_factory, alias: default }]

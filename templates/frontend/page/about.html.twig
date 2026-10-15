@@ -1,30 +1,6 @@
-{% extends 'base.html.twig' %}
-{% block body_class %}public-frontend{% endblock %}
-{% block title %}Über uns | {{ portal_name }}{% endblock %}
-{% block meta_description %}Der Werbekreis Haselünne: lokale Unternehmen stärken, gemeinsame Aktionen gestalten und den Standort beleben.{% endblock %}
-{% block canonical %}<link rel="canonical" href="{{ url('about') }}">{% endblock %}
-{% block body %}
-<header class="directory-hero"><div class="container">
-{% include 'partials/_breadcrumb.html.twig' with {items: [{label: 'Über uns'}]} only %}
-<h1>Über den Werbekreis Haselünne</h1>
-<p class="lead">Gemeinsam für einen starken, lebendigen Standort.</p>
-</div></header>
-<section class="section"><div class="container page-content">
-<h2>Gemeinsam für den Standort</h2>
-<p>Der {{ portal_organization }} ist die Gemeinschaft engagierter Unternehmen aus {{ portal_city }}. Wir machen lokalen Handel, Gastronomie, Dienstleistungen und weitere Unternehmen sichtbar und stärken gemeinsam die Attraktivität unseres Standortes.</p>
-<p>Der Werbekreis unterstützt und organisiert Aktionen und Veranstaltungen, fördert die Zusammenarbeit der Unternehmen und schafft zusätzliche Anlässe, Haselünne zu besuchen, vor Ort einzukaufen und lokale Angebote zu entdecken. Dazu gehört auch die Zusammenarbeit mit der Stadt und weiteren lokalen Akteuren.</p>
-</div></section>
-<section class="section pt-0"><div class="container"><div class="row g-4">
-{% for title, text in {
-    'Lokal stärken': 'Wir setzen uns für die Unternehmen vor Ort ein und machen ihre Angebote sichtbar.',
-    'Gemeinsam sichtbar': 'Mit einem gemeinsamen Auftritt und abgestimmten Aktionen erreichen wir mehr Menschen.',
-    'Haselünne erleben': 'Veranstaltungen und gemeinsame Aktionen beleben die Innenstadt und den gesamten Standort.',
-    'Unternehmen vernetzen': 'Wir fördern den Austausch und die Zusammenarbeit unserer Mitgliedsunternehmen.'
-} %}
-<div class="col-md-6 col-lg-3"><div class="page-card"><h2>{{ title }}</h2><p>{{ text }}</p></div></div>
-{% endfor %}
-</div><div class="d-flex flex-wrap align-items-center gap-3 mt-4">
-<a class="btn btn-primary" href="{{ path('membership') }}">Mitglied im Werbekreis werden</a>
-<a href="{{ path('board') }}">Unser Vorstand</a>
+{% extends 'frontend/page/_layout.html.twig' %}
+{% block page_content %}{{ parent() }}
+<section class="section pt-0"><div class="container"><div class="d-flex flex-wrap align-items-center gap-3">
+<a class="btn btn-primary" href="{{ path('membership') }}">Mitglied im Werbekreis werden</a><a href="{{ path('board') }}">Unser Vorstand</a>
 </div></div></section>
 {% endblock %}

@@ -35,6 +35,7 @@ final class CookieNoticeTest extends WebTestCase
         foreach (['wk_cookie_notice', '180 Tage', 'Keine Weitergabe an Dritte.', 'Im aktuellen Stand sind keine Marketing- oder Tracking-Cookies eingebaut.', 'keine Zustimmung zum Laden der Karte', 'separate bewusste Nutzeraktion'] as $text) {
             self::assertSelectorTextContains('main', $text);
         }
-        self::assertSelectorTextSame('main dd:nth-of-type(3) code', '1');
+        // CMS sections render escaped plain text instead of the former definition list.
+        self::assertSelectorTextContains('main', 'Inhalt: 1; keine User-ID oder sonstigen personenbezogenen Inhalte.');
     }
 }
