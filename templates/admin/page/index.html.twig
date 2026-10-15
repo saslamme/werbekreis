@@ -1,0 +1,11 @@
+{% extends 'admin/base.html.twig' %}
+{% block admin_body %}
+<div class="admin-page-header"><div><h1>Seiteninhalte</h1><p>Statische Inhalte des öffentlichen Portals verwalten.</p></div>
+<a class="btn btn-outline-primary" href="{{ path('admin_pages_board_members') }}">Vorstand verwalten</a></div>
+<div class="table-responsive"><table class="table">
+<thead><tr><th>Seite</th><th>URL</th><th>Zuletzt geändert</th><th class="admin-table-actions">Aktion</th></tr></thead>
+<tbody>{% for page in pages %}<tr>
+<td>{{ page.label }}</td><td><a href="{{ page.publicUrl }}">{{ page.publicUrl }}</a></td><td>{{ page.updatedAt|date('d.m.Y H:i') }}</td>
+<td class="admin-table-actions">{% if not page.legal or is_granted('ROLE_ADMIN') %}<a href="{{ path('admin_pages_edit', {code: page.code}) }}">Bearbeiten</a>{% else %}<span class="text-secondary">Nur Admin</span>{% endif %}</td>
+</tr>{% endfor %}</tbody></table></div>
+{% endblock %}

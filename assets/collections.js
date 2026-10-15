@@ -4,10 +4,16 @@ document.addEventListener('click', (event) => {
         const collection = add.closest('[data-collection]');
         const index = Number(collection.dataset.index);
         const entry = document.createElement('div');
-        entry.className = 'border rounded p-3 mb-3';
+        entry.className = collection.dataset.entryClass || 'border rounded p-3 mb-3';
         entry.dataset.collectionEntry = '';
         // The prototype comes from the server's escaped Symfony form template.
         entry.innerHTML = collection.dataset.prototype.replaceAll('__name__', String(index));
+        if (collection.hasAttribute('data-auto-position')) {
+            const positions = [...collection.querySelectorAll('[name$="[position]"]')]
+                .map((input) => Number(input.value)).filter(Number.isFinite);
+            const position = entry.querySelector('[name$="[position]"]');
+            if (position) position.value = String(Math.max(0, ...positions) + 10);
+        }
         const remove = document.createElement('button');
         remove.type = 'button';
         remove.className = 'btn btn-outline-danger btn-sm';

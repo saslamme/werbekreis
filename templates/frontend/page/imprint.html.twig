@@ -1,20 +1,4 @@
-{% extends 'base.html.twig' %}
-{% block body_class %}public-frontend{% endblock %}
-{% block title %}Impressum | {{ portal_name }}{% endblock %}
-{% block meta_description %}Anbieter- und Kontaktinformationen des Werbekreises Haselünne e.V.{% endblock %}
-{% block canonical %}<link rel="canonical" href="{{ url('imprint') }}">{% endblock %}
-{% block body %}
-<header class="directory-hero"><div class="container">
-{% include 'partials/_breadcrumb.html.twig' with {items: [{label: 'Impressum'}]} only %}
-<h1>Impressum</h1>
-</div></header>
-<section class="section"><div class="container page-content">
-<h2>Angaben gemäß den gesetzlichen Informationspflichten</h2>
-{% include 'frontend/page/_address.html.twig' %}
-<h2>Vertreten durch</h2>
-<p>{{ portal_contact_name }}<br>{{ portal_contact_role }}</p>
-<h2>Kontakt</h2>
-{% include 'frontend/page/_contact_links.html.twig' %}
-<p class="small text-secondary mt-4">Entwicklungshinweis: Registerangaben werden vor dem produktiven Start ergänzt.</p>
-</div></section>
+{% extends 'frontend/page/_layout.html.twig' %}
+{% block page_content %}{{ parent() }}
+<section class="section pt-0"><div class="container page-content">{% include 'frontend/page/_contact_links.html.twig' %}</div></section>
 {% endblock %}

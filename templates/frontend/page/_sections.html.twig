@@ -1,0 +1,17 @@
+{% if page.sections|length %}
+<section class="section"><div class="container"><div class="row g-4">
+{% for section in page.sections %}
+{% if section.style == 'feature' %}
+<div class="col-md-6 col-lg-3"><div class="page-card">
+{% if section.heading %}<h2>{{ section.heading }}</h2>{% endif %}
+<p>{% include 'frontend/page/_text.html.twig' with {text: section.body} %}</p>
+</div></div>
+{% else %}
+<div class="col-12"><div class="page-content{{ section.style == 'notice' ? ' small text-secondary' : '' }}">
+{% if section.heading %}<h2>{{ section.heading }}</h2>{% endif %}
+<p>{% include 'frontend/page/_text.html.twig' with {text: section.body} %}</p>
+</div></div>
+{% endif %}
+{% endfor %}
+</div></div></section>
+{% endif %}

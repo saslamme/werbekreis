@@ -1,0 +1,11 @@
+{# Only these fixed tokens are replaced. The result is escaped by nl2br; never evaluated as Twig/HTML. #}
+{{ text|replace({
+    '{organization}': portal_organization,
+    '{contact_name}': portal_contact_name,
+    '{contact_role}': portal_contact_role,
+    '{contact_phone}': portal_contact_phone,
+    '{contact_email}': portal_contact_email,
+    '{street}': portal_street,
+    '{postal_code}': portal_postal_code,
+    '{city}': portal_city
+})|nl2br }}

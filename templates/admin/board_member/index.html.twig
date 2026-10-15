@@ -1,0 +1,10 @@
+{% extends 'admin/base.html.twig' %}
+{% block admin_body %}
+<div class="admin-page-header"><div><h1>Vorstand</h1><p>Mitglieder, Funktionen und Reihenfolge verwalten.</p></div>
+<a class="btn btn-primary" href="{{ path('admin_pages_board_members_new') }}">Mitglied hinzufügen</a></div>
+<div class="table-responsive"><table class="table">
+<thead><tr><th>Name</th><th>Funktion</th><th>Position</th><th>Status</th><th class="admin-table-actions">Aktionen</th></tr></thead>
+<tbody>{% for member in members %}<tr><td>{{ member.name }}</td><td>{{ member.role }}</td><td>{{ member.position }}</td><td>{{ member.active ? 'Aktiv' : 'Inaktiv' }}</td><td class="admin-table-actions"><a href="{{ path('admin_pages_board_members_edit', {id: member.id}) }}">Bearbeiten</a></td></tr>
+{% else %}<tr><td colspan="5">Noch keine Vorstandsmitglieder.</td></tr>{% endfor %}</tbody></table></div>
+<a href="{{ path('admin_pages') }}">Zurück zu Seiteninhalte</a>
+{% endblock %}

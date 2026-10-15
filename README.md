@@ -628,3 +628,31 @@ Alle öffentlichen Company-, Offer-, Event-, News- und Job-Abfragen prüfen den 
 Die Tests decken Statusübergänge, Audit, optimistische und pessimistische Konkurrenzkontrolle, Live-Konflikte, Revisionen, Public-Sichtbarkeit aller Typen, Company-Übernahme, Ownership-Voter, sofortigen Rechteentzug, direkte fremde IDs, sichere Formfelder, CRUD/Submit aller Member-Inhaltstypen, Company-Auswahl und die CSRF-geschützte Review Queue ab. Die vorhandenen PR1–PR9-Suiten bleiben Bestandteil der vollständigen Prüfung.
 
 **Außerhalb von PR10:** Mitgliedsbeiträge und Abrechnung, Payment, komplexe Revisionshistorie/Undo/Branching, Messaging/Chat, E-Mail-Automation, SSO und ein vollständiges Multi-Tenant-SaaS-Modell.
+
+### Seiteninhalte
+
+Die sechs zentralen Informationsseiten (Über uns, Vorstand, Mitglied werden,
+Kontakt, Impressum und Datenschutz) werden über **Admin → Inhalte → Seiteninhalte**
+verwaltet. Titel, Einleitung, SEO und sortierte Klartext-Abschnitte mit den
+Darstellungen Standard, Feature-Karte oder Hinweis sind bearbeitbar. Unter
+„Vorstand verwalten“ können Personen angelegt, bearbeitet, sortiert und deaktiviert
+werden.
+
+Öffentliche URLs sind feste Systemrouten und können im Admin weder geändert noch
+angelegt oder gelöscht werden. ROLE_EDITOR verwaltet Inhalte und Vorstand;
+Impressum und Datenschutz sind ausschließlich für ROLE_ADMIN bearbeitbar.
+Kein HTML/WYSIWYG, keine Member-Bearbeitung und keine Moderationsintegration.
+
+Beim Deployment **Doctrine-Migrationen ausführen**: `Version20261015090000` legt
+`ContentPage`, `ContentPageSection` und `BoardMember` an und übernimmt automatisch
+die bisherigen Inhalte einschließlich Cookie-Dokumentation und neun
+Vorstandsmitgliedern. Reguläre Demo-Fixtures legen keine CMS-Daten an und
+überschreiben sie nicht. Der Standard-Fixture-Purger schließt die drei CMS-Tabellen
+aus; auch beim regulären Neuladen der Demo-Fixtures bleiben sie erhalten.
+
+Kontaktdaten bleiben in der Portal-Konfiguration. In Klartext-Abschnitten sind die
+festen Platzhalter `{organization}`, `{contact_name}`, `{contact_role}`,
+`{contact_phone}`, `{contact_email}`, `{street}`, `{postal_code}` und `{city}`
+verfügbar; die Admin-Hilfe zeigt sie ebenfalls an. Sie werden ausschließlich durch
+Portalwerte ersetzt und anschließend escaped. Meta-Titel können `{portal_name}`
+verwenden. Leere SEO-Felder verwenden öffentliche Standardwerte.
