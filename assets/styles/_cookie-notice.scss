@@ -1,0 +1,24 @@
+.cookie-notice {
+  position: fixed;
+  inset: auto 1rem 1rem;
+  width: calc(100% - 2rem);
+  max-width: 48rem;
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+  margin-inline: auto;
+  padding: 1rem 1.25rem;
+  z-index: 1020; // Below Bootstrap's modal backdrop (1050).
+  border: 1px solid $wk-border;
+  border-radius: $wk-card-radius;
+  background: $wk-surface;
+  color: $wk-dark;
+  box-shadow: $wk-shadow-soft;
+  font-size: .9375rem;
+  overflow-wrap: anywhere;
+
+  p { margin: 0 0 .75rem; }
+  .cookie-notice-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem 1.25rem; }
+  a { color: $wk-green-dark; }
+  a:focus-visible, button:focus-visible { outline: 3px solid $wk-green; outline-offset: 3px; }
+  &[hidden], [hidden] { display: none !important; }
+}

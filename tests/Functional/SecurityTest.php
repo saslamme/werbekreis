@@ -23,10 +23,11 @@ final class SecurityTest extends DatabaseTestCase
         $this->login($name);
         $this->client->request('GET', $path);
         self::assertResponseStatusCodeSame($status);
+        if ($status === 200) { self::assertSelectorNotExists('[data-cookie-notice]'); }
     }
     public static function accessRules(): array
     {
-        return [['admin', '/admin', 200], ['editor', '/admin', 200], ['member', '/admin', 403], ['member', '/member', 200], ['editor', '/member', 403], ['editor', '/admin/users', 403], ['member', '/admin/users', 403]];
+        return [['admin', '/admin', 200], ['editor', '/admin', 200], ['member', '/admin', 403], ['member', '/member', 200], ['editor', '/member', 403], ['admin', '/admin/vouchers/redeem', 200], ['editor', '/admin/users', 403], ['member', '/admin/users', 403]];
     }
     #[DataProvider('loginDestinations')]
     public function testRealLogin(string $name, string $destination): void
