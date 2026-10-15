@@ -121,7 +121,9 @@ final class LogoDimensionsTest extends DirectoryDatabaseTestCase
             self::assertResponseIsSuccessful();
             foreach (['header' => [240, 60], '.site-footer' => [220, 70]] as $selector => [$defaultWidth, $defaultHeight]) {
                 $style = $crawler->filter($selector.' .brand img')->attr('style');
-                self::assertSame('--portal-logo-max-width: '.($width ?? $defaultWidth).'px; --portal-logo-max-height: '.($height ?? $defaultHeight).'px;', $style);
+                self::assertSame($selector === 'header'
+                    ? '--portal-logo-max-width: '.($width ?? $defaultWidth).'px; --portal-logo-max-height: '.($height ?? $defaultHeight).'px;'
+                    : '--portal-footer-logo-max-width: 220px; --portal-footer-logo-max-height: 70px;', $style);
             }
         }
     }

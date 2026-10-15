@@ -35,6 +35,24 @@ final class PortalSettingsType extends AbstractType
                 'attr' => ['min' => 20, 'max' => 400, 'step' => 1],
                 'invalid_message' => 'Bitte eine ganze Zahl in Pixeln eingeben.',
             ])
+            ->add('footerLogoFile', FileType::class, [
+                'label' => 'Footer-Logo', 'mapped' => false, 'required' => false,
+                'attr' => ['accept' => '.svg,.png,.jpg,.jpeg,image/svg+xml,image/png,image/jpeg'],
+                'help' => 'Optionales separates Logo für den Footer. SVG, PNG oder JPG/JPEG, maximal 5 MB. Leer lassen, um das Website-Logo auch im Footer zu verwenden.',
+                'invalid_message' => \App\Service\PortalAssetStorage::UPLOAD_ERROR,
+            ])
+            ->add('footerLogoMaxWidth', IntegerType::class, [
+                'label' => 'Maximale Breite', 'required' => false,
+                'help' => 'Maximale Breite des Footer-Logos in Pixeln. Leer lassen für 220 px.',
+                'attr' => ['min' => 40, 'max' => 1000, 'step' => 1],
+                'invalid_message' => 'Bitte eine ganze Zahl in Pixeln eingeben.',
+            ])
+            ->add('footerLogoMaxHeight', IntegerType::class, [
+                'label' => 'Maximale Höhe', 'required' => false,
+                'help' => 'Maximale Höhe des Footer-Logos in Pixeln. Leer lassen für 70 px.',
+                'attr' => ['min' => 20, 'max' => 400, 'step' => 1],
+                'invalid_message' => 'Bitte eine ganze Zahl in Pixeln eingeben.',
+            ])
             ->add('facebookUrl', UrlType::class, [
                 'label' => 'Facebook', 'required' => false, 'default_protocol' => null,
                 'help' => 'Vollständige URL zur Facebook-Seite. Leer lassen, um Facebook im Footer auszublenden.',
@@ -47,7 +65,7 @@ final class PortalSettingsType extends AbstractType
             ]);
         // IntegerType's locale parser also accepts comma fractions and exponent notation.
         // Reject these before parsing so dimensions are never silently rounded.
-        foreach (['logoMaxWidth', 'logoMaxHeight'] as $name) {
+        foreach (['logoMaxWidth', 'logoMaxHeight', 'footerLogoMaxWidth', 'footerLogoMaxHeight'] as $name) {
             $builder->get($name)->addViewTransformer(new CallbackTransformer(
                 static fn ($value) => $value,
                 static function ($value) {
@@ -59,13 +77,20 @@ final class PortalSettingsType extends AbstractType
             ));
         }
         // Normalize PHP upload-limit/transport errors to the same actionable message.
-        $builder->get('logoFile')->addEventListener(FormEvents::POST_SUBMIT, static function (FormEvent $event): void {
-            $field = $event->getForm();
-            if (count($field->getErrors()) > 0) {
-                $field->clearErrors();
-                $field->addError(new FormError(\App\Service\PortalAssetStorage::UPLOAD_ERROR));
-            }
-        });
+        foreach (['logoFile', 'footerLogoFile'] as $uploadField) {
+            $builder->get($uploadField)->addEventListener(FormEvents::POST_SUBMIT, static function (FormEvent $event): void {
+                $field = $event->getForm();
+                if (count($field->getErrors()) > 0) {
+                    $field->clearErrors();
+                    $field->addError(new FormError(\App\Service\PortalAssetStorage::UPLOAD_ERROR));
+                }
+            });
+        }
+        if ($options['data']?->getFooterLogoFileName() !== null) {
+            $builder->add('removeFooterLogo', CheckboxType::class, [
+                'label' => 'Vorhandenes Footer-Logo entfernen', 'mapped' => false, 'required' => false,
+            ]);
+        }
         if ($options['data']?->getLogoFileName() !== null) {
             $builder->add('removeLogo', CheckboxType::class, [
                 'label' => 'Vorhandenes Logo entfernen', 'mapped' => false, 'required' => false,

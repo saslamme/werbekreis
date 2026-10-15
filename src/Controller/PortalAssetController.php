@@ -15,7 +15,17 @@ final class PortalAssetController extends AbstractController
     #[Route('/media/portal/logo', name: 'portal_logo', methods: ['GET'])]
     public function logo(Request $request, PortalSettingsRepository $settings, PortalAssetStorage $assets): BinaryFileResponse
     {
-        $name = $settings->getSettings()->getLogoFileName();
+        return $this->serve($request, $assets, $settings->getSettings()->getLogoFileName());
+    }
+
+    #[Route('/media/portal/footer-logo', name: 'portal_footer_logo', methods: ['GET'])]
+    public function footerLogo(Request $request, PortalSettingsRepository $settings, PortalAssetStorage $assets): BinaryFileResponse
+    {
+        return $this->serve($request, $assets, $settings->getSettings()->getFooterLogoFileName());
+    }
+
+    private function serve(Request $request, PortalAssetStorage $assets, ?string $name): BinaryFileResponse
+    {
         if ($name === null) { throw $this->createNotFoundException(); }
         try {
             $path = $assets->path($name);

@@ -46,32 +46,47 @@ final class PortalAssetStorage
         return array_search(pathinfo($name, PATHINFO_EXTENSION), self::MIME_EXTENSIONS, true);
     }
 
-    public function save(PortalSettings $settings, ?UploadedFile $file, bool $remove = false): void
+    public function save(PortalSettings $settings, ?UploadedFile $file, bool $remove = false, ?UploadedFile $footerFile = null, bool $removeFooter = false): void
     {
-        $oldName = $settings->getLogoFileName();
-        $oldOriginal = $settings->getLogoOriginalName();
-        $newName = null;
+        $slots = [
+            'Logo' => [$file, $remove],
+            'FooterLogo' => [$footerFile, $removeFooter],
+        ];
+        $old = [];
+        $staged = [];
+        foreach ($slots as $slot => $_) {
+            $old[$slot] = [$settings->{'get'.$slot.'FileName'}(), $settings->{'get'.$slot.'OriginalName'}()];
+        }
         try {
-            // A new upload deliberately takes precedence over the remove checkbox.
-            if ($file !== null) {
-                $newName = $this->stage($file);
-                $original = basename(str_replace('\\', '/', $file->getClientOriginalName()));
-                $original = preg_replace('/[\x00-\x1f\x7f]/u', '', $original) ?? '';
-                $settings->setLogoFileName($newName)->setLogoOriginalName(mb_substr($original, 0, 255));
-            } elseif ($remove) {
-                $settings->setLogoFileName(null)->setLogoOriginalName(null);
+            // Stage both uploads before changing either slot's metadata.
+            foreach ($slots as $slot => [$upload]) {
+                if ($upload !== null) { $staged[$slot] = $this->stage($upload); }
+            }
+            foreach ($slots as $slot => [$upload, $removeSlot]) {
+                // Upload takes precedence over removal, independently for each slot.
+                if ($upload !== null) {
+                    $original = basename(str_replace('\\', '/', $upload->getClientOriginalName()));
+                    $original = preg_replace('/[\x00-\x1f\x7f]/u', '', $original) ?? '';
+                    $settings->{'set'.$slot.'FileName'}($staged[$slot]);
+                    $settings->{'set'.$slot.'OriginalName'}(mb_substr($original, 0, 255));
+                } elseif ($removeSlot) {
+                    $settings->{'set'.$slot.'FileName'}(null);
+                    $settings->{'set'.$slot.'OriginalName'}(null);
+                }
             }
             $this->em->flush();
         } catch (\Throwable $exception) {
-            if ($newName !== null) {
-                $this->removeFile($newName);
+            foreach ($staged as $name) { $this->removeFile($name); }
+            foreach ($old as $slot => [$name, $original]) {
+                $settings->{'set'.$slot.'FileName'}($name);
+                $settings->{'set'.$slot.'OriginalName'}($original);
             }
-            $settings->setLogoFileName($oldName)->setLogoOriginalName($oldOriginal);
             throw $exception;
         }
-        // Never remove the previous asset until the database commit succeeds.
-        if (($newName !== null || $remove) && $oldName !== null) {
-            $this->removeFile($oldName);
+        // Delete only after commit, and never delete a file still used by either slot.
+        $active = [$settings->getLogoFileName(), $settings->getFooterLogoFileName()];
+        foreach (array_unique(array_column($old, 0)) as $name) {
+            if ($name !== null && !in_array($name, $active, true)) { $this->removeFile($name); }
         }
     }
 

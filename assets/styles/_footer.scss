@@ -37,4 +37,4 @@
 }
 
 .footer-logo { display: inline-flex; min-width: 0; max-width: 100%; }
-.footer-logo img { display: block; max-width: min(var(--portal-logo-max-width, 220px), 100%); max-height: var(--portal-logo-max-height, 70px); width: auto; height: auto; object-fit: contain; }
+.footer-logo img { display: block; max-width: min(var(--portal-footer-logo-max-width, 220px), 100%); max-height: var(--portal-footer-logo-max-height, 70px); width: auto; height: auto; object-fit: contain; }

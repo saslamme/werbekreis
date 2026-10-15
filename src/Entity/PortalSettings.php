@@ -75,6 +75,49 @@ final class PortalSettings
         return $this;
     }
 
+    #[ORM\Column(length: 36, nullable: true)]
+    #[Assert\Regex(pattern: self::LOGO_NAME_PATTERN)]
+    private ?string $footerLogoFileName = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(max: 255)]
+    private ?string $footerLogoOriginalName = null;
+
+    #[ORM\Column(nullable: true)]
+    #[Assert\Range(min: 40, max: 1000)]
+    private ?int $footerLogoMaxWidth = null;
+
+    #[ORM\Column(nullable: true)]
+    #[Assert\Range(min: 20, max: 400)]
+    private ?int $footerLogoMaxHeight = null;
+
+    public function getFooterLogoMaxWidth(): ?int { return $this->footerLogoMaxWidth; }
+    public function getFooterLogoMaxHeight(): ?int { return $this->footerLogoMaxHeight; }
+    public function setFooterLogoMaxWidth(?int $width): self { $this->footerLogoMaxWidth = $width; return $this; }
+    public function setFooterLogoMaxHeight(?int $height): self { $this->footerLogoMaxHeight = $height; return $this; }
+
+    public function getFooterLogoFileName(): ?string { return $this->footerLogoFileName; }
+    public function getFooterLogoOriginalName(): ?string { return $this->footerLogoOriginalName; }
+
+    public function setFooterLogoFileName(?string $name): self
+    {
+        if ($name !== null && !preg_match(self::LOGO_NAME_PATTERN, $name)) {
+            throw new \InvalidArgumentException('Invalid stored portal footer logo name.');
+        }
+        $this->footerLogoFileName = $name;
+        return $this;
+    }
+
+    public function setFooterLogoOriginalName(?string $name): self
+    {
+        // Display metadata only; never used to resolve a filesystem path.
+        if ($name !== null && (mb_strlen($name) > 255 || strpbrk($name, "/\\\0") !== false)) {
+            throw new \InvalidArgumentException('Invalid original portal footer logo name.');
+        }
+        $this->footerLogoOriginalName = $name;
+        return $this;
+    }
+
     public function __construct()
     {
         $this->initializeTimestamps();
