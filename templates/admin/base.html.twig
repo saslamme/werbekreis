@@ -1,18 +1,19 @@
 {% extends '@SyliusAdminUi/base.html.twig' %}
-{% block title %}Admin · {{ portal_name }}{% endblock %}
+{% block title %}Verwaltung · {{ portal_name }}{% endblock %}
 {% block stylesheets %}<link rel="stylesheet" href="{{ asset('generated/app.css') }}">{% endblock %}
-{% block javascripts %}<script src="{{ asset('generated/app.js') }}" defer>
-</script>{% endblock %}
-{% block body %}{% include 'partials/_header.html.twig' %}<main id="main">{% for message in app.flashes('success') %}<div class="container mt-3 alert alert-success" role="status">{{ message }}</div>{% endfor %}{% for message in app.flashes('error') %}<div class="container mt-3 alert alert-danger" role="alert">{{ message }}</div>{% endfor %}<div class="container section admin-content">
-<nav class="nav nav-pills gap-2 mb-4" aria-label="Adminnavigation">
-<a class="nav-link" href="{{ path('admin_dashboard') }}">Dashboard</a>
-<a class="nav-link" href="{{ path('admin_companies') }}">Unternehmen</a>
-<a class="nav-link" href="{{ path('admin_categories') }}">Kategorien</a>
-<a class="nav-link" href="{{ path('admin_offers') }}">Angebote</a>
-<a class="nav-link" href="{{ path('admin_events') }}">Veranstaltungen</a><a class="nav-link" href="{{ path('admin_event_categories') }}">Veranstaltungskategorien</a>
-<a class="nav-link" href="{{ path('admin_news') }}">News</a><a class="nav-link" href="{{ path('admin_news_categories') }}">News-Kategorien</a>
-<a class="nav-link" href="{{ path('admin_jobs') }}">Jobs</a>
-<a class="nav-link" href="{{ path('admin_reviews') }}">Freigaben</a>
-<a class="nav-link" href="{{ path('admin_voucher_products') }}">Gutscheinprodukte</a>
-{% if is_granted('ROLE_ADMIN') %}<a class="nav-link" href="{{ path('admin_vouchers') }}">Gutscheine</a><a class="nav-link" href="{{ path('voucher_redeem') }}">Gutschein einlösen</a><a class="nav-link" href="{{ path('admin_users') }}">Benutzer</a>{% endif %}</nav>{% block admin_body %}{% endblock %}</div>
-</main>{% include 'partials/_footer.html.twig' %}{% endblock %}
+{% block javascripts %}<script src="{{ asset('generated/app.js') }}" defer></script>{% endblock %}
+{% block body %}
+<div class="admin-shell">
+    <a class="skip-link" href="#main">Zum Inhalt</a>
+    {% include 'admin/partials/_topbar.html.twig' %}
+    {% include 'admin/partials/_sidebar.html.twig' %}
+    <main id="main" class="admin-main" tabindex="-1">
+        {% for type in ['success', 'error'] %}
+            {% for message in app.flashes(type) %}
+                <div class="alert alert-{{ type == 'error' ? 'danger' : 'success' }}" role="{{ type == 'error' ? 'alert' : 'status' }}">{{ message }}</div>
+            {% endfor %}
+        {% endfor %}
+        {% block admin_body %}{% endblock %}
+    </main>
+</div>
+{% endblock %}

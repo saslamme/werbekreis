@@ -1,0 +1,18 @@
+<header class="admin-topbar">
+    <div class="admin-topbar-brand">
+        <button class="btn btn-outline-secondary admin-nav-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#admin-navigation" aria-controls="admin-navigation" aria-expanded="false">
+            <i class="fa-solid fa-bars" aria-hidden="true"></i><span>Menü</span>
+        </button>
+        <a href="{{ path(is_granted('ROLE_EDITOR') ? 'admin_dashboard' : 'voucher_redeem') }}">Werbekreis <span>{{ portal_city }} · Verwaltung</span></a>
+    </div>
+    <div class="admin-topbar-actions">
+        <a href="{{ path('app_home') }}"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i> Website ansehen</a>
+        {% if app.user %}
+            <span class="admin-user" title="{{ app.user.userIdentifier }}">{{ app.user.userIdentifier }}</span>
+            <form action="{{ path('app_logout') }}" method="post">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
+                <button class="btn btn-outline-secondary" type="submit"><i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i> Abmelden</button>
+            </form>
+        {% endif %}
+    </div>
+</header>
