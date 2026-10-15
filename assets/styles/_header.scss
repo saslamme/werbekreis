@@ -5,6 +5,10 @@
 .navbar { padding: 1.6rem 0; border-bottom: 1px solid #e5e8e3; }
 .nav-link { font-size: .9rem; font-weight: 500; }
 
-.brand-logo { display: inline-flex; align-items: center; }
-.brand-logo img { display: block; width: auto; height: auto; max-width: 240px; max-height: 60px; object-fit: contain; }
-@media (max-width: 575.98px) { .brand-logo img { max-width: 190px; max-height: 55px; } }
+.brand-logo { display: inline-flex; align-items: center; min-width: 0; max-width: calc(100% - 4.5rem); }
+.brand-logo img { display: block; width: auto; height: auto; max-width: min(var(--portal-logo-max-width, 240px), 100%); max-height: var(--portal-logo-max-height, 60px); object-fit: contain; }
+// Leave room for the expanded navigation as well as the brand.
+@media (min-width: 1200px) {
+  .navbar > .container:has(.brand-logo) { display: grid; grid-template-columns: minmax(0, 1fr) auto; }
+  .brand-logo { max-width: 100%; }
+}
