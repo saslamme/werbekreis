@@ -3,8 +3,12 @@
 <div class="container">
 <div class="row gy-4">
 <div class="col-md-4">
+{% if settings.logoFileName %}
+<a class="brand footer-logo" href="{{ path('app_home') }}"><img src="{{ path('portal_logo', {v: settings.logoFileName}) }}" alt="{{ portal_name }}"></a>
+{% else %}
 <a class="brand" href="{{ path('app_home') }}">Werbekreis<span>{{ portal_city }}</span>
 </a>
+{% endif %}
 <p class="mt-4">Nah dran. Gemeinsam mehr bewegen.</p>
 {% if settings.facebookUrl or settings.instagramUrl %}
 <div class="social-links">
