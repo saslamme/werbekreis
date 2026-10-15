@@ -15,6 +15,7 @@ final class PublicHomepageTest extends PublicDirectoryTestCase
     {
         $this->client->request('GET', '/');
         self::assertResponseIsSuccessful();
+        self::assertSelectorCount(1, '[data-cookie-notice]');
         // Two featured companies first, filled up with further active ones; the inactive hotel never appears.
         self::assertSame(['Beispielcafé Uferpause', 'Musterladen Hasebogen', 'Demo-Werkstatt Stadtblick', 'Musterpraxis Wohlgefühl'], $this->cardNames());
         self::assertSelectorTextNotContains('main', 'Beispielhotel Lindenhof');
