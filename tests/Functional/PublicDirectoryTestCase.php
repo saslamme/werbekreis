@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional;
 
-use App\DataFixtures\DirectoryImageFixtures;
+use App\Tests\Fixtures\DirectoryImageFixtures;
 use App\Entity\Company;
 use App\Repository\CompanyRepository;
 use Doctrine\ORM\EntityManagerInterface;

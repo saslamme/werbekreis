@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 namespace App\Tests\Functional;
-use App\DataFixtures\MemberFixtures;
+use App\Tests\Fixtures\MemberFixtures;
 use App\Entity\{ContentRevision, Event, JobPosting, NewsArticle, Offer};
 use App\Enum\ContentType;
 use Symfony\Component\Clock\{Clock, ClockInterface, MockClock};

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\DataFixtures;
 
-use App\Entity\{User, Voucher, VoucherProduct, VoucherRedemption};
+use App\Entity\{Company, User, Voucher, VoucherProduct, VoucherRedemption};
 use App\Service\{VoucherCodeGenerator, DirectorySlugger};
-use App\Repository\{CompanyRepository, UserRepository};
+use App\Repository\UserRepository;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
@@ -16,15 +16,15 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 /** Explicit TEST-prefixed fictional codes and relative Clock data; never load in production. */
 final class VoucherFixtures extends Fixture implements DependentFixtureInterface
 {
-    public function __construct(private readonly CompanyRepository $companies, private readonly UserRepository $users, private readonly DirectorySlugger $slugs, private readonly ClockInterface $clock, private readonly UserPasswordHasherInterface $hasher) {}
+    public function __construct(private readonly UserRepository $users, private readonly DirectorySlugger $slugs, private readonly ClockInterface $clock, private readonly UserPasswordHasherInterface $hasher) {}
     public function getDependencies(): array { return [DirectoryFixtures::class, UserFixtures::class]; }
     public static function code(int $index): string { return 'TEST-WK-AAAA-BBBB-CCCC-DDD'.VoucherCodeGenerator::ALPHABET[$index]; }
     public function load(ObjectManager $manager): void
     {
-        $shop = $this->companies->findOneBy(['name' => 'Musterladen Hasebogen']); $cafe = $this->companies->findOneBy(['name' => 'Beispielcafé Uferpause']); $workshop = $this->companies->findOneBy(['name' => 'Demo-Werkstatt Stadtblick']);
-        $variable = (new VoucherProduct())->setName('TEST Werbekreis-Gutschein')->setDescription('Fiktiver variabler Gutschein für Entwicklung und Tests.')->setMinimumAmount('10')->setMaximumAmount('250')->setValidityMonths(36)->setFeatured(true)->setTerms('Ausschließlich Testdaten, kein produktiver Gutschein.');
+        $shop = $this->getReference('Hase & Heim', Company::class); $cafe = $this->getReference('Korn & Kanne', Company::class); $workshop = $this->getReference('Werkraum Hasetal', Company::class);
+        $variable = (new VoucherProduct())->setName('Haselünne-Gutschein')->setDescription('Ein Geschenk mit vielen Möglichkeiten: individuell wählbarer Wert für teilnehmende Geschäfte und Gastgeber.')->setMinimumAmount('10')->setMaximumAmount('250')->setValidityMonths(36)->setFeatured(true)->setTerms('Einlösbar bei den angegebenen Akzeptanzstellen innerhalb der Gültigkeit. Teilbeträge können eingelöst werden.');
         $variable->addAcceptingCompany($shop)->addAcceptingCompany($cafe)->addSellingCompany($cafe);
-        $fixed = (new VoucherProduct())->setName('TEST Gutschein 25 Euro')->setDescription('Fiktiver Festwert-Gutschein.')->setFixedAmount('25')->setValidityMonths(12)->setPosition(1)->addAcceptingCompany($shop)->addAcceptingCompany($workshop)->addSellingCompany($shop);
+        $fixed = (new VoucherProduct())->setName('Haselünne-Gutschein 25 Euro')->setDescription('25 Euro für Lieblingsstücke, eine genussvolle Pause oder eine kleine Entdeckung vor Ort.')->setFixedAmount('25')->setValidityMonths(12)->setPosition(1)->addAcceptingCompany($shop)->addAcceptingCompany($workshop)->addSellingCompany($shop);
         $inactive = (new VoucherProduct())->setName('TEST Inaktives Produkt')->setDescription('Nicht öffentliches Testprodukt.')->setFixedAmount('50')->setActive(false)->setPosition(2)->addAcceptingCompany($shop);
         foreach ([$variable, $fixed, $inactive] as $product) { $this->slugs->assign($product); $manager->persist($product); }
         $manager->flush();

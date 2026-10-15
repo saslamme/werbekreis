@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional;
 
-use App\DataFixtures\JobFixtures;
+use App\Tests\Fixtures\JobFixtures;
 use App\Entity\JobPosting;
 use App\Repository\JobPostingRepository;
 use Doctrine\ORM\EntityManagerInterface;

@@ -2,3 +2,10 @@ services:
     App\Geo\GeocodingServiceInterface:
         alias: App\Geo\NominatimGeocodingService
         public: true
+
+    # Frozen regression data: not registered with Doctrine's fixture loader.
+    App\Tests\Fixtures\:
+        resource: '../tests/Fixtures/'
+        autowire: true
+        autoconfigure: false
+        public: true

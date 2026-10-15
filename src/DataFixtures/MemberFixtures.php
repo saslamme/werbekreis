@@ -18,7 +18,7 @@ final class MemberFixtures extends Fixture implements DependentFixtureInterface
     public function getDependencies(): array { return [DirectoryFixtures::class, UserFixtures::class]; }
     public function load(ObjectManager $em): void
     {
-        $shop=$em->getRepository(Company::class)->findOneBy(['name'=>'Musterladen Hasebogen']); $cafe=$em->getRepository(Company::class)->findOneBy(['name'=>'Beispielcafé Uferpause']);
+        $shop=$this->getReference('Hase & Heim', Company::class); $cafe=$this->getReference('Korn & Kanne', Company::class);
         $members=[];
         foreach (['membera'=>[$shop], 'memberb'=>[$cafe], 'membermulti'=>[$shop,$cafe]] as $name=>$companies) {
             $user=(new User())->setEmail($name.'@example.local')->setFirstName('TEST')->setLastName($name)->setRoles(['ROLE_MEMBER']); $user->setPassword($this->hasher->hashPassword($user,'member123'));

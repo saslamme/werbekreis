@@ -200,7 +200,7 @@ php bin/console doctrine:migrations:migrate --no-interaction
 php bin/console doctrine:schema:validate
 ```
 
-Die Development-/Test-Fixtures enthalten acht Kategorien und fünf ausdrücklich fiktive Unternehmen. Sie decken mehrere Kategorien, geteilte Öffnungszeiten, mehrere Ansprechpartner, optionale Websites/Social Media sowie verschiedene Aktiv-/Featured-Zustände ab. Es werden keine realen Firmen oder personenbezogenen Daten importiert. Bilder lassen sich über die Verwaltung testen; die Fixtures funktionieren ohne Bilddateien.
+Die Demo-Fixtures enthalten acht aktive Kategorien und dreizehn vollständig fiktive Unternehmen (zehn Portalprofile und drei zusätzliche technische Randfälle). Sie decken mehrere Kategorien, geteilte Öffnungszeiten, mehrere Ansprechpartner, optionale Websites/Social Media sowie verschiedene Aktiv-/Featured-Zustände ab. Es werden keine realen Firmen oder personenbezogenen Daten importiert. Die Bild-Fixtures erzeugen eigene geometrische PNG-Motive ohne externe Bilddateien oder HTTP-Aufrufe.
 
 `doctrine:fixtures:load` lädt User- und Directory-Fixtures gemeinsam und löscht vorhandene Daten. **Nur in einer dafür vorgesehenen lokalen Development-/Testdatenbank ausführen; niemals automatisch produktiv einspielen.**
 
@@ -270,7 +270,30 @@ Karten laden Kategorien und Bilder per Fetch-Join im selben Query (Paginator mit
 
 ### Fixtures
 
-`DirectoryFixtures` enthält zusätzlich eine inaktive Kategorie „Archiv“ (einem aktiven Unternehmen zugeordnet, öffentlich unsichtbar), unterschiedliche Kurzbeschreibungen für die Suche und einen weiteren aktiven Ansprechpartner. `DirectoryImageFixtures` erzeugt einfarbige PNG-Platzhalter: Logo, Titelbild und zwei Galeriebilder für „Musterladen Hasebogen“, nur ein Logo für „Beispielcafé Uferpause“, keine Bilder für die übrigen Unternehmen (Fallback). Die Bilder werden über `CompanyImageStorage` in `COMPANY_UPLOAD_DIR` geschrieben. Nach wiederholtem `doctrine:fixtures:load` bleiben alte Dateien liegen; `php bin/console app:company-images:cleanup --delete` entfernt nicht mehr referenzierte Dateien, die älter als eine Stunde sind.
+`DirectoryFixtures` enthält zusätzlich eine inaktive Kategorie „Archiv“ (einem aktiven Unternehmen zugeordnet, öffentlich unsichtbar), mehrere aktive und inaktive Ansprechpartner sowie drei technische Unternehmensprofile für fehlende Koordinaten, inaktive Einträge und Umkreissuche außerhalb von 10 km. `DirectoryImageFixtures` erzeugt deterministische geometrische PNGs mit Farbverläufen: zehn Logos, sieben Titelbilder und jeweils zwei Galeriebilder für vier Unternehmen. Dazu kommen sechs Angebots-, fünf Veranstaltungs- und sechs Newsbilder. Die technischen Profile bleiben ohne Bilder für die Fallback-Prüfung. Die Bilder werden über `CompanyImageStorage` in `COMPANY_UPLOAD_DIR` geschrieben; dessen zufällige Dateinamen bleiben unverändert. Nach wiederholtem Laden können alte Dateien liegen bleiben; die vorhandene Bildbereinigung dient ihrer kontrollierten Entfernung.
+
+### Demo-Daten
+
+Die Fixtures enthalten vollständig fiktive Unternehmen, Angebote, Veranstaltungen, News und Stellenanzeigen zur Demonstration der Plattform. Namen, Personen, Straßen, Telefonnummern und Inhalte sind erfunden; Web- und E-Mail-Adressen verwenden reservierte `example.com`-, `example.org`- und `example.net`-Domains. Die nicht wählbaren Demo-Telefonnummern sind bewusst keine erreichbaren Kontakte. Die technischen Benutzer behalten ihre bisherigen Testadressen.
+
+Die Demo umfasst **13 Unternehmen, 14 Angebote, 12 Veranstaltungen, 12 News und 19 Jobs**. `MemberFixtures` ergänzt unverändert sechs technische Datensätze je Inhaltstyp (fünf Moderationszustände plus fremdes Unternehmen), also insgesamt **20 Angebote, 18 Veranstaltungen, 18 News und 25 Jobs** bei Laden aller Fixtures. Aktive/inaktive und Featured-Einträge, vergangene und zukünftige Zeitfenster, Entwürfe und Planungen, Absagen, Serien, alle Beschäftigungsarten und Arbeitsmodelle sowie die Gutschein-Testlogik bleiben erhalten. Termine werden relativ zur injizierbaren Clock erzeugt; saisonale Titel sind unabhängig vom Kalenderjahr bewusst feste Präsentationsthemen.
+
+Nur manuell auf einer ausdrücklich dafür vorgesehenen Entwicklungsdatenbank ausführen:
+
+```sh
+composer install
+php bin/console doctrine:fixtures:load --env=dev --append
+```
+
+**Fixtures niemals auf einer produktiv genutzten Datenbank ausführen.** Ohne `--append` löscht der Ladebefehl vorhandene Daten. `--append` verhindert dieses Löschen, macht den Import aber nicht idempotent: Die Testkonto-Adressen müssen noch frei sein; ein wiederholter Import kann an Unique Constraints scheitern. Es werden keine bestehenden Benutzer aktualisiert. Verknüpfte Demo-Inhalte verwenden Referenzen auf die neu angelegten Fixture-Unternehmen, nicht auf gleichnamige bestehende Profile.
+
+Die kleinen bisherigen Regression-Datensätze liegen unter `tests/Fixtures/`. Sie werden ausschließlich von den Funktionstests verwendet und sind nicht als Doctrine-Fixtures registriert. Damit bleiben bestehende Prüfungen von Namen, Slugs, Reihenfolgen und Grenzfällen unabhängig von der Demo-Gestaltung. Die Demo-Datendefinitionen und PNG-Erzeugung werden zusätzlich datenbankfrei geprüft:
+
+```sh
+php bin/phpunit tests/Unit
+```
+
+Der vollständige Aufruf `php bin/phpunit` lädt dagegen Test-Fixtures und verändert die separate Testdatenbank. Er darf nur ausgeführt werden, wenn solche Datenbankänderungen erlaubt sind.
 
 ### PR3-Tests
 
@@ -357,7 +380,7 @@ Die bestehende `app:company-images:cleanup`-Bereinigung berücksichtigt zusätzl
 
 Übersicht und Detailseiten besitzen eigene Titel/Descriptions/Canonical-URLs; Filter-/Folgeseiten erhalten `noindex, follow` mit Canonical auf `/angebote`. Details enthalten Open-Graph-Metadaten und sicher escaptes Schema.org-`Offer`-JSON-LD mit `seller`, vorhandenen Preisen/Währung, Bild und Zeitgrenzen. Es werden keine künstlichen Preise oder Verfügbarkeiten erfunden. Wiederverwendbare Twig-Partials kapseln Karte, Preis, Laufzeit und Status. Karten behalten den Portalstil, verständliche Links, Bild-Alt-Texte und responsive Raster; Preise/Rabatte sind auch als Text ausgezeichnet.
 
-`OfferFixtures` erzeugt zehn vollständig fiktive Angebote relativ zum injizierten Clock: mehrere Unternehmen, Featured/normal, laufend/geplant/abgelaufen/deaktiviert, inaktives Unternehmen, Preise/kein Preis/Rabatt sowie generierte Bildmotive und Bild-Fallbacks. Fixture-Bilder nutzen dieselbe PNG-Erzeugung wie die vorhandenen DirectoryImageFixtures. Niemals Fixtures gegen produktive Daten laden. Neue Tests decken Domainzeit und -preise, Slugs, Queryfilter/Pagination, öffentliche 404-Regeln, Homepage/Company-Integration, echte Admin-/Editor-CRUDs, Rollen/CSRF, Bildvalidierung und den Dateilebenszyklus ab; alle Zeitfälle verwenden MockClock und bleiben unabhängig vom Kalenderjahr.
+`OfferFixtures` erzeugt vierzehn vollständig fiktive Angebote relativ zum injizierten Clock: mehrere Unternehmen, Featured/normal, laufend/geplant/abgelaufen/deaktiviert, inaktives Unternehmen, Preise/kein Preis/Rabatt sowie generierte Bildmotive und Bild-Fallbacks. Fixture-Bilder nutzen dieselbe PNG-Erzeugung wie die vorhandenen DirectoryImageFixtures. Niemals Fixtures gegen produktive Daten laden. Neue Tests decken Domainzeit und -preise, Slugs, Queryfilter/Pagination, öffentliche 404-Regeln, Homepage/Company-Integration, echte Admin-/Editor-CRUDs, Rollen/CSRF, Bildvalidierung und den Dateilebenszyklus ab; alle Zeitfälle verwenden MockClock und bleiben unabhängig vom Kalenderjahr.
 
 PR5 umfasst Angebote und Aktionen. **Nicht enthalten:** Gutscheincodes/Voucher-System, Gutscheinverwaltung, Warenkorb, Checkout, Onlinezahlung, Reservierung, Veranstaltungen, News, Jobs, Bewertungen, Push-Benachrichtigungen, Mitglieder-Self-Service und Approval-Workflow. Für PR6 sind diese Bereiche gesondert zu planen; es wurde keine Commerce- oder Sylius-Shop-Architektur eingeführt.
 
@@ -510,7 +533,7 @@ Nur vorhandene Gehaltsdaten erzeugen `baseSalary` mit EUR und `HOUR`/`MONTH`/`YE
 
 ### Migration, Fixtures und Tests
 
-`Version20261005205439` ergänzt ausschließlich die neue JobPosting-Tabelle, eindeutige Slugs, Veröffentlichung-/Beschäftigungsindizes und die erforderliche Company-FK mit Cascade. Frühere Migrationen bleiben unverändert. `JobFixtures` hängt von `DirectoryFixtures` ab und erzeugt zwölf ausschließlich fiktive Stellen für mehrere Beispielunternehmen relativ zur Clock: alle sieben Beschäftigungsarten, alle drei Arbeitsmodelle, Featured/normal, Entwurf/geplant/veröffentlicht/abgelaufen/zukünftig, mit/ohne Gehalt, E-Mail/externe URL, unterschiedliche Orte und offene Fristen.
+`Version20261005205439` ergänzt ausschließlich die neue JobPosting-Tabelle, eindeutige Slugs, Veröffentlichung-/Beschäftigungsindizes und die erforderliche Company-FK mit Cascade. Frühere Migrationen bleiben unverändert. `JobFixtures` hängt von `DirectoryFixtures` ab und erzeugt neunzehn ausschließlich fiktive Stellen für die zehn Demo-Unternehmen relativ zur Clock: alle sieben Beschäftigungsarten, alle drei Arbeitsmodelle, Featured/normal, Entwurf/geplant/veröffentlicht/abgelaufen/zukünftig, mit/ohne Gehalt, E-Mail/externe URL, unterschiedliche Orte und offene Fristen.
 
 Die Jobs-Tests prüfen Domain- und Repository-Sichtbarkeit, sekundengenaue Grenzen mit MockClock, Veröffentlichung und Ablauf, Beziehungen, Salary-Validierung, Labels/Schema-Mapping, Suche/Filter, Featured/Fallback, Pagination, Admin-/Editor-CRUD, Member-Verbot, CSRF, Sekunden-/Sommerzeit-Erhalt, Company-E-Mail-Fallback und Löschkaskade, XSS, SEO/JSON-LD, Karte und Scalar-Projektionen. Vorhandene PR1–PR7-Tests bleiben unverändert. Zusätzlich erfolgen Composer-/Symfony-/Twig-/Container-/Schema-Prüfungen, npm-Install/Build/Tests, AssetMapper und Browser-Smoketests auf Desktop/Tablet/Mobil.
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional;
 
-use App\DataFixtures\DirectoryImageFixtures;
+use App\Tests\Fixtures\DirectoryImageFixtures;
 use App\Entity\Offer;
 use App\Repository\OfferRepository;
 use App\Service\CompanyImageStorage;
