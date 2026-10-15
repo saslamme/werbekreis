@@ -1,5 +1,11 @@
 parameters:
     portal.name: 'Werbekreis Haselünne'
     portal.city: 'Haselünne'
-    portal.contact_email: 'info@example.local'
+    portal.contact_email: 'info@werbekreis-haseluenne.de'
     portal.timezone: 'Europe/Berlin'
+    portal.organization: 'Werbekreis Haselünne e.V.'
+    portal.contact_name: 'Andreas Walburg'
+    portal.contact_role: 'Vorsitzender'
+    portal.contact_phone: '05961 95 72 21 3'
+    portal.street: 'Steintorstraße 5'
+    portal.postal_code: '49740'

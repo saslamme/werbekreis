@@ -1,0 +1,6 @@
+<address>
+<strong>{{ portal_organization }}</strong><br>
+{% if show_person|default(false) %}{{ portal_contact_name }} ({{ portal_contact_role }})<br>{% endif %}
+{{ portal_street }}<br>
+{{ portal_postal_code }} {{ portal_city }}
+</address>

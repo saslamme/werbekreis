@@ -66,6 +66,9 @@ final class PublicHomepageTest extends PublicDirectoryTestCase
         $this->client->request('GET', '/');
         self::assertSelectorExists('header a.btn[href="/unternehmen"]');
         self::assertSelectorExists('footer a[href="/unternehmen"]');
+        self::assertSelectorExists('#mitglied a[href="/mitglied-werden"]');
+        self::assertSelectorTextNotContains('body', '– folgt');
+        self::assertSelectorTextNotContains('body', 'info@example.local');
     }
 
     public function testListingQueriesLoadOnlyCardData(): void
