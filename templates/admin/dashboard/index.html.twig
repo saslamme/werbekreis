@@ -1,8 +1,49 @@
-{% extends 'admin/base.html.twig' %}{% block admin_body %}<h1 class="mb-4">Dashboard</h1>
-<div class="row g-3 mb-5">{% for label, count in counts %}<div class="col-6 col-lg-3">
-<div class="border rounded p-4">
-<span class="text-secondary">{{ label }}</span>
-<strong class="display-6 d-block">{{ count }}</strong>
+{% extends 'admin/base.html.twig' %}
+{% block admin_body %}
+<div class="admin-page-header">
+    <div><h1>Dashboard</h1><p>Überblick über den aktuellen Stand des Portals.</p></div>
 </div>
-</div>{% endfor %}</div>
-<h2 class="h4">Letzte Benutzer</h2>{% include 'admin/user/_table.html.twig' with {users: latest, editable: false} %}{% endblock %}
+<div class="admin-kpi-grid">
+    {% for kpi in overview %}
+        <div class="admin-kpi-card{{ kpi.attention|default(false) ? ' admin-kpi-attention' : '' }}">
+            <i class="fa-solid fa-{{ kpi.icon }}" aria-hidden="true"></i>
+            {% if kpi.route %}<a href="{{ path(kpi.route) }}">{{ kpi.label }}</a>{% else %}<span>{{ kpi.label }}</span>{% endif %}
+            <strong>{{ kpi.value }}</strong>
+        </div>
+    {% endfor %}
+</div>
+<section class="admin-panel" aria-labelledby="dashboard-reviews">
+    <div class="admin-panel-heading"><h2 id="dashboard-reviews">Freigaben</h2><a href="{{ path('admin_reviews') }}">Freigaben prüfen <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a></div>
+    <dl class="admin-stat-strip">
+        {% for label, value in reviews %}<div><dt>{{ label }}</dt><dd>{{ value }}</dd></div>{% endfor %}
+    </dl>
+</section>
+<section class="admin-dashboard-section" aria-labelledby="dashboard-content">
+    <h2 id="dashboard-content">Inhalte</h2>
+    <div class="admin-summary-grid">
+        {% for summary in content_stats %}
+            <article class="admin-summary-card">
+                <h3><i class="fa-solid fa-{{ summary.icon }}" aria-hidden="true"></i> {{ summary.title }}</h3>
+                {% include 'admin/partials/_stat_list.html.twig' with {stats: summary.stats} only %}
+                <a href="{{ path(summary.route) }}">Verwalten<span class="visually-hidden">: {{ summary.title }}</span> <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
+            </article>
+        {% endfor %}
+    </div>
+</section>
+{% if is_granted('ROLE_ADMIN') %}
+<section class="admin-panel" aria-labelledby="dashboard-vouchers">
+    <div class="admin-panel-heading"><h2 id="dashboard-vouchers">Gutscheine</h2><div class="admin-actions"><a href="{{ path('admin_vouchers') }}">Gutscheine verwalten</a><a class="btn btn-outline-primary btn-sm" href="{{ path('voucher_redeem') }}">Gutschein einlösen</a></div></div>
+    <dl class="admin-stat-strip admin-voucher-stats">
+        {% for label, value in voucher_stats %}<div><dt>{{ label }}</dt><dd>{{ value }}</dd></div>{% endfor %}
+    </dl>
+</section>
+{% endif %}
+<section class="admin-panel" aria-labelledby="dashboard-users">
+    <h2 id="dashboard-users">Benutzer</h2>
+    <dl class="admin-stat-strip">
+        {% for label, value in user_stats %}<div><dt>{{ label }}</dt><dd>{{ value }}</dd></div>{% endfor %}
+    </dl>
+    <div class="admin-panel-heading"><h3>Letzte Benutzer</h3>{% if is_granted('ROLE_ADMIN') %}<a href="{{ path('admin_users') }}">Alle Benutzer</a>{% endif %}</div>
+    {% include 'admin/user/_table.html.twig' with {users: latest, editable: false} %}
+</section>
+{% endblock %}

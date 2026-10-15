@@ -1,4 +1,4 @@
-{% extends 'admin/base.html.twig' %}{% block admin_body %}<div class="section-heading">
-<h1>Benutzer</h1>
+{% extends 'admin/base.html.twig' %}{% block admin_body %}<div class="admin-page-header">
+<div><h1>Benutzer</h1></div>
 <a class="btn btn-primary" href="{{ path('admin_user_new') }}">Benutzer anlegen</a>
 </div>{% include 'admin/user/_table.html.twig' with {editable: true} %}{% endblock %}

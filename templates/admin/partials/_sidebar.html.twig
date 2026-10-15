@@ -1,0 +1,55 @@
+{% set route = app.request.attributes.get('_route')|default('') %}
+<aside id="admin-navigation" class="admin-sidebar collapse">
+<nav aria-label="Adminnavigation">
+{% if is_granted('ROLE_EDITOR') %}
+<div class="admin-sidebar-group"><h2 id="admin-group-0">Übersicht</h2><ul class="admin-nav" aria-labelledby="admin-group-0">
+{% set active = route == 'admin_dashboard' %}
+<li><a class="admin-nav-link{{ active ? ' is-active' : '' }}" href="{{ path('admin_dashboard') }}"{% if active %} aria-current="page"{% endif %}><i class="fa-solid fa-gauge-high" aria-hidden="true"></i><span>Dashboard</span></a></li>
+{% set active = route == 'admin_reviews' or route starts with 'admin_review_' %}
+<li><a class="admin-nav-link{{ active ? ' is-active' : '' }}" href="{{ path('admin_reviews') }}"{% if active %} aria-current="page"{% endif %}><i class="fa-solid fa-circle-check" aria-hidden="true"></i><span>Freigaben</span></a></li>
+</ul></div>
+{% endif %}
+{% if is_granted('ROLE_EDITOR') %}
+<div class="admin-sidebar-group"><h2 id="admin-group-1">Inhalte</h2><ul class="admin-nav" aria-labelledby="admin-group-1">
+{% set active = route == 'admin_companies' or route starts with 'admin_company_' %}
+<li><a class="admin-nav-link{{ active ? ' is-active' : '' }}" href="{{ path('admin_companies') }}"{% if active %} aria-current="page"{% endif %}><i class="fa-solid fa-building" aria-hidden="true"></i><span>Unternehmen</span></a></li>
+{% set active = route == 'admin_offers' or route starts with 'admin_offer_' %}
+<li><a class="admin-nav-link{{ active ? ' is-active' : '' }}" href="{{ path('admin_offers') }}"{% if active %} aria-current="page"{% endif %}><i class="fa-solid fa-tags" aria-hidden="true"></i><span>Angebote</span></a></li>
+{% set active = (route == 'admin_events' or route starts with 'admin_event_') and not (route starts with 'admin_event_categor') %}
+<li><a class="admin-nav-link{{ active ? ' is-active' : '' }}" href="{{ path('admin_events') }}"{% if active %} aria-current="page"{% endif %}><i class="fa-solid fa-calendar-days" aria-hidden="true"></i><span>Veranstaltungen</span></a></li>
+{% set active = (route == 'admin_news' or route starts with 'admin_news_') and not (route starts with 'admin_news_categor') %}
+<li><a class="admin-nav-link{{ active ? ' is-active' : '' }}" href="{{ path('admin_news') }}"{% if active %} aria-current="page"{% endif %}><i class="fa-solid fa-newspaper" aria-hidden="true"></i><span>News</span></a></li>
+{% set active = route == 'admin_jobs' or route starts with 'admin_job_' %}
+<li><a class="admin-nav-link{{ active ? ' is-active' : '' }}" href="{{ path('admin_jobs') }}"{% if active %} aria-current="page"{% endif %}><i class="fa-solid fa-briefcase" aria-hidden="true"></i><span>Jobs</span></a></li>
+</ul></div>
+{% endif %}
+<div class="admin-sidebar-group"><h2 id="admin-group-2">Gutscheine</h2><ul class="admin-nav" aria-labelledby="admin-group-2">
+{% if is_granted('ROLE_EDITOR') %}
+{% set active = route == 'admin_voucher_products' or route starts with 'admin_voucher_product_' %}
+<li><a class="admin-nav-link{{ active ? ' is-active' : '' }}" href="{{ path('admin_voucher_products') }}"{% if active %} aria-current="page"{% endif %}><i class="fa-solid fa-gift" aria-hidden="true"></i><span>Gutscheinprodukte</span></a></li>
+{% endif %}
+{% if is_granted('ROLE_ADMIN') %}
+{% set active = (route == 'admin_vouchers' or route starts with 'admin_voucher_') and not (route starts with 'admin_voucher_product') %}
+<li><a class="admin-nav-link{{ active ? ' is-active' : '' }}" href="{{ path('admin_vouchers') }}"{% if active %} aria-current="page"{% endif %}><i class="fa-solid fa-ticket" aria-hidden="true"></i><span>Gutscheine</span></a></li>
+{% endif %}
+{% if is_granted('ROLE_VOUCHER_REDEEMER') %}
+{% set active = route == 'voucher_redeem' or route starts with 'voucher_redemption_' %}
+<li><a class="admin-nav-link{{ active ? ' is-active' : '' }}" href="{{ path('voucher_redeem') }}"{% if active %} aria-current="page"{% endif %}><i class="fa-solid fa-cash-register" aria-hidden="true"></i><span>Gutschein einlösen</span></a></li>
+{% endif %}
+</ul></div>
+{% if is_granted('ROLE_EDITOR') %}
+<div class="admin-sidebar-group"><h2 id="admin-group-3">Verwaltung</h2><ul class="admin-nav" aria-labelledby="admin-group-3">
+{% set active = route == 'admin_categories' or route starts with 'admin_category_' %}
+<li><a class="admin-nav-link{{ active ? ' is-active' : '' }}" href="{{ path('admin_categories') }}"{% if active %} aria-current="page"{% endif %}><i class="fa-solid fa-folder-tree" aria-hidden="true"></i><span>Kategorien</span></a></li>
+{% set active = route == 'admin_event_categories' or route starts with 'admin_event_category_' %}
+<li><a class="admin-nav-link{{ active ? ' is-active' : '' }}" href="{{ path('admin_event_categories') }}"{% if active %} aria-current="page"{% endif %}><i class="fa-solid fa-folder-tree" aria-hidden="true"></i><span>Veranstaltungskategorien</span></a></li>
+{% set active = route == 'admin_news_categories' or route starts with 'admin_news_category_' %}
+<li><a class="admin-nav-link{{ active ? ' is-active' : '' }}" href="{{ path('admin_news_categories') }}"{% if active %} aria-current="page"{% endif %}><i class="fa-solid fa-folder-tree" aria-hidden="true"></i><span>News-Kategorien</span></a></li>
+{% if is_granted('ROLE_ADMIN') %}
+{% set active = route == 'admin_users' or route starts with 'admin_user_' %}
+<li><a class="admin-nav-link{{ active ? ' is-active' : '' }}" href="{{ path('admin_users') }}"{% if active %} aria-current="page"{% endif %}><i class="fa-solid fa-users" aria-hidden="true"></i><span>Benutzer</span></a></li>
+{% endif %}
+</ul></div>
+{% endif %}
+</nav>
+</aside>

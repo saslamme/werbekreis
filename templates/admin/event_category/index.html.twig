@@ -1,6 +1,6 @@
 {% extends 'admin/base.html.twig' %}
-{% block admin_body %}<div class="section-heading">
-<h1>Veranstaltungskategorien</h1>
+{% block admin_body %}<div class="admin-page-header">
+<div><h1>Veranstaltungskategorien</h1></div>
 <a class="btn btn-primary" href="{{ path('admin_event_category_new') }}">Kategorie anlegen</a>
 </div>
 <div class="table-responsive">
@@ -12,7 +12,7 @@
 <th>Position</th>
 <th>Aktiv</th>
 
-<th>Aktion</th>
+<th class="admin-table-actions">Aktion</th>
 </tr>
 </thead>
 <tbody>{% for row in rows %}{% set category = row %}<tr>
@@ -21,7 +21,7 @@
 <td>{{ category.position }}</td>
 <td>{{ category.active ? 'Ja' : 'Nein' }}</td>
 
-<td>
+<td class="admin-table-actions">
 <a href="{{ path('admin_event_category_edit', {id: category.id}) }}">Bearbeiten</a>
 </td>
 </tr>{% else %}<tr>
