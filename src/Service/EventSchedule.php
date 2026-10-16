@@ -61,7 +61,10 @@ final readonly class EventSchedule
         foreach ($event->getOccurrences() as $occurrence) { $existing[$occurrence->getStartsAt()->format('c')] = $occurrence; }
         $kept = [];
         $dates = $this->dates($event);
-        if ($event->isAllDay()) { $event->setStartsAt($dates[0][0])->setEndsAt($dates[0][1]); }
+        if ($event->isAllDay()) {
+            $zone = new \DateTimeZone($this->timezone);
+            $event->setStartsAt($dates[0][0]->setTimezone($zone))->setEndsAt($dates[0][1]->setTimezone($zone));
+        }
         if ($event->getRecurrenceType() === EventRecurrence::None) { $event->setRecurrenceUntil(null); }
         foreach ($dates as [$start, $end]) {
             $key = $start->format('c');

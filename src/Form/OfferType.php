@@ -38,7 +38,7 @@ final class OfferType extends AbstractType
             ->add('active', CheckboxType::class, ['label' => 'Aktiv', 'required' => false])
             ->add('featured', CheckboxType::class, ['label' => 'Hervorgehoben', 'required' => false]);
         foreach (['startsAt' => 'Beginn', 'endsAt' => 'Ende'] as $field => $label) {
-            $builder->add($field, DateTimeType::class, ['label' => $label, 'required' => false, 'widget' => 'single_text', 'input' => 'datetime_immutable', 'model_timezone' => 'UTC', 'view_timezone' => $this->timezone, 'help' => 'Ortszeit '.$this->timezone.'. Leer lassen für einen offenen Zeitraum; die Grenze selbst ist eingeschlossen.']);
+            $builder->add($field, DateTimeType::class, ['label' => $label, 'required' => false, 'widget' => 'single_text', 'input' => 'datetime_immutable', 'model_timezone' => $this->timezone, 'view_timezone' => $this->timezone, 'help' => 'Ortszeit '.$this->timezone.'. Leer lassen für einen offenen Zeitraum; die Grenze selbst ist eingeschlossen.']);
         }
         foreach (['regularPrice' => 'Regulärer Preis (€)', 'offerPrice' => 'Angebotspreis (€)'] as $field => $label) {
             $builder->add($field, TextType::class, ['label' => $label, 'required' => false, 'attr' => ['inputmode' => 'decimal'], 'help' => 'Zum Beispiel 59,90; ohne Tausendertrennzeichen. Preise sind optional.']);

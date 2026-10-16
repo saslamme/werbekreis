@@ -31,7 +31,7 @@ final class NewsArticleType extends AbstractType
             ->add('company', EntityType::class, ['class' => Company::class, 'choice_label' => 'name', 'label' => 'Unternehmen', 'required' => false, 'placeholder' => 'Allgemeine Neuigkeit', 'query_builder' => static fn ($r) => $r->createQueryBuilder('company')->orderBy('company.name', 'ASC')])
             ->add('featured', CheckboxType::class, ['label' => 'Hervorgehoben', 'required' => false])
             ->add('status', EnumType::class, ['class' => NewsStatus::class, 'choice_label' => static fn (NewsStatus $status): string => $status->label(), 'label' => 'Status'])
-            ->add('publishedAt', DateTimeType::class, ['label' => 'Veröffentlichungszeitpunkt', 'required' => false, 'widget' => 'single_text', 'input' => 'datetime_immutable', 'model_timezone' => 'UTC', 'view_timezone' => $this->timezone,
+            ->add('publishedAt', DateTimeType::class, ['label' => 'Veröffentlichungszeitpunkt', 'required' => false, 'widget' => 'single_text', 'input' => 'datetime_immutable', 'model_timezone' => $this->timezone, 'view_timezone' => $this->timezone,
                 'help' => 'Ortszeit '.$this->timezone.'. Bei neuer Planung ist ein zukünftiger Zeitpunkt erforderlich. Beim Veröffentlichen ohne Zeitpunkt wird die aktuelle Zeit gesetzt.'])
             ->add('file', FileType::class, ['label' => 'Titelbild', 'mapped' => false, 'required' => false, 'constraints' => CompanyImageType::imageConstraints(), 'help' => 'JPEG, PNG oder WebP; maximal 5 MB und 8000 × 8000 Pixel.'])
             ->add('imageAltText', TextType::class, ['label' => 'Bild-Alternativtext', 'required' => false])

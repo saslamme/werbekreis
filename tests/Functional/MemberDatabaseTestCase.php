@@ -12,7 +12,7 @@ abstract class MemberDatabaseTestCase extends PublicDirectoryTestCase
     private ClockInterface $previousClock;
     protected function setUp(): void
     {
-        $this->previousClock=Clock::get(); $this->clock=new MockClock('2030-05-01 12:00 UTC'); Clock::set($this->clock); parent::setUp();
+        $this->previousClock=Clock::get(); $this->clock=new MockClock('2030-05-01 14:00 Europe/Berlin'); Clock::set($this->clock); parent::setUp();
         $em=static::getContainer()->get('doctrine')->getManager(); static::getContainer()->get(MemberFixtures::class)->load($em); $em->clear();
     }
     protected function tearDown(): void
