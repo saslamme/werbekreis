@@ -50,12 +50,12 @@ final class PublicHomepageTest extends PublicDirectoryTestCase
     public function testHeroSearchSubmitsToDirectory(): void
     {
         $crawler = $this->client->request('GET', '/');
-        $form = $crawler->filter('#portal-search')->closest('form');
+        $form = $crawler->filter('[id^="portal-search-"]')->closest('form');
         self::assertNotNull($form);
         self::assertSame('/unternehmen', $form->attr('action'));
         self::assertSame('get', strtolower((string) $form->attr('method')));
-        self::assertSelectorExists('#portal-search[name="q"]');
-        self::assertSelectorExists('label[for="portal-search"]');
+        self::assertSelectorExists('[id^="portal-search-"][name="q"]');
+        self::assertSelectorExists('label[for^="portal-search-"]');
         $this->client->submit($form->form(), ['q' => 'Kuchen']);
         self::assertResponseIsSuccessful();
         self::assertSame('http://localhost/unternehmen?q=Kuchen', $this->client->getRequest()->getUri());

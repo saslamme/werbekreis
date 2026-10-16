@@ -28,7 +28,7 @@ final class ContentPageController extends AbstractController
         return $this->render('admin/page/index.html.twig', ['pages' => $rows]);
     }
 
-    #[Route('/{code}/edit', name: 'admin_pages_edit', requirements: ['code' => 'about|board|membership|contact|imprint|privacy'], methods: ['GET', 'POST'])]
+    #[Route('/{code}/edit', name: 'admin_pages_edit', requirements: ['code' => 'home|about|board|membership|contact|imprint|privacy'], methods: ['GET', 'POST'])]
     public function edit(string $code, Request $request, ContentPageRepository $pages, EntityManagerInterface $em): Response
     {
         // Check before loading or binding the form, including direct POST requests.
@@ -44,7 +44,7 @@ final class ContentPageController extends AbstractController
             $em->flush();
             $this->addFlash('success', 'Seiteninhalt gespeichert.');
 
-            return $this->redirectToRoute('admin_pages', status: Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('admin_pages_edit', ['code' => $code], status: Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('admin/page/form.html.twig', ['page' => $page, 'form' => $form]);

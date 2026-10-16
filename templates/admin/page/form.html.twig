@@ -1,15 +1,12 @@
 {% extends 'admin/base.html.twig' %}
 {% block admin_body %}
-<div class="admin-page-header"><div><h1>{{ page.label }} bearbeiten</h1><p>{{ page.publicUrl }}</p></div>
-{% if page.code == 'board' %}<a class="btn btn-outline-primary" href="{{ path('admin_pages_board_members') }}">Vorstand verwalten</a>{% endif %}</div>
-{{ form_start(form, {attr: {class: 'admin-edit-form'}}) }}
-{{ form_errors(form) }}
-<section class="admin-panel"><h2 class="h4">Allgemein</h2>{{ form_row(form.title) }}{{ form_row(form.lead) }}</section>
-<section class="admin-panel"><h2 class="h4">Inhalt</h2>
-<details class="mb-3"><summary>Zentrale Kontaktdaten im Text verwenden</summary><p>Diese Platzhalter werden mit den Portalwerten ersetzt: {organization}, {contact_name}, {contact_role}, {contact_phone}, {contact_email}, {street}, {postal_code}, {city}. HTML und Twig werden nicht ausgeführt.</p></details>
-{% include 'admin/partials/_collection.html.twig' with {field: form.sections, add_label: 'Abschnitt hinzufügen', entry_class: 'admin-panel', auto_position: true} %}
-</section>
+<div class="admin-page-header"><div><h1>{{ page.label }} bearbeiten</h1><p>{{ page.publicUrl }}</p></div><a class="btn btn-outline-primary" href="{{ page.publicUrl }}">Seite ansehen</a>{% if page.code == 'board' %}<a class="btn btn-outline-primary" href="{{ path('admin_pages_board_members') }}">Vorstand verwalten</a>{% endif %}</div>
+{{ form_start(form, {attr: {class: 'admin-edit-form'}}) }}{{ form_errors(form) }}
+<section class="admin-panel"><h2 class="h4">Allgemein</h2>{{ form_row(form.title) }}{{ form_row(form.lead) }}{{ form_row(form.showDefaultHeader) }}</section>
 <section class="admin-panel"><h2 class="h4">SEO</h2>{{ form_row(form.metaTitle) }}{{ form_row(form.metaDescription) }}</section>
-<div class="admin-form-actions"><button class="btn btn-primary" type="submit">Speichern</button><a class="btn btn-outline-secondary" href="{{ path('admin_pages') }}">Abbrechen</a></div>
-{{ form_end(form) }}
+<button class="btn btn-primary" type="submit">Seiteneinstellungen speichern</button>{{ form_end(form) }}
+<section class="admin-panel mt-4"><div class="d-flex flex-wrap gap-3 justify-content-between"><h2 class="h4">Inhaltselemente</h2><a class="btn btn-primary" href="{{ path('admin_elements_choose', {code: page.code}) }}">+ Inhaltselement hinzufügen</a></div>
+{% for element in page.elements %}<article class="card my-3"><div class="card-body"><div class="d-flex flex-wrap gap-2 align-items-center"><i class="fa-solid fa-{{ element.icon }}" aria-hidden="true"></i><h3 class="h5 mb-0">{{ element.label }}</h3><span class="badge {{ element.active ? 'bg-success' : 'bg-secondary' }}">{{ element.active ? 'Aktiv' : 'Inaktiv' }}</span><span>#{{ loop.index }}</span>{% if element.anchor %}<code>{{ element.anchor }}</code>{% endif %}</div>
+<p class="mt-2">{{ element.data.heading|default(element.data.name|default('')) }}</p><div class="d-flex flex-wrap gap-2"><a class="btn btn-sm btn-outline-primary" href="{{ path('admin_elements_edit', {code: page.code, id: element.id}) }}">Bearbeiten</a>
+{% for action, label in {'move-up': 'Nach oben', 'move-down': 'Nach unten', 'toggle': element.active ? 'Deaktivieren' : 'Aktivieren', 'duplicate': 'Duplizieren', 'delete': 'Löschen'} %}<form method="post" action="{{ path('admin_elements_action', {code: page.code, id: element.id, action: action}) }}"><input type="hidden" name="_token" value="{{ csrf_token('element_' ~ action ~ '_' ~ element.id) }}"><button class="btn btn-sm {{ action == 'delete' ? 'btn-outline-danger' : 'btn-outline-secondary' }}" type="submit">{{ label }}</button></form>{% endfor %}</div></div></article>{% else %}<p>Noch keine Inhaltselemente.</p>{% endfor %}</section>
 {% endblock %}

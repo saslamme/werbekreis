@@ -1,0 +1,7 @@
+{% extends 'admin/base.html.twig' %}
+{% block admin_body %}<h1>{{ page.label }}: {{ element.label }}</h1><p><a href="{{ path('admin_pages_edit', {code: page.code}) }}">Zurück zur Seite</a></p>
+<details><summary>Platzhalter für zentrale Kontaktdaten</summary><p>{organization}, {contact_name}, {contact_role}, {contact_phone}, {contact_email}, {street}, {postal_code}, {city}. Nur Klartext, kein HTML.</p></details>
+{{ form_start(form, {attr: {class: 'admin-edit-form'}}) }}{{ form_errors(form) }}{{ form_row(form.active) }}{{ form_row(form.anchor) }}{{ form_row(form.data) }}
+{% if form.linkedEvent is defined %}{{ form_row(form.linkedEvent) }}{% endif %}{% if form.linkedCompany is defined %}{{ form_row(form.linkedCompany) }}{% endif %}
+{% if form.media is defined %}<section class="admin-panel"><h2 class="h4">Bilder</h2>{% for media in element.media %}<img src="{{ path('content_media', {id: media.id}) }}" alt="{{ media.altText }}" style="max-width:150px;max-height:100px;object-fit:contain">{% endfor %}{{ form_errors(form.media) }}{% for entry in form.media %}<div class="admin-panel" data-collection-entry>{{ form_row(entry) }}<button class="btn btn-outline-danger btn-sm" type="button" data-collection-remove>Bild entfernen</button></div>{% endfor %}{{ form_row(form.uploads) }}{{ form_row(form.uploadAlt) }}{{ form_row(form.uploadDecorative) }}</section>{% endif %}
+<button class="btn btn-primary" type="submit">Inhaltselement speichern</button>{{ form_end(form) }}{% endblock %}

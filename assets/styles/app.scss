@@ -39,3 +39,25 @@ a { text-underline-offset: .2em; }
 @import 'cookie-notice';
 
 @import "admin";
+
+.content-element { overflow-wrap: anywhere; min-width: 0; }
+.content-element img, .content-element iframe { max-width: 100%; }
+.content-image { display: block; width: 100%; height: auto; object-fit: contain; }
+.content-gallery { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.content-element .carousel-item img { height: min(65vh, 600px); object-fit: contain; }
+.content-image-left figure, .content-image-right figure { max-width: 40rem; }
+.content-image-right figure { margin-left: auto; }
+.content-image-normal figure { max-width: 60rem; margin-inline: auto; }
+@media (min-width: 768px) {
+  .content-gallery-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .content-gallery-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (max-width: 374px) { .content-gallery { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 575px) {
+  .content-element .hero-aside strong { font-size: clamp(2rem, 9vw, 3rem); }
+  .content-element .gift-cta { padding-inline: 1.25rem; }
+}
+.content-element .search-box .btn { flex-shrink: 0; white-space: nowrap; }
+.content-element .search-box .form-control { min-width: 0; }
+.content-element-contact_person .page-card { max-width: 48rem; }
+.content-element-contact_person figure { max-width: 12rem; margin-bottom: 1rem !important; }

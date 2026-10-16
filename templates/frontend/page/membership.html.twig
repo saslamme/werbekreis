@@ -1,9 +1,1 @@
 {% extends 'frontend/page/_layout.html.twig' %}
-{% block page_content %}{{ parent() }}
-<section class="section pt-0"><div class="container"><div class="page-cta">
-<h2>Interesse an einer Mitgliedschaft?</h2>
-<p>Wir informieren Sie gerne persönlich über die Mitgliedschaft und die nächsten Schritte.</p>
-{% include 'frontend/page/_contact_links.html.twig' %}
-<div class="d-flex flex-wrap align-items-center gap-3 mt-4"><a class="btn btn-primary" href="mailto:{{ portal_contact_email }}">E-Mail schreiben</a><a href="{{ path('contact') }}">Zur Kontaktseite</a></div>
-</div></div></section>
-{% endblock %}

@@ -1,16 +1,1 @@
 {% extends 'frontend/page/_layout.html.twig' %}
-{% block page_content %}
-<section class="section"><div class="container"><div class="row g-4">
-<div class="col-lg-6"><h2>Kontaktinformationen</h2>
-{% include 'frontend/page/_address.html.twig' with {show_person: true} %}
-{% include 'frontend/page/_contact_links.html.twig' %}
-</div><div class="col-lg-6"><div class="page-cta">
-{% for section in page.sections %}
-<div class="{{ section.style == 'notice' ? 'small text-secondary' : (section.style == 'feature' ? 'page-card mb-3' : '') }}">
-{% if section.heading %}<h2>{{ section.heading }}</h2>{% endif %}
-<p>{% include 'frontend/page/_text.html.twig' with {text: section.body} %}</p>
-</div>
-{% endfor %}
-<div class="d-flex flex-wrap gap-3"><a class="btn btn-primary" href="mailto:{{ portal_contact_email }}">E-Mail schreiben</a><a class="btn btn-outline-primary" href="tel:{{ portal_contact_phone|replace({' ': ''}) }}">Anrufen</a></div>
-</div></div></div></div></section>
-{% endblock %}

@@ -1,0 +1,1 @@
+<section class="section content-image-{{ data.layout }}"><div class="{{ data.layout == 'full' ? 'container-fluid' : 'container' }}">{% for media in element.media %}{% if data.linkUrl %}<a href="{{ data.linkUrl }}">{% endif %}{% include 'frontend/content_element/_media.html.twig' %}{% if data.linkUrl %}</a>{% endif %}{% endfor %}</div></section>

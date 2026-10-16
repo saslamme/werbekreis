@@ -629,33 +629,64 @@ Die Tests decken Statusübergänge, Audit, optimistische und pessimistische Konk
 
 **Außerhalb von PR10:** Mitgliedsbeiträge und Abrechnung, Payment, komplexe Revisionshistorie/Undo/Branching, Messaging/Chat, E-Mail-Automation, SSO und ein vollständiges Multi-Tenant-SaaS-Modell.
 
-### Seiteninhalte
+### Seiteninhalte und modularer Seiteneditor
 
-Die sechs zentralen Informationsseiten (Über uns, Vorstand, Mitglied werden,
-Kontakt, Impressum und Datenschutz) werden über **Admin → Inhalte → Seiteninhalte**
-verwaltet. Titel, Einleitung, SEO und sortierte Klartext-Abschnitte mit den
-Darstellungen Standard, Feature-Karte oder Hinweis sind bearbeitbar. Unter
-„Vorstand verwalten“ können Personen angelegt, bearbeitet, sortiert und deaktiviert
-werden.
+Unter **Admin → Inhalte → Seiteninhalte** werden Startseite, Über uns, Vorstand,
+Mitglied werden, Kontakt, Impressum und Datenschutz bearbeitet. Jede Seite besteht
+aus Seiteneinstellungen (Titel, Einleitung, optionaler Standard-Seitenkopf), SEO und
+sortierbaren Inhaltselementen. „Seite ansehen“ öffnet die feste öffentliche URL.
+Die Startseite ist ebenfalls eine datenbankgestützte `ContentPage`; `home` ist ihr
+Code, `app_home` ihre Route. Öffentliche URLs bleiben feste Systemrouten.
 
-Öffentliche URLs sind feste Systemrouten und können im Admin weder geändert noch
-angelegt oder gelöscht werden. ROLE_EDITOR verwaltet Inhalte und Vorstand;
-Impressum und Datenschutz sind ausschließlich für ROLE_ADMIN bearbeitbar.
-Kein HTML/WYSIWYG, keine Member-Bearbeitung und keine Moderationsintegration.
+Unter „Vorstand verwalten“ können weiterhin Personen angelegt, bearbeitet, sortiert
+und deaktiviert werden. Die Elementauswahl bietet Hero-Banner, Textfeld, CTA-Banner, Bild, Galerie,
+Bilder-Slider, Video, Ansprechpartner, Veranstaltung, Unternehmen,
+Kontaktinformationen Werbekreis, Vorstandsliste, Unternehmenskategorien, Angebote,
+Neuigkeiten, Veranstaltungsliste, Unternehmensliste, Jobs und Gutschein.
+Elemente werden einzeln bearbeitet, nach oben/unten verschoben, aktiviert,
+dupliziert oder gelöscht. Mutationen benötigen POST und CSRF. Positionen werden
+automatisch normalisiert; Anker sind sichere, pro Seite eindeutige HTML-IDs.
+Duplikate erhalten keinen Anker, damit keine doppelten Sprungziele entstehen.
 
-Beim Deployment **Doctrine-Migrationen ausführen**: `Version20261015090000` legt
-`ContentPage`, `ContentPageSection` und `BoardMember` an und übernimmt automatisch
-die bisherigen Inhalte einschließlich Cookie-Dokumentation und neun
-Vorstandsmitgliedern. Reguläre Demo-Fixtures legen keine CMS-Daten an und
-überschreiben sie nicht. Der Standard-Fixture-Purger schließt die drei CMS-Tabellen
-aus; auch beim regulären Neuladen der Demo-Fixtures bleiben sie erhalten.
+Text ist Klartext. Es gibt weder HTML-Blöcke noch WYSIWYG. Die bekannten
+Kontaktplatzhalter `{organization}`, `{contact_name}`, `{contact_role}`,
+`{contact_phone}`, `{contact_email}`, `{street}`, `{postal_code}`, `{city}` bleiben
+verfügbar. Vorstand und zentrale Kontaktdaten werden weiterhin in ihren
+bestehenden Verwaltungsbereichen gepflegt. Listen laden ihre Repository-Daten nur,
+wenn das jeweilige aktive Element vorhanden ist. Verknüpfte Unternehmen und
+Veranstaltungen werden nur bei öffentlicher Sichtbarkeit angezeigt.
 
-Kontaktdaten bleiben in der Portal-Konfiguration. In Klartext-Abschnitten sind die
-festen Platzhalter `{organization}`, `{contact_name}`, `{contact_role}`,
-`{contact_phone}`, `{contact_email}`, `{street}`, `{postal_code}` und `{city}`
-verfügbar; die Admin-Hilfe zeigt sie ebenfalls an. Sie werden ausschließlich durch
-Portalwerte ersetzt und anschließend escaped. Meta-Titel können `{portal_name}`
-verwenden. Leere SEO-Felder verwenden öffentliche Standardwerte.
+Bilder (JPEG, PNG, WebP; maximal 5 MB und 8000 × 8000 Pixel) liegen außerhalb von
+`public` in `CONTENT_UPLOAD_DIR` (Standard `var/uploads/content`). SVG wird im
+Content Builder nicht angenommen; die bestehende Logo-Sicherheitslogik bleibt
+unverändert. Zufallsnamen, Prüfung des tatsächlichen Bildformats und eine
+kontrollierte `/media/content/{id}`-Route mit MIME-Prüfung, `nosniff`, ETag und
+Caching schützen die Auslieferung. Alt-Text ist erforderlich, außer bei explizit
+dekorativen Bildern. Vorhandene Bilder lassen sich einzeln beschriften, sortieren
+und entfernen. Bei Einzelbild-Elementen kann im selben Formular das bisherige Bild
+entfernt und ein neues hochgeladen werden. Neue Uploads werden vor dem Datenbank-
+Commit gespeichert und bei Fehlern entfernt; alte Dateien werden erst nach
+Commit gelöscht. Duplizieren erzeugt unabhängige Bilddateien.
+
+YouTube und Vimeo werden ausschließlich per „Video laden“ eingebunden. Vor dem
+Klick gibt es keinen iframe und keinen Request an den Videoanbieter. Nach dem
+Klick nutzt YouTube `youtube-nocookie.com`, Vimeo `dnt=1`. Der Platzhalter erklärt
+die Datenübertragung. Die Cookie-Präferenz steuert diesen bewussten Klick nicht.
+Nur bekannte Video-URLs werden akzeptiert; keine beliebigen iframe-Quellen.
+Links erlauben interne absolute Pfade oder HTTP/HTTPS, keine aktiven URL-Schemes.
+
+**Migration erforderlich:** `php bin/console doctrine:migrations:migrate` vor
+Nutzung ausführen. `Version20261016090000` übernimmt die tatsächlich vorhandenen
+`ContentPageSection`-Datensätze einschließlich Text, Überschrift, Position,
+Darstellung und Zeitstempeln; vorhandene Seiteneinstellungen bleiben unverändert.
+Sie erzeugt außerdem die bisher festen Sonderbereiche und die neun bisherigen
+Startseitenbereiche mit ihren Texten, Limits und Ankern. Die alte Section-Tabelle
+bleibt als Archiv erhalten und wird nicht mehr im Editor oder Renderer verwendet.
+Die Migration ist absichtlich irreversibel, damit spätere CMS-Änderungen nicht
+beim Rollback verworfen werden; vor einem Rollback eine Datenbanksicherung nutzen.
+Demo-Fixtures erhalten CMS-Seiten, Elemente und Medien. Impressum und Datenschutz
+bleiben einschließlich aller direkten Elementrouten `ROLE_ADMIN` vorbehalten;
+die übrigen Seiten können `ROLE_EDITOR` bearbeiten.
 
 ## Website-Logo
 
