@@ -1,0 +1,4 @@
+{% for view in elementViews %}{% set element = view.element %}
+<div class="content-element content-element-{{ element.type }}"{% if element.anchor %} id="{{ element.anchor }}"{% endif %}>
+{% include 'frontend/content_element/' ~ element.type ~ '.html.twig' with view %}
+</div>{% endfor %}

@@ -2,15 +2,15 @@
 {% block body_class %}public-frontend{% endblock %}
 {% block title %}{{ page.metaTitle ? page.metaTitle|replace({'{portal_name}': portal_name}) : page.title ~ ' | ' ~ portal_name }}{% endblock %}
 {% block meta_description %}{{ page.metaDescription ?: 'Informationen und Kontakt zum Werbekreis Haselünne.' }}{% endblock %}
-{% block canonical %}<link rel="canonical" href="{{ url(page.code) }}">{% endblock %}
+{% block canonical %}<link rel="canonical" href="{{ url(page.route) }}">{% endblock %}
 {% block body %}
-<header class="directory-hero"><div class="container">
+{% if page.showDefaultHeader %}<header class="directory-hero"><div class="container">
 {% set items = page.code == 'board' ? [{label: 'Werbekreis', url: path('about')}, {label: page.label}] : [{label: page.label}] %}
 {% include 'partials/_breadcrumb.html.twig' with {items: items} only %}
 <h1>{{ page.title }}</h1>
 {% if page.lead %}<p class="lead">{{ page.lead }}</p>{% endif %}
-</div></header>
+</div></header>{% endif %}
 {% block page_content %}
-{% include 'frontend/page/_sections.html.twig' %}
+{% include 'frontend/content_element/_content_elements.html.twig' %}
 {% endblock %}
 {% endblock %}

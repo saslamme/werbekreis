@@ -21,7 +21,7 @@
 <li><a class="admin-nav-link{{ active ? ' is-active' : '' }}" href="{{ path('admin_news') }}"{% if active %} aria-current="page"{% endif %}><i class="fa-solid fa-newspaper" aria-hidden="true"></i><span>News</span></a></li>
 {% set active = route == 'admin_jobs' or route starts with 'admin_job_' %}
 <li><a class="admin-nav-link{{ active ? ' is-active' : '' }}" href="{{ path('admin_jobs') }}"{% if active %} aria-current="page"{% endif %}><i class="fa-solid fa-briefcase" aria-hidden="true"></i><span>Jobs</span></a></li>
-{% set active = route starts with 'admin_pages' %}
+{% set active = route starts with 'admin_pages' or route starts with 'admin_elements' %}
 <li><a class="admin-nav-link{{ active ? ' is-active' : '' }}" href="{{ path('admin_pages') }}"{% if active %} aria-current="page"{% endif %}><i class="fa-solid fa-file-lines" aria-hidden="true"></i><span>Seiteninhalte</span></a></li>
 </ul></div>
 {% endif %}

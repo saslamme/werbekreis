@@ -18,12 +18,13 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 final class ContentPage
 {
     public const SYSTEM_PAGES = [
-        'about' => ['label' => 'Über uns', 'url' => '/werbekreis/ueber-uns'],
-        'board' => ['label' => 'Vorstand', 'url' => '/werbekreis/vorstand'],
-        'membership' => ['label' => 'Mitglied werden', 'url' => '/mitglied-werden'],
-        'contact' => ['label' => 'Kontakt', 'url' => '/kontakt'],
-        'imprint' => ['label' => 'Impressum', 'url' => '/impressum'],
-        'privacy' => ['label' => 'Datenschutz', 'url' => '/datenschutz'],
+        'home' => ['label' => 'Startseite', 'url' => '/', 'route' => 'app_home'],
+        'about' => ['label' => 'Über uns', 'url' => '/werbekreis/ueber-uns', 'route' => 'about'],
+        'board' => ['label' => 'Vorstand', 'url' => '/werbekreis/vorstand', 'route' => 'board'],
+        'membership' => ['label' => 'Mitglied werden', 'url' => '/mitglied-werden', 'route' => 'membership'],
+        'contact' => ['label' => 'Kontakt', 'url' => '/kontakt', 'route' => 'contact'],
+        'imprint' => ['label' => 'Impressum', 'url' => '/impressum', 'route' => 'imprint'],
+        'privacy' => ['label' => 'Datenschutz', 'url' => '/datenschutz', 'route' => 'privacy'],
     ];
 
     use TimestampedTrait;
@@ -32,7 +33,7 @@ final class ContentPage
     private ?int $id = null;
 
     #[ORM\Column(length: 20, unique: true)]
-    #[Assert\Choice(choices: ['about', 'board', 'membership', 'contact', 'imprint', 'privacy'])]
+    #[Assert\Choice(choices: ['home', 'about', 'board', 'membership', 'contact', 'imprint', 'privacy'])]
     private string $code;
 
     #[ORM\Column(length: 180)]
@@ -50,6 +51,28 @@ final class ContentPage
     #[Assert\Length(max: 300)]
     private ?string $metaDescription = null;
 
+    #[ORM\Column(options: ['default' => true])]
+    private bool $showDefaultHeader = true;
+
+    /** @var Collection<int, ContentElement> */
+    #[ORM\OneToMany(targetEntity: ContentElement::class, mappedBy: 'page', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OrderBy(['position' => 'ASC', 'id' => 'ASC'])]
+    #[Assert\Valid]
+    private Collection $elements;
+
+    public function getRoute(): string { return self::SYSTEM_PAGES[$this->code]['route']; }
+    public function isShowDefaultHeader(): bool { return $this->showDefaultHeader; }
+    public function setShowDefaultHeader(bool $value): self { $this->showDefaultHeader = $value; return $this; }
+    public function getElements(): Collection { return $this->elements->matching(Criteria::create()->orderBy(['position' => 'ASC', 'id' => 'ASC'])); }
+    public function addElement(ContentElement $element): self {
+        if (!$this->elements->contains($element)) { $this->elements->add($element); $element->setPage($this); }
+        return $this;
+    }
+    public function removeElement(ContentElement $element): self {
+        if ($this->elements->removeElement($element) && $element->getPage() === $this) { $element->setPage(null); }
+        return $this;
+    }
+
     /** @var Collection<int, ContentPageSection> */
     #[ORM\OneToMany(targetEntity: ContentPageSection::class, mappedBy: 'page', cascade: ['persist', 'remove'], orphanRemoval: true)]
     #[ORM\OrderBy(['position' => 'ASC', 'id' => 'ASC'])]
@@ -63,6 +86,8 @@ final class ContentPage
         }
         $this->code = $code;
         $this->sections = new ArrayCollection();
+        $this->elements = new ArrayCollection();
+        $this->showDefaultHeader = $code !== 'home';
         $this->initializeTimestamps();
     }
 

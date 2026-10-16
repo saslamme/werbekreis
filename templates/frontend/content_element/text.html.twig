@@ -1,0 +1,1 @@
+<section class="section"><div class="container {{ data.variant == 'narrow' ? 'page-content' }}"><div class="{{ data.variant == 'card' ? 'page-card' : (data.variant == 'notice' ? 'page-notice small text-secondary' : '') }}">{% if data.heading %}<h2>{{ data.heading }}</h2>{% endif %}<p>{% include 'frontend/page/_text.html.twig' with {text: data.body} %}</p></div></div></section>

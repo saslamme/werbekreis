@@ -1,0 +1,8 @@
+<section class="hero {{ data.variant == 'light' ? 'bg-light text-dark' : (data.variant == 'dark' ? 'bg-dark text-white' : '') }}"><div class="container"><div class="row align-items-center gy-5"><div class="col-lg-9">
+{% if data.eyebrow %}<p class="eyebrow">{% include 'frontend/page/_text.html.twig' with {text: data.eyebrow} %}</p>{% endif %}
+<h1>{% include 'frontend/page/_text.html.twig' with {text: data.heading} %}</h1><p class="lead">{% include 'frontend/page/_text.html.twig' with {text: data.text} %}</p>
+{% if data.showCompanySearch %}<form class="search-box d-flex gap-2" method="get" action="{{ path('company_index') }}" role="search"><label class="visually-hidden" for="portal-search-{{ element.id }}">Unternehmen suchen</label><input id="portal-search-{{ element.id }}" class="form-control border-0" type="search" name="q" maxlength="100" placeholder="{{ data.searchPlaceholder }}"><button class="btn btn-primary" type="submit">Suchen</button></form>{% endif %}
+{% if categories is not empty %}<p class="small mt-3">Beliebt: {% for row in categories %}<a class="ms-2 text-reset" href="{{ path('company_index', {kategorie: row.category.slug}) }}">{{ row.category.name }}</a>{{ not loop.last ? ' ·' }}{% endfor %}</p>{% endif %}
+{% if data.buttonLabel and data.buttonUrl %}<a class="btn btn-primary" href="{{ data.buttonUrl }}">{{ data.buttonLabel }}</a>{% endif %}
+</div>{% if data.asideHeading or data.asideText %}<div class="col-lg-3"><div class="hero-aside"><strong>{{ data.asideHeading|nl2br }}</strong><p class="mt-3 mb-0">{{ data.asideText }}</p></div></div>{% endif %}</div>
+{% for media in element.media %}{% include 'frontend/content_element/_media.html.twig' %}{% endfor %}</div></section>

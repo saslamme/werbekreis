@@ -17,7 +17,7 @@ final class CmsAdminTest extends DatabaseTestCase
     {
         parent::setUp();
         $connection = static::getContainer()->get(EntityManagerInterface::class)->getConnection();
-        foreach (['ContentPage', 'ContentPageSection', 'BoardMember'] as $table) {
+        foreach (['ContentPage', 'ContentPageSection', 'BoardMember', 'ContentElement', 'ContentMedia'] as $table) {
             $this->snapshot[$table] = $connection->fetchAllAssociative('SELECT * FROM '.$table);
         }
     }
@@ -26,7 +26,7 @@ final class CmsAdminTest extends DatabaseTestCase
     {
         $em = static::getContainer()->get(EntityManagerInterface::class);
         $connection = $em->getConnection();
-        foreach (['ContentPageSection', 'ContentPage', 'BoardMember'] as $table) {
+        foreach (['ContentMedia', 'ContentElement', 'ContentPageSection', 'ContentPage', 'BoardMember'] as $table) {
             $connection->executeStatement('DELETE FROM '.$table);
         }
         foreach ($this->snapshot as $table => $rows) {
@@ -69,14 +69,14 @@ final class CmsAdminTest extends DatabaseTestCase
     {
         $this->login('admin');
         $this->client->request('GET', '/admin/pages/about/edit');
-        $this->client->submitForm('Speichern', [
+        $this->client->submitForm('Seiteneinstellungen speichern', [
             'content_page[title]' => 'Geänderter Titel <script>alert(1)</script>',
-            'content_page[sections][0][heading]' => '<img src=x onerror=alert(1)>',
-            'content_page[sections][0][body]' => "Neue Zeile\n<script>alert(2)</script> {{ 7 * 7 }} {organization}",
-            'content_page[metaTitle]' => '',
-            'content_page[metaDescription]' => '',
+            'content_page[metaTitle]' => '', 'content_page[metaDescription]' => '',
         ]);
         self::assertResponseStatusCodeSame(303);
+        // Historical/imported text is escaped at render time even if it bypasses current form validation.
+        $connection = static::getContainer()->get(EntityManagerInterface::class)->getConnection();
+        $connection->executeStatement("UPDATE ContentElement SET data = ? WHERE page_id = (SELECT id FROM ContentPage WHERE code='about') AND type='text'", [json_encode(['heading' => '<img src=x onerror=alert(1)>', 'body' => "Neue Zeile\n<script>alert(2)</script> {{ 7 * 7 }} {organization}", 'variant' => 'default'])]);
         $this->client->request('GET', '/werbekreis/ueber-uns');
         self::assertSelectorTextSame('h1', 'Geänderter Titel <script>alert(1)</script>');
         self::assertSelectorTextContains('main', '<script>alert(2)</script> {{ 7 * 7 }} Werbekreis Haselünne e.V.');
@@ -90,22 +90,22 @@ final class CmsAdminTest extends DatabaseTestCase
     {
         $this->login('editor');
         $page = static::getContainer()->get(ContentPageRepository::class)->findOneByCode('about');
-        $removedId = $page->getSections()->first()->getId();
+        $originalCount = $page->getElements()->count();
+        $removedId = $page->getElements()->first()->getId();
+        $this->client->request('GET', '/admin/pages/about/elements/new/text');
+        $this->client->submitForm('Inhaltselement speichern', ['content_element[data][heading]' => 'Neuer Hinweis', 'content_element[data][body]' => 'Hinweistext', 'content_element[data][variant]' => 'notice']);
+        self::assertResponseStatusCodeSame(303);
         $this->client->request('GET', '/admin/pages/about/edit');
-        $form = $this->client->getCrawler()->selectButton('Speichern')->form();
-        $values = $form->getPhpValues();
-        unset($values['content_page']['sections'][0]);
-        $values['content_page']['sections'][8] = ['heading' => 'Neuer Hinweis', 'body' => 'Hinweistext', 'style' => 'notice', 'position' => '0'];
-        $this->client->request('POST', '/admin/pages/about/edit', $values);
+        $form = $this->client->getCrawler()->filter('form[action="/admin/pages/about/elements/'.$removedId.'/delete"]')->form();
+        $this->client->submit($form);
         self::assertResponseStatusCodeSame(303);
         $em = static::getContainer()->get(EntityManagerInterface::class);
-        self::assertNull($em->find(ContentPageSection::class, $removedId));
+        self::assertNull($em->find(\App\Entity\ContentElement::class, $removedId));
         $page = static::getContainer()->get(ContentPageRepository::class)->findOneByCode('about');
-        self::assertCount(5, $page->getSections());
-        self::assertSame('Neuer Hinweis', $page->getSections()->first()->getHeading());
+        self::assertCount($originalCount, $page->getElements());
         self::assertGreaterThanOrEqual($this->snapshot['ContentPage'][0]['updatedAt'], $page->getUpdatedAt()->format('Y-m-d H:i:s'));
         $this->client->request('GET', '/werbekreis/ueber-uns');
-        self::assertSelectorTextContains('main .text-secondary', 'Hinweistext');
+        self::assertSelectorTextContains('main .page-notice', 'Hinweistext');
         self::assertSelectorTextNotContains('main', 'Gemeinsam für den Standort');
     }
 
@@ -154,7 +154,7 @@ final class CmsAdminTest extends DatabaseTestCase
         $this->client->request('POST', '/admin/pages/about/edit', ['content_page' => ['title' => 'CSRF attempt', '_token' => 'bad']]);
         self::assertResponseStatusCodeSame(422);
         $this->client->request('GET', '/admin/pages/about/edit');
-        $this->client->submitForm('Speichern', ['content_page[title]' => '', 'content_page[sections][0][position]' => '-1']);
+        $this->client->submitForm('Seiteneinstellungen speichern', ['content_page[title]' => '']);
         self::assertResponseStatusCodeSame(422);
         $this->client->request('GET', '/admin/pages/board/members/new');
         $this->client->submitForm('Speichern', ['board_member[name]' => '', 'board_member[role]' => '', 'board_member[position]' => '-1']);

@@ -10,6 +10,6 @@ final class HomepageTest extends WebTestCase
         $client->request('GET', '/');
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('h1', 'Haselünne hat mehr zu bieten.');
-        self::assertSelectorExists('#portal-search');
+        self::assertSelectorExists('[id^="portal-search-"]');
     }
 }
