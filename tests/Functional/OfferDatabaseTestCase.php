@@ -20,7 +20,7 @@ abstract class OfferDatabaseTestCase extends PublicDirectoryTestCase
     protected function setUp(): void
     {
         $this->previousClock = Clock::get();
-        $this->clock = new MockClock('2030-05-01 12:00:00Z');
+        $this->clock = new MockClock('2030-05-01 14:00:00 Europe/Berlin');
         Clock::set($this->clock);
         parent::setUp();
         static::getContainer()->get(OfferFixtures::class)->load(static::getContainer()->get(EntityManagerInterface::class));

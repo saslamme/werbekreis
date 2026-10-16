@@ -21,7 +21,7 @@ final class AdminEventTest extends EventDatabaseTestCase
         $this->login($role); $companyId = $this->firstCompany()->getId();
         $this->client->request('GET', '/admin/events/new?company='.$companyId); self::assertResponseIsSuccessful(); self::assertSelectorExists('select[name="event[company]"] option[value="'.$companyId.'"][selected]');
         $this->client->submitForm('Speichern', ['event[title]' => 'Wöchentlicher Beispieltreff', 'event[startsAt]' => '2030-05-01T18:00', 'event[endsAt]' => '2030-05-01T20:00', 'event[recurrenceType]' => 'weekly', 'event[recurrenceUntil]' => '2030-05-22']);
-        self::assertResponseStatusCodeSame(303); $event = $this->event('woechentlicher-beispieltreff'); $id = $event->getId(); self::assertCount(4, $event->getOccurrences()); self::assertSame('16:00', $event->getStartsAt()->format('H:i'));
+        self::assertResponseStatusCodeSame(303); $event = $this->event('woechentlicher-beispieltreff'); $id = $event->getId(); self::assertCount(4, $event->getOccurrences()); self::assertSame('16:00', $event->getStartsAt()->setTimezone(new \DateTimeZone('UTC'))->format('H:i'));
         $ids = $event->getOccurrences()->map(static fn ($o) => $o->getId())->getValues();
         $this->client->request('GET', '/admin/events/'.$id); self::assertResponseIsSuccessful(); self::assertSelectorTextContains('h1', 'Wöchentlicher Beispieltreff');
         $this->client->request('GET', '/admin/events/'.$id.'/edit'); $this->client->submitForm('Speichern', ['event[title]' => 'Neuer Titel', 'event[endsAt]' => '2030-05-01T21:00', 'event[cancelled]' => true, 'event[cancellationNotice]' => 'Absage']); self::assertResponseStatusCodeSame(303);

@@ -49,7 +49,7 @@ final class EventFixtures extends Fixture implements DependentFixtureInterface
             ['Freier Beispieltalk', $today->modify('+5 days')->setTime(18, 0), $today->modify('+5 days')->setTime(19, 0), null, [8], true, false, false],
         ];
         foreach ($rows as $index => [$title, $start, $end, $company, $categoryIds, $active, $featured, $allDay]) {
-            $event = (new Event())->setTitle($title)->setCompany($company)->setStartsAt($start->setTimezone(new \DateTimeZone('UTC')))->setEndsAt($end->setTimezone(new \DateTimeZone('UTC')))
+            $event = (new Event())->setTitle($title)->setCompany($company)->setStartsAt($start->setTimezone(new \DateTimeZone('Europe/Berlin')))->setEndsAt($end->setTimezone(new \DateTimeZone('Europe/Berlin')))
                 ->setActive($active)->setFeatured($featured)->setAllDay($allDay)->setLocationName('Fiktiver Begegnungsort')->setStreet('Fiktive Beispielstraße')->setHouseNumber('10')->setPostalCode('49740')->setCity('Haselünne')
                 ->setShortDescription('Fiktive Beispielveranstaltung – kein realer Termin.')->setDescription('Dieses Beispiel dient ausschließlich der Entwicklung und automatisierten Tests.');
             foreach ($categoryIds as $id) { $event->addCategory($categories[$id]); }

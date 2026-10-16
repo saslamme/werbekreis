@@ -16,7 +16,7 @@ abstract class JobDatabaseTestCase extends PublicDirectoryTestCase
     private ClockInterface $previousClock;
     protected function setUp(): void
     {
-        $this->previousClock = Clock::get(); $this->clock = new MockClock('2030-05-01 12:00Z'); Clock::set($this->clock);
+        $this->previousClock = Clock::get(); $this->clock = new MockClock('2030-05-01 14:00 Europe/Berlin'); Clock::set($this->clock);
         parent::setUp(); $em = static::getContainer()->get(EntityManagerInterface::class);
         $em->createQuery('DELETE FROM App\Entity\JobPosting job')->execute(); $em->clear(); static::getContainer()->get(JobFixtures::class)->load($em);
     }

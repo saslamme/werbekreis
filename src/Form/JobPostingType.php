@@ -42,16 +42,26 @@ final class JobPostingType extends AbstractType
         $builder->add('addressCountry', CountryType::class, ['label' => 'Land des Arbeitsorts', 'required' => false, 'placeholder' => 'Keine Länderangabe', 'help' => 'Tatsächliches Land für strukturierte Job-Daten; keine Einschränkung für Remote-Bewerber.']);
         $builder->add('applicationEmail', EmailType::class, ['label' => 'Bewerbungs-E-Mail', 'required' => false, 'help' => 'Ohne Bewerbungs-URL oder eigene E-Mail wird die E-Mail des Unternehmens verwendet.'])
             ->add('applicationUrl', UrlType::class, ['label' => 'Externe Bewerbungs-URL', 'required' => false, 'default_protocol' => null]);
-        $builder->add('publishedAt', DateTimeType::class, ['label' => 'Veröffentlichungszeitpunkt', 'required' => false, 'widget' => 'single_text', 'input' => 'datetime_immutable', 'model_timezone' => 'UTC', 'view_timezone' => $this->timezone,
+        $builder->add('publishedAt', DateTimeType::class, ['label' => 'Veröffentlichungszeitpunkt', 'required' => false, 'widget' => 'single_text', 'input' => 'datetime_immutable', 'model_timezone' => $this->timezone, 'view_timezone' => $this->timezone,
             'help' => 'Ortszeit '.$this->timezone.'. Neue Planungen müssen in der Zukunft liegen. Beim Veröffentlichen ohne Datum wird die aktuelle Zeit gesetzt.']);
-        $builder->add('validThrough', DateType::class, ['label' => 'Letzter Bewerbungstag', 'required' => false, 'widget' => 'single_text', 'input' => 'datetime_immutable', 'model_timezone' => 'UTC', 'view_timezone' => $this->timezone,
+        $builder->add('validThrough', DateType::class, ['label' => 'Letzter Bewerbungstag', 'required' => false, 'widget' => 'single_text', 'input' => 'datetime_immutable', 'model_timezone' => $this->timezone, 'view_timezone' => $this->timezone,
             'help' => 'Bis zum Ende dieses Tages in '.$this->timezone.' sichtbar; leer lassen für eine offene Frist.']);
-        // Explicit day conversion handles short/long DST days and round-trips existing deadlines.
+        $originalDeadline = $job instanceof JobPosting ? $job->getValidThrough() : null;
+        // Keep existing DATETIME values intact; new deadlines end on the selected local day.
         $builder->get('validThrough')->addModelTransformer(new CallbackTransformer(
-            fn (?\DateTimeImmutable $value): ?\DateTimeImmutable => $value?->setTimezone(new \DateTimeZone($this->timezone))->setTime(0, 0)->setTimezone(new \DateTimeZone('UTC')),
-            fn (?\DateTimeImmutable $value): ?\DateTimeImmutable => $value?->setTimezone(new \DateTimeZone($this->timezone))->setTime(23, 59, 59)->setTimezone(new \DateTimeZone('UTC')),
+            fn (?\DateTimeImmutable $value): ?\DateTimeImmutable => $value?->setTimezone(new \DateTimeZone($this->timezone))->setTime(0, 0),
+            fn (?\DateTimeImmutable $value): ?\DateTimeImmutable => $value === null ? null
+                : ($originalDeadline !== null && $originalDeadline->format('Y-m-d') === $value->format('Y-m-d')
+                    ? $originalDeadline : $value->setTime(23, 59, 59)),
         ));
-        $builder->add('startsAt', DateType::class, ['label' => 'Geplanter Arbeitsbeginn', 'required' => false, 'widget' => 'single_text', 'input' => 'datetime_immutable', 'model_timezone' => 'UTC', 'view_timezone' => $this->timezone]);
+        // Work start is a calendar date, including when Doctrine reloads its DATETIME column.
+        $builder->add('startsAt', DateType::class, ['label' => 'Geplanter Arbeitsbeginn', 'required' => false, 'widget' => 'single_text', 'input' => 'datetime_immutable', 'model_timezone' => null, 'view_timezone' => null]);
+        $originalStart = $job instanceof JobPosting ? $job->getStartsAt() : null;
+        $builder->get('startsAt')->addModelTransformer(new CallbackTransformer(
+            static fn (?\DateTimeImmutable $value): ?\DateTimeImmutable => $value,
+            static fn (?\DateTimeImmutable $value): ?\DateTimeImmutable => $value !== null && $originalStart !== null
+                && $value->format('Y-m-d') === $originalStart->format('Y-m-d') ? $originalStart : $value,
+        ));
         foreach (['salaryMin' => 'Mindestgehalt (€)', 'salaryMax' => 'Höchstgehalt (€)'] as $field => $label) {
             $builder->add($field, TextType::class, ['label' => $label, 'required' => false, 'attr' => ['inputmode' => 'decimal'], 'help' => 'Zum Beispiel 2500,50; ohne Tausendertrennzeichen.'])
                 ->get($field)->addModelTransformer(new CallbackTransformer(

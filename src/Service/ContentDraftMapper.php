@@ -3,11 +3,12 @@
 declare(strict_types=1);
 namespace App\Service;
 
-use App\Entity\{Company, CompanyImage, ContactPerson, OpeningHour};
+use App\Entity\{Company, CompanyImage, ContactPerson, OpeningHour, JobPosting};
 use App\Enum\ContentType;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 /** Explicit editable schema. Detached validation objects are never flushed into the live identity map. */
 final readonly class ContentDraftMapper
@@ -24,7 +25,7 @@ final readonly class ContentDraftMapper
         'contactPersons' => [ContactPerson::class, ['firstName','lastName','position','email','phone','mobile','primaryContact','sortOrder','image'], 'ContactPerson'],
         'images' => [CompanyImage::class, ['fileName','altText','title','type','position'], 'Image'],
     ];
-    public function __construct(private EntityManagerInterface $em, private PropertyAccessorInterface $accessor) {}
+    public function __construct(private EntityManagerInterface $em, private PropertyAccessorInterface $accessor, #[Autowire('%portal.timezone%')] private string $timezone) {}
     public function capture(object $entity): array
     {
         $type = ContentType::forEntity($entity); $data = [];
@@ -123,7 +124,15 @@ final readonly class ContentDraftMapper
     private function value(object $entity, string $field, mixed $value): void
     {
         $name = (new \ReflectionProperty($entity, $field))->getType()->getName();
-        if ($value !== null && $name === \DateTimeImmutable::class) { $value = new \DateTimeImmutable($value); }
+        if ($value !== null && $name === \DateTimeImmutable::class) {
+            $value = new \DateTimeImmutable($value);
+            $zone = new \DateTimeZone($this->timezone);
+            // JSON keeps an offset, not a named timezone. Restore the form's model timezone.
+            // Calendar labels must retain their date even when the payload was encoded in UTC.
+            $value = $field === 'recurrenceUntil' || ($entity instanceof JobPosting && $field === 'startsAt')
+                ? new \DateTimeImmutable($value->format('Y-m-d H:i:s'), $zone)
+                : $value->setTimezone($zone);
+        }
         elseif ($value !== null && enum_exists($name)) { $value = $name::from($value); }
         elseif ($value !== null && $name === CompanyImage::class) { $value = $this->em->find(CompanyImage::class, $value); }
         $entity->{'set'.ucfirst($field)}($value);

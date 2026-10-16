@@ -18,6 +18,7 @@ final class VoucherIssueType extends AbstractType
     public function __construct(#[Autowire('%portal.timezone%')] private readonly string $timezone) {}
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        // Issuance is unbound and starts with null: this input produces UTC, never hydrates an entity.
         $builder->add('product', EntityType::class, ['class' => VoucherProduct::class, 'choice_label' => 'name', 'label' => 'Gutscheinprodukt', 'placeholder' => 'Bitte wählen', 'constraints' => [new Assert\NotNull()], 'query_builder' => static fn ($repo) => $repo->createQueryBuilder('product')->where('product.active = true')->orderBy('product.position', 'ASC')])
             ->add('amount', DecimalAmountType::class, ['label' => 'Gutscheinwert', 'constraints' => [new Assert\Regex(DecimalAmount::PATTERN)], 'help' => 'Bei einem festen Produktwert leer lassen; dessen Wert kann nicht geändert werden.'])
             ->add('validFrom', DateTimeType::class, ['label' => 'Gültig ab', 'required' => false, 'widget' => 'single_text', 'input' => 'datetime_immutable', 'model_timezone' => 'UTC', 'view_timezone' => $this->timezone])

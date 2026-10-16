@@ -24,10 +24,10 @@ final class AdminJobTest extends JobDatabaseTestCase
         $this->client->request('GET', '/admin/jobs/'.$id); self::assertResponseIsSuccessful();
         $this->client->request('GET', '/jobs/neue-stelle-ohne-titelzusatz'); self::assertResponseStatusCodeSame(404);
         $this->client->request('GET', '/admin/jobs/'.$id.'/edit'); $this->client->submitForm('Speichern', ['job_posting[status]' => 'published', 'job_posting[salaryMin]' => '2500,50', 'job_posting[salaryMax]' => '3200', 'job_posting[salaryPeriod]' => 'monthly', 'job_posting[validThrough]' => '2030-05-03']); self::assertResponseStatusCodeSame(303);
-        $job = $this->job('neue-stelle-ohne-titelzusatz'); self::assertEquals($this->clock->now(), $job->getPublishedAt()); self::assertSame('2500.50', $job->getSalaryMin()); self::assertSame('2030-05-03 21:59:59', $job->getValidThrough()->format('Y-m-d H:i:s'));
+        $job = $this->job('neue-stelle-ohne-titelzusatz'); self::assertEquals($this->clock->now(), $job->getPublishedAt()); self::assertSame('2500.50', $job->getSalaryMin()); self::assertSame('2030-05-03 21:59:59', $job->getValidThrough()->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:s'));
         $this->client->request('GET', '/jobs/neue-stelle-ohne-titelzusatz'); self::assertResponseIsSuccessful();
         $this->client->request('GET', '/admin/jobs/'.$id.'/edit'); $this->client->submitForm('Speichern', ['job_posting[title]' => 'Geänderter Titel', 'job_posting[status]' => 'scheduled', 'job_posting[publishedAt]' => '2030-05-02T18:00']); self::assertResponseStatusCodeSame(303);
-        self::assertSame('16:00', $this->job('neue-stelle-ohne-titelzusatz')->getPublishedAt()->format('H:i')); $this->client->request('GET', '/jobs/neue-stelle-ohne-titelzusatz'); self::assertResponseStatusCodeSame(404);
+        self::assertSame('16:00', $this->job('neue-stelle-ohne-titelzusatz')->getPublishedAt()->setTimezone(new \DateTimeZone('UTC'))->format('H:i')); $this->client->request('GET', '/jobs/neue-stelle-ohne-titelzusatz'); self::assertResponseStatusCodeSame(404);
         $this->clock->modify('+2 days'); $this->client->request('GET', '/admin/jobs/'.$id.'/edit'); $this->client->submitForm('Speichern', ['job_posting[description]' => 'Weiter bearbeitet']); self::assertResponseStatusCodeSame(303);
         $this->client->request('GET', '/jobs/neue-stelle-ohne-titelzusatz'); self::assertResponseIsSuccessful();
         $this->client->request('GET', '/admin/jobs/'.$id.'/edit'); $this->client->submitForm('Speichern', ['job_posting[status]' => 'draft']); self::assertResponseStatusCodeSame(303);
@@ -80,8 +80,8 @@ final class AdminJobTest extends JobDatabaseTestCase
     public function testDeadlineIncludesWholeLocalDayAcrossDstAndRoundTrips(string $localDay, string $utcEnd): void
     {
         $this->login('editor'); $id = $this->job()->getId(); $this->client->request('GET', '/admin/jobs/'.$id.'/edit');
-        $this->client->submitForm('Speichern', ['job_posting[status]' => 'draft', 'job_posting[publishedAt]' => '', 'job_posting[validThrough]' => $localDay]); self::assertResponseStatusCodeSame(303); self::assertSame($utcEnd, $this->job()->getValidThrough()->format('Y-m-d H:i:s'));
-        $this->client->request('GET', '/admin/jobs/'.$id.'/edit'); self::assertSelectorExists('input[name="job_posting[validThrough]"][value="'.$localDay.'"]'); $this->client->submitForm('Speichern', ['job_posting[description]' => 'Unchanged deadline']); self::assertResponseStatusCodeSame(303); self::assertSame($utcEnd, $this->job()->getValidThrough()->format('Y-m-d H:i:s'));
+        $this->client->submitForm('Speichern', ['job_posting[status]' => 'draft', 'job_posting[publishedAt]' => '', 'job_posting[validThrough]' => $localDay]); self::assertResponseStatusCodeSame(303); self::assertSame($utcEnd, $this->job()->getValidThrough()->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:s'));
+        $this->client->request('GET', '/admin/jobs/'.$id.'/edit'); self::assertSelectorExists('input[name="job_posting[validThrough]"][value="'.$localDay.'"]'); $this->client->submitForm('Speichern', ['job_posting[description]' => 'Unchanged deadline']); self::assertResponseStatusCodeSame(303); self::assertSame($utcEnd, $this->job()->getValidThrough()->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:s'));
     }
     public function testRemoteAndCompanyEmailFallbackAreAllowed(): void
     {
